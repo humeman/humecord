@@ -13,24 +13,24 @@ class Events:
         # Force register
         self.force = {
             "on_ready": [
-                events.on_ready.prep,
                 events.on_ready.populate_debug_channel,
                 events.on_ready.ready
+            ],
+            "on_message": [
+                events.on_message.run_command
             ]
         }
 
         @bot.client.event
         async def on_ready():
-            from humecord.bot import bot
-            await self.prep()
+            global bot
+            from .. import bot
+
+            await bot.populate_imports()
 
     async def prep(
             self
         ):
-
-        global bot
-        from ..bot import bot
-
         await self.load()
         await self.register()
 

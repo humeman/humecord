@@ -2,6 +2,7 @@ from .colors import TermColors
 from . import exceptions
 from humecord import data
 
+import textwrap
 import time
 
 adapters = {
@@ -46,7 +47,7 @@ def log(
 
         else:
             from humecord import bot
-            timer = bot.bot.timer
+            timer = bot.timer
 
         timelen = 16
         typelen = 8
@@ -85,7 +86,7 @@ def log_long(
     bold = TermColors.get_color("bold")
     reset = TermColors.get_color("reset")
 
-    for line in content.split("\n"):
+    for line in textwrap.dedent(content).split("\n"):
         if line.strip() == "" and remove_blank_lines:
             continue
         

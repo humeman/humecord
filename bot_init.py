@@ -11,5 +11,6 @@ from .classes import Bot
 
 def init(imports):
     global bot
-    bot = Bot(imports)
+    #bot = 
+    Bot(imports)
 

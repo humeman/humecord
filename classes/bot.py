@@ -4,13 +4,17 @@ HumeCord/classes/bot.py
 The main Bot object.
 """
 
-import os
 import sys
 import discord
 import time
 
+import humecord
+
 from .config import Config
 from .events import Events
+from .commands import Commands
+
+from ..interfaces.apiinterface import APIInterface
 
 from .. import data
 
@@ -21,8 +25,12 @@ from humecord.utils import debug
 class Bot:
     def __init__(
             self,
-            imports
+            imports_class
         ):
+
+        self.imports_class = imports_class
+
+        humecord.bot = self
 
         logger.log("start", "Initializing bot instance...", bold = True)
 
@@ -47,11 +55,9 @@ class Bot:
 
         # -- HANDLERS --
 
-        self.imports = imports
-
-        # if self.config.use_api:
-        #   self.api = API()
-        # self.commands = Commands()
+        if self.config.use_api:
+            self.api = APIInterface()
+        self.commands = Commands(None)
         # self.loops = Loops()
         self.events = Events(self)
         # self.overrides = Overrides()
@@ -78,6 +84,16 @@ class Bot:
 
         for key, value in self.config.config_raw.items():
             setattr(self.config, key, value)
+
+    async def populate_imports(
+            self
+        ):
+        self.imports = self.imports_class()
+
+        self.commands.commands = self.imports.commands
+        await self.events.prep()
+
+        print()
 
     def start(
             self
