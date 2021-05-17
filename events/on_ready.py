@@ -11,6 +11,8 @@ async def populate_debug_channel(__):
         sys.exit(-1)
 
 async def ready(__):
+    logger.log_step(f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})", "cyan")
+
     description = []
 
     description += [

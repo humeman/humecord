@@ -1,5 +1,6 @@
 from ..utils import logger
 from ..utils import debug
+from ..utils import errorhandler
 
 from .. import events
 from .. import data
@@ -59,7 +60,14 @@ class Events:
             return
 
         for function in self.events[event]:
-            await function(*args)
+            await errorhandler.wrap(
+                function(*args),
+                context = {
+                    "Event details": [
+                        f"Event name: {event}"
+                    ]
+                }
+            )
 
     async def register(
             self

@@ -101,21 +101,6 @@ class Commands:
         if args_lower[0] != f"{gdb['prefix']}{header['match'][0]}":
             return
 
-        command_id = str(hex(message.id)).replace("0x", "")
-
-        humecord.utils.logger.log("cmd", f"Dispatching command ID {command_id}", bold = True)
-        linebreak = "\n"
-        humecord.utils.logger.log_long(
-            f"""Command:        {category}.{command.name}
-            Guild:          {message.guild.id} ({message.guild.name})
-            Channel:        {message.channel.id} ({message.channel.name})
-            User:           {message.author.id} ({message.author.name}#{message.author.discriminator})
-            Content:        {message.clean_content[:110].replace(linebreak, "")}
-            Match type:     {header['type']}""".replace("            ", ""),
-            "blue",
-            extra_line = False
-        )
-
         args = message.content.split(" ")
 
         # Expand the args
@@ -125,10 +110,58 @@ class Commands:
         elif header["type"] == "shortcut":
             args = header["replace_with"].split(" ") + args[len(header["match"]):]
 
+        # Match subcommands
+        subcommand_details = ""
+        if "subcommands" in dir(command):
+            if len(args) == 1:
+                if "__default__" in command.subcommands:
+                    function = command.subcommands["__default__"](message, args, gdb)
+                    subcommand_details = ".__default__"
+
+                else:
+                    function = self.syntax_error(message, args, gdb["prefix"], "test", "when")
+                    subcommand_details = ".__syntax_internal__"
+
+            else:
+                action = args[1].lower()
+
+                if action in command.subcommands:
+                    function = command.subcommands[action](message, args, gdb)
+                    subcommand_details = f".{action}"
+
+                else:   
+                    if "__syntax__" in command.subcommands:
+                        function = command.subcommands["__syntax__"](message, args, gdb)
+                        subcommand_details = ".__syntax__"
+
+                    else:
+                        function = self.syntax_error(message, args, gdb["prefix"], "test", "when")
+                        subcommand_details = ".__syntax_internal__"
+
+        else:
+            function = command.run(message, args, gdb)
+
+        command_id = str(hex(message.id)).replace("0x", "")
+
+        humecord.utils.logger.log("cmd", f"Dispatching command ID {command_id}", bold = True)
+        linebreak = "\n"
+        humecord.utils.logger.log_long(
+            f"""Command:        {category}.{command.name}{subcommand_details}
+            Guild:          {message.guild.id} ({message.guild.name})
+            Channel:        {message.channel.id} ({message.channel.name})
+            User:           {message.author.id} ({message.author.name}#{message.author.discriminator})
+            Content:        {message.clean_content[:110].replace(linebreak, "")}
+            Match type:     {header['type']}""".replace("            ", ""),
+            "blue",
+            extra_line = False
+        )
+
+
+
         humecord.utils.logger.log_step("Creating command task...", "blue")
         humecord.bot.client.loop.create_task(
             humecord.utils.errorhandler.discord_wrap(
-                command.run(message, args, gdb),
+                function,
                 message,
                 command = [category, command, header]
             )

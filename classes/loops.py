@@ -113,7 +113,7 @@ class Loops:
                                     f"Loop exception counter is now at {loop.errors + 1}. If 3 are accumulated, it will be stopped indefinitely."
                                 ]
                             },
-                            on_fail = pause_execution(loop)
+                            on_fail = [pause_execution, [loop]]
                         )
                     )
 

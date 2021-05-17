@@ -61,10 +61,8 @@ async def wrap(
 
         if on_fail:
             await wrap(
-                on_fail
+                on_fail[0](*on_fail[1])
             )
-
-        
 
 async def discord_wrap(
         function,
