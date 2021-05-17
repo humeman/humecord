@@ -12,6 +12,8 @@ class APIInterface:
 
         self.direct = DirectAPI(self)
 
+        humecord.bot.api_online = True
+
     async def get(
             self,
             category: str,
@@ -36,7 +38,11 @@ class APIInterface:
         if route.get("auth"):
             args = {**args, **humecord.bot.config.auth}
 
-        data = await self.direct.get(url, args)
+        try:
+            data = await self.direct.get(url, args)
+
+        except humecord.utils.exceptions.APIOffline:
+            await self.handle_api_error()
 
         if botapi_adapt:
             if not data.get("success"):
@@ -71,7 +77,11 @@ class APIInterface:
         if route.get("auth"):
             json = {**json, **humecord.bot.config.auth}
 
-        data = await self.direct.put(url, json)
+        try:
+            data = await self.direct.put(url, json)
+
+        except humecord.utils.exceptions.APIOffline:
+            await self.handle_api_error()
 
         if botapi_adapt:
             if not data.get("success"):
@@ -81,6 +91,28 @@ class APIInterface:
                 return data["data"]
 
         return data
+
+    async def handle_api_error(
+            self
+        ):   
+        if humecord.bot.api_online:
+            humecord.bot.api_online = False
+
+            humecord.utils.logger.log("error", f"Bot API has gone offline. Pausing all requests.")
+
+            try:
+                await humecord.bot.debug_channel.send(
+                    embed = humecord.utils.discordutils.create_embed(
+                        description = f"{humecord.bot.config.lang['emoji']['error']} **Lost connection to the bot API.**\n\nConnection failed for: `{humecord.bot.config.api_url}`\nPausing all events and loops until it returns.",
+                        color = "error"
+                    )
+                )
+
+            except:
+                humecord.utils.logger.log_step("Failed to log to debug channel.", "red")
+            
+            # Reraise
+            raise humecord.utils.exceptions.APIOffline("Failed to connect to bot API.")
 
 class DirectAPI:
     def __init__(
@@ -111,6 +143,9 @@ class DirectAPI:
             except httpx.HTTPStatusError as e:
                 raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
 
+            except httpx.ConnectError as e:
+                raise humecord.utils.exceptions.APIOffline()
+
             except httpx.RequestError as e:
                 raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
 
@@ -134,6 +169,9 @@ class DirectAPI:
 
             except httpx.HTTPStatusError as e:
                 raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
+
+            except httpx.ConnectError as e:
+                raise humecord.utils.exceptions.APIOffline()
 
             except httpx.RequestError as e:
                 raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")

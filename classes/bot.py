@@ -13,6 +13,7 @@ import humecord
 from .config import Config
 from .events import Events
 from .commands import Commands
+from .loops import Loops
 
 from ..interfaces.apiinterface import APIInterface
 
@@ -21,6 +22,9 @@ from .. import data
 from humecord.utils import logger
 from humecord.utils import fs
 from humecord.utils import debug
+from humecord.utils import discordutils
+from humecord.utils import miscutils
+from humecord.utils import errorhandler
 
 class Bot:
     def __init__(
@@ -41,6 +45,9 @@ class Bot:
         # Load globals
         self.config.load_globals()
 
+        # Load lang
+        self.config.load_lang()
+
         logger.log_step("Loaded config", "cyan")
 
         # -- MEM STORAGE --
@@ -58,7 +65,7 @@ class Bot:
         if self.config.use_api:
             self.api = APIInterface()
         self.commands = Commands(None)
-        # self.loops = Loops()
+        self.loops = Loops()
         self.events = Events(self)
         # self.overrides = Overrides()
         # self.console = Console()
@@ -89,9 +96,13 @@ class Bot:
             self
         ):
         self.imports = self.imports_class()
+        
+        self.loops.loops = self.imports.loops
+        await self.loops.prep()
 
         self.commands.commands = self.imports.commands
         await self.events.prep()
+
 
         print()
 
@@ -107,6 +118,16 @@ class Bot:
             print()
             logger.log("close", "Shutting down...", bold = True)
 
+            self.client.loop.run_until_complete(
+                self.debug_channel.send(
+                    embed = discordutils.create_embed(
+                        title = f"{self.config.lang['emoji']['success']}  Shutting down client.",
+                        description = f"```yml\nRuntime: {miscutils.get_duration(time.time() - self.timer)}\nSession started: {miscutils.get_datetime(self.timer)}\nSession closed: {miscutils.get_datetime(time.time())}\n\nBye bye!```",
+                        color = "success"
+                    )
+                )
+            )
+
             logger.log_step("Closing websocket", "cyan")
 
             logger.log_step("Logging out of API", "cyan")
@@ -118,4 +139,6 @@ class Bot:
             self.client.loop.run_until_complete(self.client.close())
 
             logger.log_step("Bye bye!", "cyan", bold = True)
+
+            time.sleep(0.5)
             sys.exit(0)

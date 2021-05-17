@@ -25,7 +25,7 @@ def create_embed(
     for field in fields:
         inline = field.get("inline") if "inline" in field else None
 
-        embed.add_field(name = field["name"], value = field["value"], inline = field["inline"])
+        embed.add_field(name = field["name"], value = field["value"], inline = inline)
 
     if thumbnail:
         embed.set_thumbnail(url = thumbnail)

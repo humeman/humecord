@@ -23,6 +23,15 @@ class Config:
         for key, value in self.raw_globals.items():
             setattr(self.globals, key, value)
 
+    def load_lang(
+            self
+        ):
+        """
+        Loads global configuration values from
+        the specified global config file.
+        """
+
+        self.lang = fs.read_yaml(self.lang_path)
         
 
 class Globals:

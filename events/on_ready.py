@@ -51,9 +51,9 @@ async def ready(__):
 
     await humecord.bot.debug_channel.send(
         embed = humecord.utils.discordutils.create_embed(
-            "Client ready!",
+            f"{humecord.bot.config.lang['emoji']['success']}  Client ready!",
             description = f"```yaml\n{linebreak.join(description)}```",
-            color = "green",
+            color = "success",
             footer = f"Running HumeCord v{humecord.version}"
         )
     )

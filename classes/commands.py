@@ -127,8 +127,10 @@ class Commands:
 
         humecord.utils.logger.log_step("Creating command task...", "blue")
         humecord.bot.client.loop.create_task(
-            #humecord.bot.bot.debug.handle_errors(
-                command.run(message, args, gdb)
-            #)
+            humecord.utils.errorhandler.discord_wrap(
+                command.run(message, args, gdb),
+                message,
+                command = [category, command, header]
+            )
         )
         print()

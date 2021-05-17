@@ -17,3 +17,6 @@ class InvalidRoute(Exception):
 
 class UnsuccessfulRequest(Exception):
     pass
+
+class APIOffline(Exception):
+    pass
