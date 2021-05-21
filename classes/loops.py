@@ -21,6 +21,14 @@ class Loops:
         await self.load()
         self.expand()
 
+        for loop in self.loops:
+            if loop.name not in humecord.bot.files.files["__loops__.json"]:
+                humecord.bot.files.files["__loops__.json"][loop.name] = {
+                    "last_run": -1
+                }
+
+        humecord.bot.files.write("__loops__.json")
+
         self.recover_api = humecord.loops.recover_api.RecoverAPILoop()
 
         await self.start()
@@ -84,7 +92,7 @@ class Loops:
                     continue
 
             for loop in self.loops:
-                if loop.last_run < int(time.time()) - loop.delay:
+                if self.check_run(loop):
                     if loop.errors >= 3:
                         continue
 
@@ -102,7 +110,7 @@ class Loops:
                             continue
 
                     # Needs to be run
-                    loop.last_run = int(time.time())
+                    self.store_run(loop)
                     loop.task = humecord.bot.client.loop.create_task(
                         humecord.utils.errorhandler.wrap(
                             loop.run(),
@@ -116,6 +124,26 @@ class Loops:
                             on_fail = [pause_execution, [loop]]
                         )
                     )
+
+    def check_run(self, loop):
+        if loop.type == "delay":
+            if loop.last_run < int(time.time()) - loop.delay:
+                return True
+
+            return False
+
+        elif loop.type == "period":
+            # Check shortcuts
+            return humecord.bot.files.files["__loops__.json"][loop.name]["last_run"] != humecord.utils.dateutils.get_datetime(loop.time)
+
+    def store_run(self, loop):
+        if loop.type == "delay":
+            loop.last_run = int(time.time())
+
+        elif loop.type == "period":
+            # Check shortcuts
+            humecord.bot.files.files["__loops__.json"][loop.name]["last_run"] = humecord.utils.dateutils.get_datetime(loop.time)
+            humecord.bot.files.write("__loops__.json")
 
 
 async def pause_execution(loop):

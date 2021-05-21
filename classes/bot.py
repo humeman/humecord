@@ -7,7 +7,7 @@ The main Bot object.
 import sys
 import discord
 import time
-
+import pytz
 import humecord
 
 from .config import Config
@@ -16,6 +16,7 @@ from .commands import Commands
 from .loops import Loops
 
 from ..interfaces.apiinterface import APIInterface
+from ..interfaces.fileinterface import FileInterface
 
 from .. import data
 
@@ -25,6 +26,7 @@ from humecord.utils import debug
 from humecord.utils import discordutils
 from humecord.utils import miscutils
 from humecord.utils import errorhandler
+from humecord.utils import subprocess
 
 class Bot:
     def __init__(
@@ -50,6 +52,8 @@ class Bot:
 
         logger.log_step("Loaded config", "cyan")
 
+        # Read persistent storage
+
         # -- MEM STORAGE --
         self.mem_storage = dict(self.config.mem_storage)
 
@@ -57,6 +61,7 @@ class Bot:
         self.started = False
         self.timer = time.time()
         self.client = discord.Client()
+        self.timezone = pytz.timezone(self.config.timezone)
 
         logger.log_step("Initialized storage", "cyan")
 
@@ -67,6 +72,7 @@ class Bot:
         self.commands = Commands(None)
         self.loops = Loops()
         self.events = Events(self)
+        self.files = FileInterface(self)
         # self.overrides = Overrides()
         # self.console = Console()
         # self.dconsole = DConsole()

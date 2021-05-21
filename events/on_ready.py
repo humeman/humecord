@@ -39,15 +39,13 @@ async def ready(__):
         for name, value in humecord.bot.events.events.items()
     ]
 
-    """
     description += [
         " ",
         f"Loops: {len(humecord.bot.loops.loops)}",
     ] + [
-        f"  {name}"
-        for name in humecord.bot.loops.loops
+        f"  {loop.name}"
+        for loop in humecord.bot.loops.loops
     ]
-    """
 
     linebreak = "\n"
 

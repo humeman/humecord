@@ -20,3 +20,11 @@ class UnsuccessfulRequest(Exception):
 
 class APIOffline(Exception):
     pass
+
+# -- utils -> Subprocess --
+class SubprocessError(Exception):
+    pass
+
+# -- utils -> DateUtils --
+class InvalidFormat(Exception):
+    pass

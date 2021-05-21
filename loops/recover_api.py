@@ -5,6 +5,8 @@ class RecoverAPILoop:
             self
         ):
 
+        self.type = "delay"
+
         self.name = "recover_api"
 
         self.delay = 0.5
