@@ -16,6 +16,10 @@ class FileInterface:
             "__loops__.json": {
                 "loops": {}
             },
+            "__debugconsole__.json": {
+                "listen": [],
+                "commands": {}
+            },
             **bot.config.req_files
         }
 

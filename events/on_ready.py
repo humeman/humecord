@@ -10,6 +10,9 @@ async def populate_debug_channel(__):
         logger.log("error", "Debug channel does not exist.")
         sys.exit(-1)
 
+    # Populate debug console's channel
+    await humecord.bot.debug_console.prep()
+
 async def ready(__):
     logger.log_step(f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})", "cyan")
 

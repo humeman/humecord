@@ -14,6 +14,7 @@ from .config import Config
 from .events import Events
 from .commands import Commands
 from .loops import Loops
+from .debugconsole import DebugConsole
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -75,7 +76,7 @@ class Bot:
         self.files = FileInterface(self)
         # self.overrides = Overrides()
         # self.console = Console()
-        # self.dconsole = DConsole()
+        self.debug_console = DebugConsole()
 
         logger.log_step("Initialized handlers", "cyan")
 
