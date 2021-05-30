@@ -1,17 +1,17 @@
 import time
 import datetime
+import discord
 
 import humecord
-from humecord import bot
 
 class RefreshStatusLoop:
     def __init__(
             self
         ):
 
-        self.type = "period"
+        self.type = "delay"
 
-        self.time = "minute"
+        self.delay = 600
 
         self.name = "refresh_status"
 
@@ -32,7 +32,10 @@ class RefreshStatusLoop:
                     humecord.utils.debug.print_traceback(f"Status placeholder {name}'s eval failed.")
 
         # Find visibility
-        visibility = eval(bot.config["visibilities"][humecord.bot.files.files["__bot__.json"]["visibility"]], globals())
+        visibility = eval(humecord.bot.config.visibilities[humecord.bot.files.files["__bot__.json"]["visibility"]], globals())
+
+        # Get activity
+        activity = humecord.bot.files.files["__bot__.json"]["activity"]
 
         # Update it
-        await eval()
+        await humecord.bot.client.change_presence(status = visibility, activity = humecord.utils.discordutils.generate_activity(details = status, **activity))

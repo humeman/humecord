@@ -84,4 +84,27 @@ def check_perms(
         member: discord.Member
     ):
 
-    pass 
+    pass
+
+def generate_activity(
+        type: str,
+        details: str,
+        streaming: Optional[dict],
+    ):
+
+    if type == "streaming":
+        return discord.Streaming(
+            name = details,
+            game = streaming.get("game"),
+            url = streaming.get("url"),
+            twitch_name = streaming.get("name"),
+            platform = streaming.get("platform")
+        )
+
+    else:
+        activity = discord.Activity(name = details)
+
+        activity.type = eval(humecord.bot.config.activities[type], globals())
+
+        return activity
+

@@ -8,15 +8,16 @@ class Loops:
             self
         ):
 
-        self.force = [
-        ]
-
         self.task = None
 
 
     async def prep(
             self
         ):
+
+        self.force = [
+            humecord.loops.refresh_status.RefreshStatusLoop()
+        ]
 
         await self.load()
         self.expand()

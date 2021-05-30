@@ -9,7 +9,9 @@ import traceback
 from . import logger
 from .colors import TermColors
 
-def print_traceback():
+def print_traceback(
+        error_message: str = "An error occured!"
+    ):
     """
     Prints a formatted stack trace for the active exception.
     """
@@ -21,7 +23,7 @@ def print_traceback():
         logger.log("warn", "Tried to print stack trace but there is no active exception.")
         return
 
-    logger.log("error", "An error occured!", bold = True)
+    logger.log("error", error_message, bold = True)
 
     logger.log_long(tb, "red", True)
     

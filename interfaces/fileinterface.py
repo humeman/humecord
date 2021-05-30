@@ -22,7 +22,16 @@ class FileInterface:
             },
             "__bot__.json": {
                 "status": bot.config.default_status,
-                "visibility": bot.config.default_visibility
+                "visibility": bot.config.default_visibility,
+                "activity": {
+                    "type": "playing",
+                    "streaming": {
+                        "game": "HumeCord",
+                        "url": "https://twitch.tv/hume_man",
+                        "twitch_name": "humeman",
+                        "platform": "twitch"
+                    }
+                }
             },
             **bot.config.req_files
         }
