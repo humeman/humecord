@@ -1,5 +1,6 @@
 import humecord
 import sys
+import discord
 
 from humecord.utils import logger
 
@@ -20,7 +21,8 @@ async def ready(__):
 
     description += [
         f"Running: {humecord.bot.config.name}",
-        f"Version: {humecord.bot.config.version}"
+        f"Version: {humecord.bot.config.version}",
+        f"Discord: {discord.__version__}"
     ]
 
     if humecord.bot.config.use_api:

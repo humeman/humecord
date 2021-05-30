@@ -15,6 +15,7 @@ from .events import Events
 from .commands import Commands
 from .loops import Loops
 from .debugconsole import DebugConsole
+from .interactions import Interactions
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -70,9 +71,11 @@ class Bot:
 
         if self.config.use_api:
             self.api = APIInterface()
+            
         self.commands = Commands(None)
         self.loops = Loops()
         self.events = Events(self)
+        self.interactions = Interactions()
         self.files = FileInterface(self)
         # self.overrides = Overrides()
         # self.console = Console()

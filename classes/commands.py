@@ -101,6 +101,11 @@ class Commands:
         if args_lower[0] != f"{gdb['prefix']}{header['match'][0]}":
             return
 
+        # Create response channel
+        resp = humecord.classes.discordclasses.MessageResponseChannel(
+            message
+        )
+
         args = message.content.split(" ")
 
         # Expand the args
@@ -115,31 +120,31 @@ class Commands:
         if "subcommands" in dir(command):
             if len(args) == 1:
                 if "__default__" in command.subcommands:
-                    function = command.subcommands["__default__"](message, args, gdb)
+                    function = command.subcommands["__default__"](message, resp, args, gdb)
                     subcommand_details = ".__default__"
 
                 else:
-                    function = self.syntax_error(message, args, gdb["prefix"], "test", "when")
+                    function = self.syntax_error(message, resp, args, gdb["prefix"], "test", "when")
                     subcommand_details = ".__syntax_internal__"
 
             else:
                 action = args[1].lower()
 
                 if action in command.subcommands:
-                    function = command.subcommands[action](message, args, gdb)
+                    function = command.subcommands[action](message, resp, args, gdb)
                     subcommand_details = f".{action}"
 
                 else:   
                     if "__syntax__" in command.subcommands:
-                        function = command.subcommands["__syntax__"](message, args, gdb)
+                        function = command.subcommands["__syntax__"](message, resp, args, gdb)
                         subcommand_details = ".__syntax__"
 
                     else:
-                        function = self.syntax_error(message, args, gdb["prefix"], "test", "when")
+                        function = self.syntax_error(message, resp, args, gdb["prefix"], "test", "when")
                         subcommand_details = ".__syntax_internal__"
 
         else:
-            function = command.run(message, args, gdb)
+            function = command.run(message, resp, args, gdb)
 
         command_id = str(hex(message.id)).replace("0x", "")
 
@@ -155,8 +160,6 @@ class Commands:
             "blue",
             extra_line = False
         )
-
-
 
         humecord.utils.logger.log_step("Creating command task...", "blue")
         humecord.bot.client.loop.create_task(

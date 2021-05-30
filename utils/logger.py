@@ -13,6 +13,7 @@ adapters = {
     "stop": "cyan",
     "close": "cyan",
     "cmd": "blue",
+    "int": "blue",
     "info": "default",
     "obj": "magenta"
 }

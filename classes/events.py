@@ -20,6 +20,9 @@ class Events:
             "on_message": [
                 events.on_message.run_command,
                 events.on_message.check_debug_console
+            ],
+            "on_interaction": [
+                events.on_interaction.check_interaction
             ]
         }
 

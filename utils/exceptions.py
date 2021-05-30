@@ -28,3 +28,7 @@ class SubprocessError(Exception):
 # -- utils -> DateUtils --
 class InvalidFormat(Exception):
     pass
+
+# -- utils -> Components
+class InvaldComponent(Exception):
+    pass

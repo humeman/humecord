@@ -20,6 +20,10 @@ class FileInterface:
                 "listen": [],
                 "commands": {}
             },
+            "__bot__.json": {
+                "status": bot.config.default_status,
+                "visibility": bot.config.default_visibility
+            },
             **bot.config.req_files
         }
 
