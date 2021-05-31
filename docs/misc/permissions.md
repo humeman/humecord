@@ -71,6 +71,10 @@ For example:
 * `guild.mod` - People with general moderation permissions.
     * Defined in bot.config.mod_perms
 
+* `guild.permission` - People with a certain permission.
+    * Ex: `guild.permission[manage_guild,kick_members]` will allow anyone with the ability to manage the server and kick people.
+    * A full list of permissions can be found [here](https://discordpy.readthedocs.io/en/master/api.html#permissions).
+
 * `guild.role[args]` - Members with a role (found by ID).
     * Ex: `guild.role[123,456]` will allow members with any role with ID 123 or 456
 
