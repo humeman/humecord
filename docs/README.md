@@ -8,3 +8,6 @@ This should cover *almost* everything you need to know about using the library -
 * [basics]()
     * Creating:
         * [commands](basics/commands.md)
+
+* [misc]()
+    * [Permissions system](misc/permissions.md)
