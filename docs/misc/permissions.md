@@ -1,11 +1,10 @@
-# humecord documentation
-## permissions system
+# permissions system
 
 This document outlines how the HumeCord discord permission system works.
 These permissions are used everywhere - command permissions, interactions,
 permission overrides, and so on.
 
-### basic outline
+## basic outline
 
 Here's a sample permission:
 
@@ -19,7 +18,7 @@ To access things outside of the guild, like if the user is a developer:
 
 `bot.dev`
 
-### chaining
+## chaining
 
 Permissions can be combined with a `+` to use multiple.
 
@@ -29,7 +28,7 @@ For example:
 to use the command. You can chain up to 10 permissions together in one
 string and still have it be valid.
 
-### guild permissions
+## guild permissions
 
 Guild permissions are special in that they can be defined with users,
 roles, permissions, and so on.
@@ -42,6 +41,14 @@ will allow people with role IDs 123 and 456 to run the command.
 
 Permissions that accept a number of arguments, specified with brackets
 and commas, will be denoted as `argument permissions`.
+
+## negating permissions
+
+Permissions can be negated with a `!`.
+
+For example:
+
+`!guild.role[123]` will disallow anyone with the role ID `123`.
 
 ## the complete permission list
 **bot**
