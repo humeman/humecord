@@ -15,6 +15,7 @@ class Events:
         self.force = {
             "on_ready": [
                 events.on_ready.populate_debug_channel,
+                events.on_ready.tell_api,
                 events.on_ready.ready
             ],
             "on_message": [

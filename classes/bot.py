@@ -16,6 +16,7 @@ from .commands import Commands
 from .loops import Loops
 from .debugconsole import DebugConsole
 from .interactions import Interactions
+from .permissions import Permissions
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -62,7 +63,10 @@ class Bot:
         # -- STARTUP VARS --
         self.started = False
         self.timer = time.time()
-        self.client = discord.Client()
+        intents = discord.Intents().default()
+        intents.members = True
+        intents.reactions = True
+        self.client = discord.Client(intents = intents)
         self.timezone = pytz.timezone(self.config.timezone)
 
         logger.log_step("Initialized storage", "cyan")
@@ -80,6 +84,7 @@ class Bot:
         # self.overrides = Overrides()
         # self.console = Console()
         self.debug_console = DebugConsole()
+        self.permissions = Permissions(self)
 
         logger.log_step("Initialized handlers", "cyan")
 
@@ -149,6 +154,4 @@ class Bot:
             self.client.loop.run_until_complete(self.client.close())
 
             logger.log_step("Bye bye!", "cyan", bold = True)
-
-            time.sleep(0.5)
             sys.exit(0)

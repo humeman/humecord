@@ -1,3 +1,7 @@
+# *
+class NotImplemented(Exception):
+    pass
+
 # -- utils -> Colors --
 class InvalidColorException(Exception):
     pass
@@ -31,4 +35,11 @@ class InvalidFormat(Exception):
 
 # -- utils -> Components
 class InvaldComponent(Exception):
+    pass
+
+class NotDefined(Exception):
+    pass
+
+# -- classes -> Permissions
+class InvalidPermission(Exception):
     pass

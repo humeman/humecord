@@ -143,7 +143,7 @@ class Interactions:
             )
 
             # Get GDB
-            gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": mid})
+            gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id})
 
             humecord.utils.logger.log_long(
                 f"""Type:           components.button

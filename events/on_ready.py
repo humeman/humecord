@@ -14,6 +14,17 @@ async def populate_debug_channel(__):
     # Populate debug console's channel
     await humecord.bot.debug_console.prep()
 
+async def tell_api(__):
+    if humecord.bot.config.use_api:
+        await humecord.bot.api.put(
+            humecord.bot.config.ready_route["category"],
+            humecord.bot.config.ready_route["method"],
+            {
+                "category": humecord.bot.config.self_api,
+                "defaults": humecord.bot.config.defaults
+            }
+        )
+
 async def ready(__):
     logger.log_step(f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})", "cyan")
 

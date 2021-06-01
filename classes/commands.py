@@ -91,7 +91,7 @@ class Commands:
         # Get the guild database
         # -> API method
         if humecord.bot.config.use_api:
-            gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id})
+            gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id, "autocreate": True})
 
         else:
             gdb = await humecord.bot.db.get("guild", {"id": message.guild.id})

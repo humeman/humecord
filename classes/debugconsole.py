@@ -117,7 +117,7 @@ class DebugConsole:
 
         tasks = []
 
-        lines = [x.strip() for x in message.content.strip().strip("```").split("\n")]
+        lines = [x for x in message.content.strip().strip("```").split("\n")]
 
         active = ""
         for line in lines:
@@ -143,7 +143,7 @@ class DebugConsole:
 
                     active = ""
 
-            if "=" in line:
+            if "=" in line and "if" not in line:
                 if " " not in line.split("=")[0].strip():
                     tasks.append(
                         {
@@ -194,28 +194,28 @@ class DebugConsole:
             tasks: list
         ):
 
-        locals()["message"] = message
-        locals()["humecord"] = humecord
-        locals()["bot"] = humecord.bot
+        globals()["message"] = message
+        globals()["humecord"] = humecord
+        globals()["bot"] = humecord.bot
 
         r = None
 
         for task in tasks:
             try:
                 if task["type"] == "exec":
-                    r = exec(task["cmd"], locals())
+                    r = exec(task["cmd"], globals())
 
                 elif task["type"] == "asynceval":
-                    r = await eval(task["cmd"], locals())
+                    r = await eval(task["cmd"], globals())
 
                 else:
-                    r = eval(task["cmd"], locals())
+                    r = eval(task["cmd"], globals())
 
 
             except:
                 r = traceback.format_exc()
 
-        if r:
+        if r is not None:
             if len(str(r)) > 1975:
                 async with aiofiles.open("data/dc_temp.txt", "w+") as f:
                     await f.write(r)
