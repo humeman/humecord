@@ -52,6 +52,8 @@ For example:
 
 ## the complete permission list
 ### bot
+* `bot.any` - Anyone
+
 * `bot.dev` - Members listed in bot.config.devs
 
 * `bot.owner` - Bot's owner, first item in bot.config.devs
