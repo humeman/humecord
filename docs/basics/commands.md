@@ -73,10 +73,33 @@ Below is a list of valid keys which can be used in your command class:
     * Should be a dict, formatted as:
     ```py
     {
-        "name": self.function
+        "name": {
+            "function": self.function,
+            "description": "(optional) A subcommand description"
+        }
     }
     ```
     * Functions are called with the same base arguments as `self.run()`.
     * Use the following names for fallback cases:
         * `__default__` - Called if no subcommand is specified.
         * `__syntax__` - Called when an invalid subcommand is passed, or if no subcommand is specified and there's no __default__.
+
+* `info` - Overrides syntax error and info messages.
+    * If not specified, HumeCord will generate one based on other command info.
+
+    * Will fill in the embed's fields.
+
+    * Each key is the embed's title, and the value is the value.
+
+    * Valid placeholders:
+        * `command`: Command name
+        * `prefix` or `p`: Guild's prefix
+        * `syntax`: Compiled version of the command's syntax
+        * `description`: Command's description
+
+    * Sample:
+    ```py
+    {
+        "Field 1": "Some info about this field",
+        "You can": "also use placeholders like %p% and %command% here"
+    }

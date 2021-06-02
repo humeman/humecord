@@ -76,7 +76,7 @@ class Bot:
         if self.config.use_api:
             self.api = APIInterface()
             
-        self.commands = Commands(None)
+        self.commands = Commands({})
         self.loops = Loops()
         self.events = Events(self)
         self.interactions = Interactions()
@@ -116,6 +116,8 @@ class Bot:
         await self.loops.prep()
 
         self.commands.commands = self.imports.commands
+        self.commands.register_internal()
+
         await self.events.prep()
 
 

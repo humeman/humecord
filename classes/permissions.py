@@ -10,6 +10,7 @@ class Permissions:
         bot = _bot
 
         self.bot = {
+            "any": self.BotPermissions.any,
             "dev": self.BotPermissions.dev,
             "owner": self.BotPermissions.owner,
             "mod": self.BotPermissions.mod,
@@ -107,6 +108,9 @@ class Permissions:
 
 
     class BotPermissions:
+        async def any(member, args):
+            return True
+
         async def dev(member, args):
             return member.id in bot.config.devs
 

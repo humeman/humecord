@@ -43,3 +43,13 @@ class NotDefined(Exception):
 # -- classes -> Permissions
 class InvalidPermission(Exception):
     pass
+
+# -- any --
+class TestException(Exception):
+    pass
+
+class LookupError(Exception):
+    pass
+
+class DevError(Exception):
+    pass

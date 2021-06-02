@@ -1,6 +1,7 @@
 import math
 import time
 import datetime
+import random
 
 def get_duration(seconds):
     seconds = math.trunc(seconds)
@@ -19,3 +20,25 @@ def get_duration(seconds):
 
 def get_datetime(seconds):
     return f"{datetime.datetime.fromtimestamp(seconds).strftime('%b %d, %Y at %H:%M %Z')}"
+
+def expand_placeholders(
+        message: str,
+        placeholders: dict
+    ):
+
+    for placeholder, value in placeholders.items():
+        message = message.replace(f"%{placeholder}%", str(value))
+
+    return message
+
+def generate_hexid(
+        length: int = 10
+    ):
+
+    chars = "1234567890abcdef"
+    comp = ""
+
+    for i in range(length):
+        comp += random.choice(chars)
+
+    return comp

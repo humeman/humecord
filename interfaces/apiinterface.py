@@ -78,7 +78,6 @@ class APIInterface:
             json = {**json, **humecord.bot.config.auth}
 
         try:
-            print(json)
             data = await self.direct.put(url, json)
 
         except humecord.utils.exceptions.APIOffline:

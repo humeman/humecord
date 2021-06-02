@@ -33,7 +33,10 @@ async def ready(__):
     description += [
         f"Running: {humecord.bot.config.name}",
         f"Version: {humecord.bot.config.version}",
-        f"Discord: {discord.__version__}"
+        " ",
+        "Libraries:",
+        f"  Humecord: {humecord.version}",
+        f"  Discord: {discord.__version__}"
     ]
 
     if humecord.bot.config.use_api:
@@ -41,7 +44,7 @@ async def ready(__):
 
     description += [
         " ",
-        f"Commands: {len(humecord.bot.commands.commands)}",
+        f"Commands: {sum([len(y) for x, y in humecord.bot.commands.commands.items()])}",
     ] + [
         f"  {name}: {len(value)} commands"
         for name, value in humecord.bot.commands.commands.items()
@@ -69,7 +72,6 @@ async def ready(__):
         embed = humecord.utils.discordutils.create_embed(
             f"{humecord.bot.config.lang['emoji']['success']}  Client ready!",
             description = f"```yaml\n{linebreak.join(description)}```",
-            color = "success",
-            footer = f"Running HumeCord v{humecord.version}"
+            color = "success"
         )
     )

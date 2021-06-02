@@ -29,7 +29,7 @@ def create_action_row(
         components: list = []
     ):
 
-    view = discord.ui.View()
+    view = discord.ui.View(timeout = 3600)
 
     for component in components:
         view.add_item(component)

@@ -7,6 +7,7 @@ async def wrap(
         function,
         exclude: list = [],
         context: dict = {},
+        message = None,
         on_fail = None
     ):
 
@@ -50,14 +51,25 @@ async def wrap(
                 }
             )
 
+        eid = humecord.utils.miscutils.generate_hexid(12)
+
         await humecord.bot.debug_channel.send(
             embed = humecord.utils.discordutils.create_embed(
                 title = f"{humecord.bot.config.lang['emoji']['error']}  An uncaught exception occurred.",
                 description = f"```py\n{tb_short}\n```",
                 fields = fields,
-                color = "error"
+                color = "error",
+                footer = f"Exception ID: {eid}"
             )
         )
+
+        if message is not None:
+            await send_error(
+                message,
+                eid,
+                e
+            )
+
 
         if on_fail:
             await wrap(
@@ -100,6 +112,8 @@ async def discord_wrap(
             elif command[2]["type"] == "alias":
                 shortcut_details = f" ({' '.join(command[2]['match'])} -> {command[1].name})"
 
+        eid = humecord.utils.miscutils.generate_hexid(12)
+
         await humecord.bot.debug_channel.send(
             embed = humecord.utils.discordutils.create_embed(
                 title = f"{humecord.bot.config.lang['emoji']['error']}  An uncaught exception occurred during command execution.",
@@ -125,6 +139,49 @@ async def discord_wrap(
                         }
                     ] if command else []
                 ),
-                color = "error"
+                color = "error",
+                footer = f"Exception ID: {eid}"
             )
         )
+
+        await send_error(
+            message,
+            eid,
+            e
+        )
+
+async def send_error(
+        message,
+        eid,
+        e
+    ):
+    expand = ""
+    name = ""
+    if humecord.bot.config.lang["error"].get("exception_details"):
+        expand = humecord.bot.config.lang["error"]["exception_details"]
+
+        name = str(e.__class__).split("'", 1)[1].rsplit("'", 1)[0]
+
+        if humecord.bot.config.lang["error"]["only_share_if_humecord"]:
+            if not name.startswith("humecord."):
+                expand = ""
+                name = ""
+
+        if humecord.bot.config.lang["error"]["share_args"] and name != "":
+            name += f": {' '.join(e.args)}"
+
+    description = humecord.utils.miscutils.expand_placeholders(
+        f"{humecord.bot.config.lang['error']['description']}{expand}",
+        {
+            "id": eid,
+            "ex": name
+        }
+    )        
+
+    await message.channel.send(
+        embed = humecord.utils.discordutils.error(
+            message.author,
+            humecord.bot.config.lang["error"]["title"],
+            description
+        )
+    )

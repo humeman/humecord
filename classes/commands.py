@@ -18,6 +18,26 @@ class Commands:
 
         self.commands = commands
 
+    def register_internal(
+            self
+        ):
+        
+        for category in ["dev", "info"]:
+            if category not in self.commands:
+                self.commands[category] = []
+
+        self.commands["dev"] = [
+            *self.commands["dev"],
+            humecord.commands.dev.DevCommand()
+        ]
+
+        self.commands["info"] = [
+            *self.commands["info"],
+            humecord.commands.help.HelpCommand()
+        ]
+
+
+
     async def run(
             self, 
             message: discord.Message
@@ -60,9 +80,8 @@ class Commands:
                 for header in matched:
                     if len(header["match"]) != 1 and len(args_lower) >= len(header):
                         i = 1
-                        for arg in header[1:]:
-                            i += 1
-                            if args_lower[i] != header[i]:
+                        for arg in header["match"][1:]:
+                            if args_lower[i] != arg:
                                 break
 
                             matched_commands.append(
@@ -72,6 +91,8 @@ class Commands:
                                     "header": header
                                 }
                             )
+                            
+                            i += 1
 
                     elif len(header["match"]) == 1:
                         matched_commands.append(
@@ -101,10 +122,26 @@ class Commands:
         if args_lower[0] != f"{gdb['prefix']}{header['match'][0]}":
             return
 
+        # Generate pdb
+        pdb = {}
+        for key in humecord.bot.config.preferred_gdb:
+            pdb[key] = gdb[key]
+
         # Create response channel
         resp = humecord.classes.discordclasses.MessageResponseChannel(
             message
         )
+
+        # Check perms
+        if not await humecord.bot.permissions.check(message.author, command.permission):
+            await resp.send(
+                embed = humecord.utils.discordutils.error(
+                    message.author,
+                    "You don't have permission to run this command!",
+                    f"Contact an admin if you believe this is in error." 
+                )
+            )
+            return
 
         args = message.content.split(" ")
 
@@ -113,38 +150,62 @@ class Commands:
             args = command.name.split(" ") + args[len(header["match"]):]
 
         elif header["type"] == "shortcut":
-            args = header["replace_with"].split(" ") + args[len(header["match"]):]
+            final = []
+            rep_args = header["replace_with"].split(" ")
+            current_index = len(rep_args)
+            final_num = 0
+
+            for i, arg in enumerate(rep_args):
+                if "%%" in arg:
+                    num = int(arg.replace("%%", "").replace("-", ""))
+
+                    if "-" in arg:
+                        final += args[num:]
+                        final_num = len(args) - 1
+
+                    elif len(args) - 1 >= num:
+                        final.append(args[num])
+                        final_num = num
+
+                else:
+                    final.append(arg)
+
+            if final_num + 1 < len(args):
+                final += args[final_num + 1:]
+
+            args = final
+            #header["replace_with"].split(" ") + args[len(header["match"]):]
 
         # Match subcommands
         subcommand_details = ""
         if "subcommands" in dir(command):
             if len(args) == 1:
                 if "__default__" in command.subcommands:
-                    function = command.subcommands["__default__"](message, resp, args, gdb)
+                    function = command.subcommands["__default__"]["function"](message, resp, args, gdb, None, pdb)
                     subcommand_details = ".__default__"
 
                 else:
-                    function = self.syntax_error(message, resp, args, gdb["prefix"], "test", "when")
+                    function = self.syntax_error(message, resp, args, gdb, command.name)
                     subcommand_details = ".__syntax_internal__"
 
             else:
                 action = args[1].lower()
 
                 if action in command.subcommands:
-                    function = command.subcommands[action](message, resp, args, gdb)
+                    function = command.subcommands[action]["function"](message, resp, args, gdb, None, pdb)
                     subcommand_details = f".{action}"
 
                 else:   
                     if "__syntax__" in command.subcommands:
-                        function = command.subcommands["__syntax__"](message, resp, args, gdb)
+                        function = command.subcommands["__syntax__"]["function"](message, resp, args, gdb, None, pdb)
                         subcommand_details = ".__syntax__"
 
                     else:
-                        function = self.syntax_error(message, resp, args, gdb["prefix"], "test", "when")
+                        function = self.syntax_error(message, resp, args, gdb, command.name)
                         subcommand_details = ".__syntax_internal__"
 
         else:
-            function = command.run(message, resp, args, gdb)
+            function = command.run(message, resp, args, gdb, None, pdb)
 
         command_id = str(hex(message.id)).replace("0x", "")
 
@@ -170,3 +231,110 @@ class Commands:
             )
         )
         print()
+
+    async def syntax_error(
+            self,
+            message: discord.Message, 
+            resp, 
+            args: list, 
+            gdb: dict,
+            command: str
+        ):
+
+        # Forward
+        await self.send_info_message(
+            message,
+            resp,
+            args,
+            gdb,
+            command,
+            title = f"{humecord.bot.config.lang['emoji']['error']}  {humecord.bot.config.lang['command_info']['title']['syntax_error']}",
+            color = "error"
+        )
+
+    async def send_info_message(
+            self,
+            message: discord.Message,
+            resp,
+            args: list,
+            gdb: dict,
+            command: str,
+            title = None,
+            color = "invisible"
+        ):
+
+        if title is None:
+            title = humecord.bot.config.lang["command_info"]["title"]["info_message"]
+
+        # Find the command
+        active = None
+        for category, commands in self.commands.items():
+            for command_ in commands:
+                if command_.name == command:
+                    if active is not None:
+                        raise humecord.utils.exceptions.LookupError(f"Command {command} has multiple instances")
+
+                    active = command_
+
+        if active is None:
+            raise humecord.utils.exceptions.LookupError(f"Command {command} doesn't exist")
+
+        command = active
+
+        prefix = gdb.get("prefix")
+
+        # Compile the embed
+        cd = dir(command)
+
+        # Create syntax
+        if "syntax" in cd:
+            syntax = f"{prefix}{command.name} {command.syntax}".strip()
+
+        else:
+            # Try to compile syntax
+            syntax = f"{prefix}{command.name}"
+
+            if "subcommands" in cd:
+                syntax += " [subcommand]"
+
+        placeholders = {
+            "command": command.name,
+            "prefix": prefix,
+            "p": prefix,
+            "syntax": syntax,
+            "description": command.description
+        }
+
+        # Create fields
+        fields = []
+        if "info" in cd:
+            fields = [{"name": humecord.utils.miscutils.expand_placeholders(x, placeholders), "value": humecord.utils.miscutils.expand_placeholders(y, placeholders)} for x, y in command.info.items()]
+
+        else:
+            # Try to compile it ourselves
+            if "subcommands" in cd:
+                fields.append(
+                    {
+                        "name": "Valid subcommands",
+                        "value": "\n".join([f"`{prefix}{command.name}{f' {x}' if not x.startswith('__') else ''}`{': ' + y.get('description') if 'description' in y else ''}" for x, y in command.subcommands.items()])
+                    }
+                )
+
+        description = humecord.utils.miscutils.expand_placeholders(
+            humecord.bot.config.lang["command_info"]["description"],
+            placeholders
+        )
+
+        title = humecord.utils.miscutils.expand_placeholders(
+            title,
+            placeholders
+        )
+
+        await resp.send(
+            embed = humecord.utils.discordutils.create_embed(
+                title = title,
+                description = description,
+                fields = fields,
+                color = color
+            )
+        )
