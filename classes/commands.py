@@ -33,6 +33,7 @@ class Commands:
 
         self.commands["info"] = [
             *self.commands["info"],
+            humecord.commands.about.AboutCommand(),
             humecord.commands.help.HelpCommand()
         ]
 

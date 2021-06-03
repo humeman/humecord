@@ -1,8 +1,10 @@
 from humecord.utils import (
         discordutils,
-        exceptions
+        exceptions,
+        components
     )
 
+import math
 
 class HelpCommand:
     def __init__(
@@ -93,7 +95,18 @@ class HelpCommand:
                     active = info
             
             if active is not None:
-                pass
+                await self.update_page(
+                    None,
+                    "new",
+                    name,
+                    None,
+                    message,
+                    resp,
+                    args,
+                    gdb,
+                    alternate_gdb,
+                    preferred_gdb
+                )
 
             else:
                 active = None
@@ -134,56 +147,11 @@ class HelpCommand:
                 prefix = preferred_gdb["prefix"]
                 command = active
                 cd = dir(command)
-                comp = []
-
-                comp.append(
-                    {
-                        "name": "→ Category",
-                        "value": f"{category['emoji']}  {category['name']}\n{category['description']}"
-                    }
+                comp = self.generate_command_details(
+                    command,
+                    category,
+                    prefix
                 )
-
-                # Create syntax
-                if "syntax" in cd:
-                    syntax = f"{prefix}{command.name} {command.syntax}".strip()
-
-                else:
-                    # Try to compile syntax
-                    syntax = f"{prefix}{command.name}"
-
-                    if "subcommands" in cd:
-                        syntax += " [subcommand]"
-
-                comp.append(
-                    {
-                        "name": "→ Syntax",
-                        "value": f"`{syntax}`"
-                    }
-                )
-
-                if "aliases" in cd:
-                    comp.append(
-                        {
-                            "name": "→ Aliases",
-                            "value": ", ".join([f"`{prefix}{x}`" for x in command.aliases])
-                        }
-                    )
-
-                if "shortcuts" in cd:
-                    comp.append(
-                        {
-                            "name": "→ Shortcuts",
-                            "value": "\n".join([f"`{prefix}{x}` → `{prefix}{y}`" for x, y in command.shortcuts.items()])
-                        }
-                    )
-
-                if "subcommands" in cd:
-                    comp.append(
-                        {
-                            "name": "→ Subcommands",
-                            "value": "\n".join([f"`{prefix}{command.name}{f' {x}' if not x.startswith('__') else ''}`{': ' + y.get('description') if 'description' in y else ''}" for x, y in command.subcommands.items()])
-                        }
-                    )
 
                 await resp.send(
                     embed = discordutils.create_embed(
@@ -194,3 +162,211 @@ class HelpCommand:
                     )
                 )
 
+    def generate_command_details(
+            self,
+            command,
+            category,
+            prefix,
+            one_line_safe = False
+        ):
+
+        cd = dir(command)
+        comp = []
+
+        comp.append(
+            {
+                "name": "→ Category",
+                "value": f"{category['emoji']}  {category['name']}\n{category['description']}"
+            }
+        )
+
+        # Create syntax
+        if "syntax" in cd:
+            syntax = f"{prefix}{command.name} {command.syntax}".strip()
+
+        else:
+            # Try to compile syntax
+            syntax = f"{prefix}{command.name}"
+
+            if "subcommands" in cd:
+                syntax += " [subcommand]"
+
+        comp.append(
+            {
+                "name": "→ Syntax",
+                "value": f"`{syntax}`"
+            }
+        )
+
+        if "aliases" in cd:
+            comp.append(
+                {
+                    "name": "→ Aliases",
+                    "value": ", ".join([f"`{prefix}{x}`" for x in command.aliases])
+                }
+            )
+
+        if "shortcuts" in cd:
+            if one_line_safe:
+                comp.append(
+                    {
+                        "name": "→ Shortcuts",
+                        "value": "\n" + "\n".join([f" • `{prefix}{x}` → `{prefix}{y}`" for x, y in command.shortcuts.items()])
+                    }
+                )
+
+            else:
+                comp.append(
+                    {
+                        "name": "→ Shortcuts",
+                        "value": "\n".join([f"`{prefix}{x}` → `{prefix}{y}`" for x, y in command.shortcuts.items()])
+                    }
+                )
+
+        if "subcommands" in cd:
+            comp.append(
+                {
+                    "name": "→ Subcommands",
+                    "value": "\n" + "\n".join([f" • `{prefix}{command.name}{f' {x}' if not x.startswith('__') else ''}`{': ' + y.get('description') if 'description' in y else ''}" for x, y in command.subcommands.items()])
+                }
+            )
+
+        return comp
+
+    async def update_page(
+            self,
+            direction,
+            gen,
+            category,
+            old_page,
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        ):
+        if gen == "new":
+            if len(args) == 3:
+                try:
+                    page = int(args[2])
+
+                except:
+                    await resp.send(
+                        embed = discordutils.error(
+                            message.author,
+                            "Invalid page!",
+                            "If you specify a page, make sure it's a number."
+                        )
+                    )
+                    return
+
+            else:
+                page = 1
+
+        else:
+            page = old_page - 1 if direction == "back" else old_page + 1
+
+        name = str(category)
+        category = bot.config.command_categories[category]
+        
+        prefix = preferred_gdb["prefix"]
+
+        # Compile a list of commands they can use
+        comp = []
+
+        for command in bot.commands.commands[name]:
+            if await bot.permissions.check(
+                message.author,
+                command.permission
+            ):
+                comp.append(command)
+
+        if len(comp) == 0:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Can't list category!",
+                    f"You don't have access to any commands in the category {category['name']}."
+                )
+            )
+            return
+
+        per = bot.config.commands_per_page
+
+        page_count = math.ceil(len(comp) / per)
+
+        if page > page_count or page < 1:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Page out of bounds!",
+                    f"Specify a page between 1 and {page_count}."
+                )
+            )
+            return
+
+        fields = []
+
+        for command in comp[per * (page - 1):per * page]:
+            details = "\n".join([f"**{x['name'].split(' ', 1)[1]}**: {x['value']}" for x in self.generate_command_details(command, category, prefix, True) if "Category" not in x["name"]])
+
+            fields.append(
+                {
+                    "name": f"→ {category['emoji']}  {prefix}{command.name}",
+                    "value": f"{command.description}\n\n{details}"
+                }
+            )
+
+        if page == 1:
+            backward_button = ["secondary", self.pass_]
+
+        else:
+            backward_button = ["primary", lambda *args: self.update_page("back", "edit", str(name), int(page), *args)]
+        
+        if page == page_count:
+            forward_button = ["secondary", self.pass_]
+
+        else:
+            forward_button = ["primary", lambda *args: self.update_page("forward", "edit", str(name), int(page), *args)]
+
+        embed = discordutils.create_embed(
+            f"{category['emoji']}  {category['name']} (page {page}/{page_count})",
+            f"{category['description']}\n\nYou can access {len(comp)} commands in this category.",
+            fields = fields,
+            color = "invisible"
+        )
+
+        view = components.create_action_row(
+            [
+                components.create_button(
+                    message,
+                    label = "🡸",
+                    id = "back",
+                    style = backward_button[0],
+                    callback = backward_button[1]
+                ),
+                components.create_button(
+                    message,
+                    label = "🡺",
+                    id = "forward",
+                    style = forward_button[0],
+                    callback = forward_button[1]
+                )
+            ]
+        )
+
+        if gen == "new":
+            await resp.send(
+                embed = embed,
+                view = view
+            )
+
+        else:
+            await resp.edit(
+                embed = embed,
+                view = view
+            )
+
+    async def pass_(self, *args):
+        return

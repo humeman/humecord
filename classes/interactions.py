@@ -145,6 +145,12 @@ class Interactions:
             # Get GDB
             gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id})
 
+            # Generate PDB
+            pdb = {}
+
+            for key in humecord.bot.config.preferred_gdb:
+                pdb[key] = gdb[key]
+
             humecord.utils.logger.log_long(
                 f"""Type:           components.button
                 Component:      {cid}
@@ -159,7 +165,7 @@ class Interactions:
             humecord.utils.logger.log_step("Creating callback task...", "blue")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
-                    self.components[mid]["interactions"][cid]["callback"](message, resp, gdb, interaction),
+                    self.components[mid]["interactions"][cid]["callback"](message, resp, gdb, interaction, None, pdb),
                     message
                 )
             )
