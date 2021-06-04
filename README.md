@@ -6,22 +6,27 @@ An advanced discord.py wrapper, designed to allow for easy creation of bots with
     * All discord.py events
     * Commands
     * Loops
+
 * Storage interfaces for:
     * HTTP APIs
     * Websockets
     * Local files
     * MySQL
+
 * Supports:
     * Normal message commands
     * Message components
     * Slash commands
+
 * Built in command set:
     * !dev - manages your bot, entirely from discord
     * !help - automatically compiled from your registered commands
     * !about - gives details about your bot, and fully customizable
+
 * Advanced development tools
     * Error reporting and logging, in both your console & a Discord channel
     * Fully interactive Python shell in a Discord channel
+
 * Lots of time-saving features
     * A wide and ever-growing array of development utilities for use in your code
     * Handlers and such to make writing any feature easier than ever
@@ -36,7 +41,7 @@ And, head over to the Discussions tab for any HumeCord-related question if you d
 ## Extensions
 You can find details on implementing StatusReporter support, which is my monitoring bot for any HumeCord instance, at:
 * the [humeman/statusreporter](https://github.com/humeman/statusreporter) github repo
-* the docs: 
+* the docs: [docs/misc/status](docs/misc/status.md)
 
 Info on creating a HumeCord compatible API and websocket is listed at [docs/interfaces](docs/interfaces).
 
@@ -58,7 +63,7 @@ $ mv humecord ~/.local/lib/python3.[press tab]/site-packages
 
 ## Bots using HumeCord
 | Created by           | Bots                                                              |
-|:--------------------:|
+|:--------------------:| ----------------------------------------------------------------- |
 | humeman (me)         | [humebot](https://humeman/bots/humebot) - all of the below, merged |
 |                      | [teck tip bot](https://humeman/bots/tecktip) - copypastas |
 |                      | [humetunes](https://humeman/bots/humetunes) - music |
