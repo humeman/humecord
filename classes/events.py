@@ -19,6 +19,7 @@ class Events:
                 events.on_ready.ready
             ],
             "on_message": [
+                events.on_message.check_ping,
                 events.on_message.run_command,
                 events.on_message.check_debug_console
             ],

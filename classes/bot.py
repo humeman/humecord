@@ -41,8 +41,6 @@ class Bot:
 
         humecord.bot = self
 
-        logger.log("start", "Initializing bot instance...", bold = True)
-
         # -- CONFIG --
         # Load the config
         self.load_config()
@@ -53,6 +51,30 @@ class Bot:
         # Load lang
         self.config.load_lang()
 
+        # Log things
+        placeholders = {
+            "bot": self.config.cool_name,
+            "version": self.config.version,
+            "humecord": humecord.version
+        }
+
+        for command in self.config.start_calls:
+            if command.startswith("eval:::"):
+                eval(miscutils.expand_placeholders(
+                    command.split(":::", 1)[1],
+                    placeholders
+                    )
+                )
+
+            else:
+                subprocess.sync_run(
+                    miscutils.expand_placeholders(
+                        command,
+                        placeholders
+                    )
+                )
+
+        logger.log("start", "Initializing bot instance...", bold = True)
         logger.log_step("Loaded config", "cyan")
 
         # Read persistent storage

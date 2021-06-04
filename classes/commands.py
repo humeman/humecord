@@ -339,3 +339,18 @@ class Commands:
                 color = color
             )
         )
+
+    def get_command(
+            self,
+            category,
+            name
+        ):
+
+        if category not in self.commands:
+            raise humecord.utils.exceptions.DevError(f"Category {category} doesn't exist")
+
+        for command in self.commands[category]:
+            if command.name == name:
+                return command
+
+        raise humecord.utils.exceptions.DevError(f"Command {name} doesn't exist in category {category}")
