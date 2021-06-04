@@ -12,7 +12,10 @@ class DevCommand:
         self.permission = "bot.dev"
 
         self.subcommands = {
-            "error": self.error
+            "error": {
+                "function": self.error,
+                "description": "Forces an error."
+            }
         }
 
     async def error(self, message, resp, args, gdb, alternat_gdb = None, preferred_gdb = None):
