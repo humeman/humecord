@@ -21,8 +21,8 @@ class FileInterface:
                 "commands": {}
             },
             "__bot__.json": {
-                "status": bot.config.default_status,
-                "visibility": bot.config.default_visibility,
+                "status": bot.config.default_status["status"],
+                "visibility": bot.config.default_status["visibility"],
                 "activity": {
                     "type": "playing",
                     "streaming": {
