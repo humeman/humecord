@@ -332,7 +332,7 @@ class HelpCommand:
 
         embed = discordutils.create_embed(
             f"{category['emoji']}  {category['name']} (page {page}/{page_count})",
-            f"{category['description']}\n\nYou can access {len(comp)} commands in this category.",
+            f"{category['description']}\n\nYou can access {len(comp)} command{'' if len(comp) == 1 else 's'} in this category.",
             fields = fields,
             color = "invisible"
         )
