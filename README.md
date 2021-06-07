@@ -64,14 +64,14 @@ $ mv humecord ~/.local/lib/python3.[press tab]/site-packages
 ## Bots using HumeCord
 | Created by           | Bots                                                              |
 |:--------------------:| ----------------------------------------------------------------- |
-| humeman (me)         | [humebot](https://humeman/bots/humebot) - all of the below, merged |
-|                      | [teck tip bot](https://humeman/bots/tecktip) - copypastas |
-|                      | [humetunes](https://humeman/bots/humetunes) - music |
-|                      | [huskbot](https://humeman/bots/tecktip) - moderation |
-|                      | [huskhook](https://humeman/bots/huskhook) - pterodactyl interface + minecraft server utils |
-|                      | [guildmanager](https://humeman/bots/guildmanager) - hypixel & minecraft chatbots |
+| humeman (me)         | [humebot](https://humeman.com/bots/humebot) - all of the below, merged |
+|                      | [teck tip bot](https://humeman.com/bots/tecktip) - copypastas |
+|                      | [humetunes](https://humeman.com/bots/humetunes) - music |
+|                      | [huskbot](https://humeman.com/bots/tecktip) - moderation |
+|                      | [huskhook](https://humeman.com/bots/huskhook) - pterodactyl interface + minecraft server utils |
+|                      | [guildmanager](https://humeman.com/bots/guildmanager) - hypixel & minecraft chatbots |
 |                      | [statusreporter](https://github.com/humeman/statusreporter) - bot monitoring & server status |
-|                      | [testcord](https://humeman/bots/testcord) - testing bot for new humecord releases |
-|                      | [yuno](https://humeman/bots/humebot) - reskin of humebot, requested by [theseconddiarykeeper](https://github.com/TheSecondDiaryKeeper) |
+|                      | [testcord](https://humeman.com/bots/testcord) - testing bot for new humecord releases |
+|                      | [yuno](https://humeman.com/bots/humebot) - reskin of humebot, requested by [theseconddiarykeeper](https://github.com/TheSecondDiaryKeeper) |
 | theseconddiarykeeper | Currently working on migrating his bots to HumeCord. 
 |                      | Check back soon.
