@@ -1,9 +1,9 @@
 from .colors import TermColors
 from . import exceptions
-from humecord import data
-
 import textwrap
 import time
+
+import humecord
 
 adapters = {
     "warn": "yellow",
@@ -43,12 +43,11 @@ def log(
         except:
             raise exceptions.InvalidColorException(f"Invalid color {color}.")
 
-        if not data.bot_init:
-            timer = time.time()
+        if hasattr(humecord.bot, "timer"):
+            timer = humecord.bot.timer
 
         else:
-            from humecord import bot
-            timer = bot.timer
+            timer = time.time()
 
         timelen = 16
         typelen = 8

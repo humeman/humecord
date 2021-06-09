@@ -17,11 +17,10 @@ from .loops import Loops
 from .debugconsole import DebugConsole
 from .interactions import Interactions
 from .permissions import Permissions
+from .overrides import OverrideHandler
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
-
-from .. import data
 
 from humecord.utils import logger
 from humecord.utils import fs
@@ -33,13 +32,16 @@ from humecord.utils import subprocess
 
 class Bot:
     def __init__(
+            self
+        ):
+        pass
+
+    def init(
             self,
             imports_class
         ):
 
         self.imports_class = imports_class
-
-        humecord.bot = self
 
         # -- CONFIG --
         # Load the config
@@ -97,6 +99,7 @@ class Bot:
 
         if self.config.use_api:
             self.api = APIInterface()
+            self.overrides = OverrideHandler(self)
             
         self.commands = Commands({})
         self.loops = Loops()
@@ -109,8 +112,7 @@ class Bot:
         self.permissions = Permissions(self)
 
         logger.log_step("Initialized handlers", "cyan")
-
-        data.bot_init = True
+        
         logger.log_step("Initialized successfully!", "cyan", bold = True)
 
     def load_config(

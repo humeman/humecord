@@ -32,6 +32,15 @@ class Config:
         """
 
         self.lang = fs.read_yaml(self.lang_path)
+
+    def load_messages(
+            self
+        ):
+        """
+        Loads global message defaults.
+        """
+
+        self.messages = fs.read_yaml(self.mesasges_path)
         
 
 class Globals:

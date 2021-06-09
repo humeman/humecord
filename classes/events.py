@@ -3,7 +3,6 @@ from ..utils import debug
 from ..utils import errorhandler
 
 from .. import events
-from .. import data
 
 class Events:
     def __init__(

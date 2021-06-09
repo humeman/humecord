@@ -1,66 +1,177 @@
+import humecord
+from typing import Optional
 
-def get_message(m_type, message):
-    if m_type == "message":
-        return message
-
-    else:
-        raise NotImplementedError()
-
-
-class SlashCommandMessage:
+class Messenger:
     def __init__(
             self,
-            message_type: str,
-            details: dict
+            bot
         ):
 
-        """
-        Constructs a fake Message.
+        # Need to access before initialization
+        self.bot = bot
 
-        Designed to allow for a seamless transition between
-        regular messages and slashcommands without the pain of
-        creating a fake message class or abusing the bot + 
-        slashcommand system.
-        """
+        # Load in default messages
+        self.messages = bot.config.messages
 
-        self.type = message_type
-
-    async def send(
+    def find(
             self,
-            content,
-            embed = None,
-            file = None,
-            files = None
+            path: list
         ):
 
-        await self.channel.send(content, embed = embed, file = file, files = files)
+        current = self.messages
 
+        for name in path:
+            if name not in current:
+                raise humecord.utils.exceptions.NotFound(f"Path {'.'.join(path)} not in messages ({name})")
+            
+            current = current[name]
 
-class SlashCommandChannel:
-    def __init__(
+        return current
+
+    def parse_placeholders(
             self,
-            parent: SlashCommandMessage
+            message: str,
+            placeholders: dict,
+            conditions: dict
+        ):
+        comp = []
+
+        for line in message.split("\n"):
+            if ":::" in line and line.startswith("if"):
+                condition, msg = line.split(":::", 1)
+
+                if "[" in condition and "]" in condition:
+                    detail = condition.split("[", 1)[1].rsplit("]", 1)[0]
+
+                    if ":" in detail:
+                        check_type, var = detail.split(":", 1)
+
+                        if check_type == "exists":
+                            if placeholders.get(var) is not None:
+                                comp.append(msg)
+                            
+                            continue
+
+                        else:
+                            raise humecord.utils.exceptions.InvalidStatement(f"Can't use if condition with check type {check_type}")
+
+                    else:
+                        if conditions.get(detail) is not None:
+                            comp.append(msg)
+
+                        continue
+
+        message = "\n".join(comp)
+
+        for placeholder, value in placeholders.items():
+            message = message.replace(f"%{placeholder}%", str(value))
+
+    def parse_embed(
+            self,
+            embed: dict,
+            placeholders: dict,
+            conditions: dict
         ):
 
-        self.parent = parent
+        comp = {}
 
-        if parent.type == "message":
-            # Set some things
-            set_values = [
-                "category",
-                "name",
-                "guild",
-                "created_at",
-                "mention",
-                "position",
-                "permissions_synced"
-            ]
+        for key, value in embed.items():
+            if key in ["title", "description", "footer", "thumbnail", "image"]:
+                comp[key] = self.parse_placeholders(value, placeholders, conditions)
 
-            for key in set_values:
-                try:
-                    val = getattr(parent.channel, val, j)
+            elif key in ["profile"]:
+                comp[key] = []
 
-                except:
-                    pass
+                for item in value:
+                    comp[key].append(
+                        self.parse_placeholders(
+                            item,
+                            placeholders,
+                            conditions
+                        )
+                    )
 
-                setattr(self, key, getattr())
+            elif key in ["fields"]:
+                comp[key] = []
+
+                for item in value:
+                    comp[key].append(
+                        {
+                            x: self.parse_placeholders(y, placeholders, conditions)
+                            for x, y in item.items() if type(y) != str
+                        }
+                    )
+
+            else:
+                raise humecord.utils.exceptions.InvalidKey(f"Unknown key: {key}")
+
+        return humecord.utils.discordutils.create_embed(**comp)
+
+    async def get(
+            self,
+            gdb: dict,
+            path: list,
+            placeholders: dict,
+            conditions: dict = {},
+            force_type: Optional[str] = None
+        ):
+
+        # Follow path
+        msg = self.find(path)
+
+        # Check if guild has overridden
+        try:
+            override = humecord.utils.miscutils.follow(gdb["messages"], path)
+
+        except:
+            override = None
+            use = msg
+
+        else:
+            use = {
+                **msg,
+                **override
+            }
+
+        m_type = msg["default"] if force_type is None else force_type
+
+        if msg["allow_override"]:
+            if "type_override" in msg:
+                m_type = msg["type_override"]
+
+        kwargs = {}
+
+        if m_type == "str":
+            content = self.parse_placeholders(
+                msg["content"],
+                placeholders,
+                conditions
+            )
+
+            kwargs["content"] = content
+
+        elif m_type == "embed":
+            embed = self.parse_embed(
+                msg["embed"],
+                placeholders,
+                conditions
+            )
+
+            kwargs["embed"] = embed
+
+        elif m_type == "both":
+            kwargs["content"] = self.parse_placeholders(
+                msg["content"],
+                placeholders,
+                conditions
+            )
+            kwargs["embed"] = self.parse_embed(
+                msg["embed"],
+                placeholders,
+                conditions
+            )
+
+        return kwargs
+
+        
+    

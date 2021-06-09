@@ -21,21 +21,28 @@ class Commands:
     def register_internal(
             self
         ):
-        
-        for category in ["dev", "info"]:
+
+        self.defaults = {
+            "dev": [
+                humecord.commands.dev.DevCommand()
+            ],
+            "info": [
+                humecord.commands.about.AboutCommand(),
+                humecord.commands.help.HelpCommand()
+            ],
+            "config": [
+                humecord.commands.overrides.OverridesCommand()
+            ]
+        }
+
+        for category, commands in self.defaults.items():
             if category not in self.commands:
                 self.commands[category] = []
 
-        self.commands["dev"] = [
-            *self.commands["dev"],
-            humecord.commands.dev.DevCommand()
-        ]
-
-        self.commands["info"] = [
-            *self.commands["info"],
-            humecord.commands.about.AboutCommand(),
-            humecord.commands.help.HelpCommand()
-        ]
+            self.commands[category] = [
+                *commands,
+                *self.commands[category]
+            ]
 
 
 

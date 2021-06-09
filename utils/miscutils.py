@@ -1,7 +1,10 @@
 import math
+from re import search
 import time
 import datetime
 import random
+
+from . import exceptions
 
 def get_duration(seconds):
     seconds = math.trunc(seconds)
@@ -42,3 +45,18 @@ def generate_hexid(
         comp += random.choice(chars)
 
     return comp
+
+def follow(
+        search_in: dict,
+        path: list
+    ):
+
+    current = search_in
+
+    for name in path:
+        if name not in current:
+            raise exceptions.NotFound(f"Path {'.'.join(path)} doesn't exist ({name})")
+
+        current = current[name]
+
+    return current
