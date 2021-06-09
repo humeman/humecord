@@ -1,4 +1,5 @@
 import asyncio
+import shlex
 from . import logger
 from . import exceptions
 
@@ -6,6 +7,9 @@ import subprocess
 
 def sync_run(command):
     subprocess.call(command, shell = True)
+
+def get_output(command):
+    return subprocess.check_output(shlex.split(command))
 
 async def run(command):
     cmd = Command(command)
