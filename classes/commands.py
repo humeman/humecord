@@ -9,6 +9,7 @@ import humecord
 import textwrap
 import random
 import discord
+import sys
 
 class Commands:
     def __init__(
@@ -23,26 +24,34 @@ class Commands:
         ):
 
         self.defaults = {
-            "dev": [
-                humecord.commands.dev.DevCommand()
-            ],
-            "info": [
-                humecord.commands.about.AboutCommand(),
-                humecord.commands.help.HelpCommand()
-            ],
-            "config": [
-                humecord.commands.overrides.OverridesCommand()
-            ]
+            "dev": humecord.commands.dev.DevCommand,
+            "about": humecord.commands.about.AboutCommand,
+            "help": humecord.commands.help.HelpCommand,
+            "overrides": humecord.commands.overrides.OverridesCommand
         }
 
-        for category, commands in self.defaults.items():
-            if category not in self.commands:
-                self.commands[category] = []
+        # Load all defaults
+        for command, command_overrides in humecord.bot.config.default_commands.items():
+            if command not in self.defaults:
+                raise humecord.utils.exceptions.NotFound(f"Default command {command} does not exist.")
 
-            self.commands[category] = [
-                *commands,
-                *self.commands[category]
-            ]
+            if command_overrides["__category__"] not in self.commands:
+                self.commands[command_overrides["__category__"]] = []
+
+            # Get command object
+            cmd = self.defaults[command]()
+
+            # Set attributes
+            override_count = 0
+            for key, value in command_overrides.items():
+                if not key.startswith("__"):
+                    setattr(cmd, key, value)
+                    override_count += 1
+
+            # Register
+            self.commands[command_overrides["__category__"]].append(cmd)
+            if override_count > 0:
+                humecord.utils.logger.log_step(f"Registered default command {command} with {override_count} override{'' if override_count == 1 else 's'}", "cyan")
 
 
 
