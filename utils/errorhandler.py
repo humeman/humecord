@@ -168,7 +168,11 @@ async def send_error(
                 name = ""
 
         if humecord.bot.config.lang["error"]["share_args"] and name != "":
-            name += f": {' '.join(e.args)}"
+            try:
+                name += f": {' '.join(list(e.args))}"
+            
+            except:
+                pass
 
     description = humecord.utils.miscutils.expand_placeholders(
         f"{humecord.bot.config.lang['error']['description']}{expand}",
