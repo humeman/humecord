@@ -19,6 +19,10 @@ class Loops:
             humecord.loops.refresh_status.RefreshStatusLoop()
         ]
 
+
+        if humecord.bot.config.use_api:
+            self.force.append(humecord.loops.update_overrides.UpdateOverridesLoop())
+
         await self.load()
         self.expand()
 

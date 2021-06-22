@@ -40,3 +40,55 @@ def get_datetime(specificity):
         raise humecord.utils.exceptions.InvalidFormat(f"Specificity {specificity} does not exist")
 
     return pytz.utc.localize(datetime.datetime.utcnow()).astimezone(humecord.bot.timezone).strftime(time_format)
+
+times = {
+    "year": 31556952,
+    "month": 2629800,
+    "day": 86400,
+    "hour": 3600,
+    "minute": 60,
+    "second": 0
+}
+
+friendly_names = {
+    "year": "y",
+    "month": "mo",
+    "day": "d",
+    "hour": "h",
+    "minute": "m",
+    "second": "s"
+}
+
+def get_duration(
+        seconds: int,
+        short: bool = True
+    ):
+    seconds = int(seconds)
+
+    comp = {}
+
+    while seconds > 0:
+        for name, bound in times.items():
+            if seconds > bound:
+                # Find number
+                if name == "second":
+                    comp[name] = seconds
+                    seconds = 0
+
+                else:
+                    comp[name] = seconds // bound
+                    seconds = seconds % bound
+
+    # Compile into string
+    comp_str = []
+    for name, value in comp.items():
+        if value == 0:
+            continue
+
+        if short:
+            comp_str.append(f"{value}{friendly_names[name]}")
+
+        else:
+            comp_str.append(f"{value} {name}s")
+
+    return ", ".join(comp_str)
