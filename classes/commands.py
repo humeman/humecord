@@ -134,10 +134,17 @@ class Commands:
         else:
             gdb = await humecord.bot.db.get("guild", {"id": message.guild.id})
 
-        category, command, header = matched_commands[0].values()
+        full_match = None
+        for match in matched_commands:
+            category, command, header = match.values()
 
-        if args_lower[0] != f"{gdb['prefix']}{header['match'][0]}":
+            if args_lower[0] == f"{gdb['prefix']}{header['match'][0]}":
+                full_match = match
+
+        if full_match is None:
             return
+
+        category, command, header = full_match.values()
 
         # Generate pdb
         pdb = {}
