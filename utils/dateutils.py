@@ -1,7 +1,10 @@
 import humecord
 
+from . import exceptions
+
 import datetime
 import time
+import re
 import pytz
 
 specs = {
@@ -92,3 +95,32 @@ def get_duration(
             comp_str.append(f"{value} {name}s")
 
     return ", ".join(comp_str)
+
+def parse_duration(
+        duration: str
+    ):
+
+    comp = {}
+
+    for name, value in friendly_names.items():
+        comp[name] = 0
+        # Find every instance
+        for value in re.findall(f"(\d+){name}", duration) + re.findall(f"(\d+){value}", duration):
+            try:
+                comp[name] += float(value)
+
+            except:
+                raise exceptions.InvalidDate(f"{value} is not a number")
+
+    # Compile into seconds
+    total = 0
+    for unit, value in comp.items():
+        if unit == "second":
+            total += value
+
+        else:
+            total += times[unit] * value
+
+    return total
+
+        

@@ -18,7 +18,7 @@ def get_loop_last_run(loop):
         if loop.last_run == -1:
             return "Never"
 
-        return dateutils.get_duration(time.time() - loop.last_run)
+        return dateutils.get_duration(time.time() - loop.last_run) + " ago"
 
     elif loop.type == "period":
-        return bot.files.files["__loops__.json"][loop.name]["last_run"]
+        return humecord.bot.files.files["__loops__.json"][loop.name]["last_run"]

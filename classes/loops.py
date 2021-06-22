@@ -61,7 +61,8 @@ class Loops:
             },
             "task": None,
             "errors": 0,
-            "pause_until": None
+            "pause_until": None,
+            "pause": False
         }
 
         for loop in self.loops:
@@ -99,6 +100,10 @@ class Loops:
             for loop in self.loops:
                 if self.check_run(loop):
                     if loop.errors >= 3:
+                        continue
+
+                    # Manual pause
+                    if loop.pause:
                         continue
 
                     if loop.pause_until:
