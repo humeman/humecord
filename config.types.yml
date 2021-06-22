@@ -1,0 +1,99 @@
+# HumeCord Config Types
+
+# Do not use this config directly. Instead, copy 'config.default.yml'.
+# This is only for validation purposes.
+
+# -- Files --
+globals_path: "str"
+
+endpoint_path: "str"
+
+lang_path: "str"
+
+messages_path: "str"
+
+# -- Startup --
+mem_storage: "dict"
+
+req_files: "dict"
+
+# -- Bot --
+name: "str"
+cool_name: "str"
+version: "str"
+
+owner_name: "str"
+
+invite: "str"
+
+guide_page: "str"
+
+discord_server: "str"
+
+token: "str"
+
+placeholders: "dict[str:str]"
+
+visibilities: "dict[str:str]"
+
+activities: "dict[str:str]"
+
+# -- API --
+use_api: "bool"
+
+__if[use_api:==True]__:
+  api_url: "str"
+
+  auth: "dict[str:str]"
+
+  self_api: "str"
+
+  online_route: "dict[str:str]"
+
+  ready_route: "dict[str:str]"
+
+  allow_primary_override: "bool"
+
+# -- Logging --
+logging: "dict[str:bool]"
+
+debug_channel: "int"
+
+start_calls: "list[str]"
+
+devs: "list[int]"
+
+eval_perms: "list[int]"
+
+mods: "list[int]"
+
+mod_perms: "list[str]"
+
+# -- Defaults --
+default_status: "dict[str:str&status,visibility]"
+
+offline_status: "dict[str:str&status,visibility]"
+
+api_error_status: "dict[str:str&status,visibility]"
+
+default_footer: "dict[str:str&text,image]"
+
+defaults: "dict"
+
+preferred_gdb: "list[str]"
+
+# -- Loops --
+loop_pause_time: "int"
+
+# -- Time --
+timezone: "str"
+
+# -- Components --
+component_expire_time: "int"
+
+# -- Commands --
+command_categories: "dict[str:any]"
+
+commands_per_page: "int"
+
+default_commands: "dict[str:dict]"

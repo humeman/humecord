@@ -53,6 +53,9 @@ class Bot:
         # Load lang
         self.config.load_lang()
 
+        # Validate
+        self.config.validate()
+
         # Log things
         placeholders = {
             "bot": self.config.cool_name,
