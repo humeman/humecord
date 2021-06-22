@@ -1,0 +1,270 @@
+# HumeBots/                    ____              _ 
+# | | | |_   _ _ __ ___   ___ / ___|___  _ __ __| |
+# | |_| | | | | '_ ` _ \ / _ \ |   / _ \| '__/ _` |
+# |  _  | |_| | | | | | |  __/ |__| (_) | | | (_| |
+# |_| |_|\__,_|_| |_| |_|\___|\____\___/|_|  \__,_|
+
+# This is the bot configuration file for HumeCord.
+
+# -- Files --
+
+# The path to the global configuration file to be
+#   imported into Config.globals.
+globals_path: "globals.yml"
+
+# If the API is enabled, this is the path to the
+#   endpoint config file.
+endpoint_path: "endpoints.yml"
+
+# Language file path
+lang_path: "lang.yml"
+
+# Messages file path
+messages_path: "messages.yml"
+
+# -- Startup --
+
+# The bot's memory storage registers on startup.
+mem_storage:
+  voice: {}
+  evals: {}
+
+# Extra files to dump into the data directory
+#   through the file interface.
+req_files: {}
+
+# -- Bot --
+
+name: ""
+cool_name: ""
+version: ""
+
+# Name of the bot's owner
+owner_name: ""
+
+# Discord invite
+invite: ""
+
+# Guide page
+guide_page: ""
+
+# Support discord
+discord_server: ""
+
+# Discord token
+token: ""
+
+# Status placeholders - everything in the value is evaled
+# for the result, then turned into a string. For that reason,
+# make sure this has no possibility of executing user input.
+placeholders:
+  bot: humecord.bot.config.name
+  version: humecord.bot.config.version
+  discord: discord.__version__
+  humecord: humecord.version
+  username: humecord.bot.client.user.name
+  tag: f"{humecord.bot.client.user.name}#{humecord.bot.client.user.discriminator}"
+  guilds: len(humecord.bot.client.guilds)
+  members: sum([len(x.members) for x in humecord.bot.client.guilds])
+  uptime: humecord.utils.miscutils.get_duration(time.time() - humecord.bot.timer)
+  starttime: humecord.utils.miscutils.get_datetime(humecord.bot.timer)
+
+# Visibilities - based on discord.py's internal enums.
+# Also evaled, so make sure this has no potential to execute
+# user input.
+visibilities:
+  online: discord.Status.online
+  offline: discord.Status.offline
+  idle: discord.Status.idle
+  dnd: discord.Status.dnd
+  invisible: discord.Status.invisible
+
+# Activities - ditto the above.
+activities:
+  playing: discord.ActivityType.playing
+  streaming: discord.ActivityType.streaming
+  listening: discord.ActivityType.listening
+  watching: discord.ActivityType.watching
+  competing: discord.ActivityType.competing
+
+# -- API --
+
+# Enable or disable API support.
+use_api: true
+
+# URL - exclude trailing slash, include http/https
+api_url: http://localhost:5000
+
+# Authentication details.
+# Anything in this will be inserted into every API
+# call.
+auth:
+  key: ""
+
+# API category which this bot should use, when not
+# manually specified.
+self_api: ""
+
+# Method to ping to check for API status
+online_route:
+  category: main
+  method: online
+
+# Method to send ready data to
+ready_route:
+  category: main
+  method: ready
+
+# Allow commands to override guild databases in
+# API calls
+allow_primary_override: false
+
+# -- Logging --
+
+# Enable/disable various logs. (Not implemented yet)
+logging:
+  log_requests: false
+  log_request_content: false
+  log_loops: true
+  log_start: true
+  log_stop: true
+  log_unhandled_errors: true
+  log_handled_errors: true
+  log_cache_info: true
+  log_commands: true
+  log_errored_requests: true
+  log_chatbots: true
+
+# Error reporting channel
+debug_channel: 0
+
+# Each command is called in the subprocess on start.
+# REALLY DANGEROUS. Be careful with the placeholders.
+# If anyone has the ability to edit the content of the
+# placeholders, they have access to do whatever they want
+# on your server.
+# Placeholders: %bot%, %version%, %humecord%
+# Eval code with eval:::
+start_calls:
+  #- toilet -f ascii9 --filter border:metal "%bot%"
+  - eval:::humecord.utils.logger.log("start", "Running %bot%[%version%] on HumeCord[%humecord%]", bold = True)
+
+# -- Permissions --
+
+# Permission overrides for everything but evals.
+# First one is defined as the "bot owner".
+devs:
+  - 337758812465528833
+
+# Permission to use debug console in debug channel and
+#   dev eval, dev exec, etc
+eval_perms: []
+
+# Overrides *almost* everything - normal permission checks,
+# but not development commands. Includes all devs.
+mods: []
+
+# Permissions to be classified as a guild moderator.
+# If they have any of these, they're included.
+mod_perms:
+  - kick_members
+  - ban_members
+  - administrator
+  - manage_guild
+  - manage_messages
+  - manage_roles
+
+# -- Defaults --
+
+default_status: 
+  status: "%bot% %version% | Ping me for help!"
+  visibility: dnd
+
+offline_status: 
+  status: "I'm offline right now: %reason%"
+  visibility: dnd
+
+api_error_status: 
+  status: "My API is offline right now! Check back soon."
+  visibility: dnd
+
+default_footer:
+  text: "%username% %version%"
+  image: ""
+
+defaults:
+  guild:
+    __populate__: guilds
+    prefix: "!"
+
+# Passed to each call as preferred_gdb.
+# Values always taken from the bot's own GDB - whether that's gdb or alternate_gdb.
+preferred_gdb:
+  - prefix
+
+# -- Loops --
+
+# Time to pause loop execution for when an
+#   exception occurs.
+loop_pause_time: 3
+
+
+# -- Time --
+
+# Timezone to use.
+timezone: America/Denver
+
+
+# -- Components --
+
+# Time after which components are removed from memory.
+component_expire_time: 60
+
+
+# -- Commands --
+
+# Command categories, used in !help.
+command_categories:
+  dev:
+    emoji: 🛠
+    name: Development
+    aliases:
+      - development
+    description: Development commands.
+
+  info:
+    emoji: ℹ
+    name: Information
+    aliases:
+      - information
+    description: Commands which give you more info about the bot.
+
+  config:
+    emoji: ⚙
+    name: Config
+    aliases:
+      - configuration
+    description: Commands which allow you to change how the bot works in your server.
+
+# Number of commands to display on one !help page.
+commands_per_page: 5
+
+# Default commands
+# Current list:
+#   dev, about, help, overrides
+# Each command must have a __category__ key to specify
+#   the category to register to.
+# Anything else in the command's dict will override
+#   default attributes.
+default_commands:
+  dev:
+    __category__: dev
+  
+  about:
+    __category__: info
+  
+  help:
+    __category__: info
+
+  overrides:
+    __category__: config

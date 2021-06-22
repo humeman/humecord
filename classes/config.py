@@ -57,6 +57,10 @@ class Config:
         Validates all config options.
         """
 
+        # Read config sample
+        with open(f"{os.path.dirname(inspect.getfile(humecord))}/config.default.yml", "r") as f:
+            self.config_sample = f.read().split("\n")
+
         # Read config types
         self.types = fs.read_yaml(f"{os.path.dirname(inspect.getfile(humecord))}/config.types.yml")
 
@@ -81,7 +85,7 @@ class Config:
                         var, sep = check.split(":", 1)
 
                         if not hasattr(self, var):
-                            self.log_error(f"Config requires value '{var}' for validation, but it is not present.")
+                            self.log_error(f"Config requires value '{var}' for validation, but it is not present.", var = var)
 
                         # Exec it
                         try:
@@ -123,7 +127,7 @@ class Config:
         ):
 
         if not hasattr(self, name):
-            self.log_error(f"Config requires value '{name}' (type: '{expected}').")
+            self.log_error(f"Config requires value '{name}' (type: '{expected}').", var = name)
 
         # Parse rule
         if "[" in expected:
@@ -149,10 +153,11 @@ class Config:
     def log_error(
             self,
             message,
-            tb = False
+            tb = False,
+            var = None
         ):
 
-        logger.log_step("A config validation error occurred:", "red", bold = True)
+        logger.log("error", "A config validation error occurred:", bold = True)
         logger.log_step(message, "red")
         print()
 
@@ -161,6 +166,51 @@ class Config:
             print()
 
         logger.log_step("Please correct it and restart.", "red")
+
+        # Find
+        if var is not None:
+            print()
+            print("\033[96m-- \033[1mHere's a sample for this config option:\033[0m\033[96m --\033[0m")
+            #logger.log_step("Here's a sample for this config option:", "light_cyan", bold = True)
+
+            for i, line in enumerate(self.config_sample):
+                if line.startswith(f"{var}:"):
+                    # Find everything before & after
+                    comp = []
+                    
+                    # First, go above & look for comments
+                    active = self.config_sample[i - 1]
+                    active_i = i - 1
+                    while active.startswith("#"):
+                        comp.append(active)
+                        active_i -= 1
+                        if active_i < 0:
+                            active = ""
+
+                        else:
+                            active = self.config_sample[active_i]
+
+                    # Reverse comp
+                    comp.reverse()
+
+                    comp.append(f"\033[1m{line}") # Add actual line
+
+                    # Find everything after
+                    active = self.config_sample[i + 1]
+                    active_i = i + 1
+                    while active.startswith(" "):
+                        comp.append(active)
+
+                        active_i += 1
+                        if active_i > len(self.config_sample) - 1:
+                            active = ""
+
+                        else:
+                            active = self.config_sample[active_i]
+
+                    for line in comp:
+                        print(f"\033[96m{line}\033[0m")
+
         sys.exit(-1)
 
 class Globals:
