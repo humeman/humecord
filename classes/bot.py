@@ -8,6 +8,9 @@ import sys
 import discord
 import time
 import pytz
+import os
+import inspect
+
 import humecord
 
 from .config import Config
@@ -127,6 +130,26 @@ class Bot:
         except:
             debug.print_traceback()
             logger.log("error", "Failed to read config file.")
+
+            print()
+
+            choice = logger.ask("Would you like to automatically generate a new config file?", "Y/n", "cyan")
+
+            if choice.lower().strip() in ["yes", "y", ""]:
+                # Read config default
+                with open(f"{os.path.dirname(inspect.getfile(humecord))}/config.default.yml", "r") as f:
+                    config_sample = f.read().split("\n")
+
+                # Write to base dir
+                with open("config.yml", "w+") as f:
+                    f.write("\n".join(config_sample))
+
+                logger.log("info", f"Wrote default config file to 'config.yml'.", color = "cyan", bold = True)
+                logger.log_step("Edit the file as needed, then start HumeCord again to get going!", color = "cyan")
+
+            else:
+                logger.log("info", "Not creating config file.", color = "cyan")
+
             sys.exit(-1)
 
         for key, value in self.config.config_raw.items():

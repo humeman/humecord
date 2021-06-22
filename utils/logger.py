@@ -25,42 +25,75 @@ def log(
         color: str = "default",
         condition: bool = True
     ):
-        if not condition:
-            return
+    if not condition:
+        return
 
-        color = color.lower()
+    color = color.lower()
 
-        if color == "default":
-            if log_type in adapters:
-                color = adapters[log_type]
+    if color == "default":
+        if log_type in adapters:
+            color = adapters[log_type]
 
-        try:
-            col = TermColors.get_color(color)
+    try:
+        col = TermColors.get_color(color)
 
-            if color in ["bold", "reset"]:
-                raise exceptions.InvalidColorException(f"Color cannot be bold or reset.")
+        if color in ["bold", "reset"]:
+            raise exceptions.InvalidColorException(f"Color cannot be bold or reset.")
 
-        except:
-            raise exceptions.InvalidColorException(f"Invalid color {color}.")
+    except:
+        raise exceptions.InvalidColorException(f"Invalid color {color}.")
 
-        if hasattr(humecord.bot, "timer"):
-            timer = humecord.bot.timer
+    if hasattr(humecord.bot, "timer"):
+        timer = humecord.bot.timer
 
-        else:
-            timer = time.time()
+    else:
+        timer = time.time()
 
-        timelen = 16
-        typelen = 8
+    timelen = 16
+    typelen = 8
 
-        timestr = f"[{round(time.time() - timer, 3)}]"
-        typestr = f"[{log_type.upper()}]"
+    timestr = f"[{round(time.time() - timer, 3)}]"
+    typestr = f"[{log_type.upper()}]"
 
-        timestr += " " * (timelen - len(timestr))
-        typestr += " " * (typelen - len(typestr))
+    timestr += " " * (timelen - len(timestr))
+    typestr += " " * (typelen - len(typestr))
 
-        bold_str = TermColors.get_color("bold") if bold else ""
+    bold_str = TermColors.get_color("bold") if bold else ""
 
-        print(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{bold_str}{message}{TermColors.get_color('reset')}")
+    print(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{bold_str}{message}{TermColors.get_color('reset')}")
+
+def ask(
+        message: str,
+        args: str,
+        color: str
+    ):
+    color = color.lower()
+    
+    try:
+        col = TermColors.get_color(color)
+
+        if color in ["bold", "reset"]:
+            raise exceptions.InvalidColorException(f"Color cannot be bold or reset.")
+
+    except:
+        raise exceptions.InvalidColorException(f"Invalid color {color}.")
+
+    if hasattr(humecord.bot, "timer"):
+        timer = humecord.bot.timer
+
+    else:
+        timer = time.time()
+
+    timelen = 16
+    typelen = 8
+
+    timestr = f"[{round(time.time() - timer, 3)}]"
+    typestr = f"[ASK]"
+
+    timestr += " " * (timelen - len(timestr))
+    typestr += " " * (typelen - len(typestr))
+
+    return input(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{TermColors.get_color('bold')}{message}{TermColors.get_color('reset')} {col}[{args}]{TermColors.get_color('reset')} ")
 
 def log_step(
         content: str,

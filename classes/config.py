@@ -118,7 +118,7 @@ class Config:
         result = self.validate_item(name, expected)
 
         if not result:
-            self.log_error(f"Config value '{name}' is of invalid type (required: '{expected}')")
+            self.log_error(f"Config value '{name}' is of invalid type (required: '{expected}')", var = name)
             
     def validate_item(
             self,
