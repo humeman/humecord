@@ -46,7 +46,7 @@ async def ready(__):
         " ",
         f"Commands: {sum([len(y) for x, y in humecord.bot.commands.commands.items()])}",
     ] + [
-        f"  {name}: {len(value)} commands"
+        f"  {name}: {len(value)} command{'' if len(value) == 1 else 's'}"
         for name, value in humecord.bot.commands.commands.items()
     ]
 
@@ -54,7 +54,7 @@ async def ready(__):
         "",
         f"Events: {len(humecord.bot.events.events)}",
     ] + [
-        f"  {name}: {len(value)} functions"
+        f"  {name}: {len(value)} function{'' if len(value) == 1 else 's'}"
         for name, value in humecord.bot.events.events.items()
     ]
 
