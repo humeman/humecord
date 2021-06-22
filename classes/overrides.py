@@ -62,17 +62,17 @@ class OverrideHandler:
             self,
             guild_id: int,
             priority: int,
-            bot: Optional[str] = None
+            bot_name: Optional[str] = None
         ):
 
-        if not bot:
-            bot = self.bot.config.self_api
+        if not bot_name:
+            bot_name = self.bot.config.self_api
 
         await bot.api.get(
             "main",
             "override_settings",
             {
-                "bot": bot,
+                "bot": bot_name,
                 "guild": guild_id,
                 "priority": priority,
                 "autocreate": True
