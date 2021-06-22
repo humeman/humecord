@@ -90,9 +90,7 @@ class Bot:
         # -- STARTUP VARS --
         self.started = False
         self.timer = time.time()
-        intents = discord.Intents().default()
-        intents.members = True
-        intents.reactions = True
+        intents = discord.Intents().all()
         self.client = discord.Client(intents = intents)
         self.timezone = pytz.timezone(self.config.timezone)
 
