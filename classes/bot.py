@@ -68,17 +68,19 @@ class Bot:
 
         for command in self.config.start_calls:
             if command.startswith("eval:::"):
-                eval(miscutils.expand_placeholders(
-                    command.split(":::", 1)[1],
-                    placeholders
+                eval(
+                    miscutils.expand_placeholders(
+                        command.split(":::", 1)[1],
+                        placeholders
                     ),
                     globals()
                 )
             
             elif command.startswith("exec:::"):
-                exec(miscutils.expand_placeholders(
-                    command.split(":::", 1)[1],
-                    placeholders
+                exec(
+                    miscutils.expand_placeholders(
+                        command.split(":::", 1)[1],
+                        placeholders
                     ),
                     globals()
                 )
