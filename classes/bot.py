@@ -71,8 +71,18 @@ class Bot:
                 eval(miscutils.expand_placeholders(
                     command.split(":::", 1)[1],
                     placeholders
-                    )
+                    ),
+                    globals()
                 )
+            
+            elif command.startswith("exec:::"):
+                exec(miscutils.expand_placeholders(
+                    command.split(":::", 1)[1],
+                    placeholders
+                    ),
+                    globals()
+                )
+
 
             else:
                 subprocess.sync_run(
