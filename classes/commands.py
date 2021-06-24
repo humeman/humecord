@@ -337,12 +337,13 @@ class Commands:
         else:
             # Try to compile it ourselves
             if "subcommands" in cd:
-                fields.append(
-                    {
-                        "name": "Valid subcommands",
-                        "value": "\n".join([f"`{prefix}{command.name}{f' {x}' if not x.startswith('__') else ''}`{': ' + y.get('description') if 'description' in y else ''}" for x, y in command.subcommands.items()])
-                    }
-                )
+                if len(command.subcommands) > 0:
+                    fields.append(
+                        {
+                            "name": "Valid subcommands",
+                            "value": "\n".join([f"`{prefix}{command.name}{f' {x}' if not x.startswith('__') else ''}{' ' + y.get('syntax') if 'syntax' in y else ''}`{': ' + y.get('description') if 'description' in y else ''}" for x, y in command.subcommands.items()])
+                        }
+                    )
 
         description = humecord.utils.miscutils.expand_placeholders(
             humecord.bot.config.lang["command_info"]["description"],
