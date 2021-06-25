@@ -100,7 +100,10 @@ class Bot:
         # Read persistent storage
 
         # -- MEM STORAGE --
-        self.mem_storage = dict(self.config.mem_storage)
+        self.mem_storage = {
+            "reply": None,
+            **dict(self.config.mem_storage)
+        }
 
         # -- STARTUP VARS --
         self.started = False

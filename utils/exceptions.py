@@ -53,3 +53,6 @@ class LookupError(Exception):
 
 class DevError(Exception):
     pass
+
+class NotFound(Exception):
+    pass

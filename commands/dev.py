@@ -2,6 +2,8 @@ import discord
 import time
 import asyncio
 import traceback
+import aiohttp
+import aiofiles
 
 import humecord
 
@@ -34,13 +36,19 @@ class DevCommand:
             "exec": {
                 "function": ExecSubcommand.run,
                 "description": "Allows for execution of code."
+            },
+            "dm": {
+                "function": DMSubcommand.run,
+                "description": "DMs someone."
             }
         }
 
         self.shortcuts = {
             "loops": "dev loops",
             "loop": "dev loops",
-            "exec": "dev exec"
+            "exec": "dev exec",
+            "dm": "dev dm",
+            "reply": "dev dm reply"
         }
 
         global bot
@@ -714,5 +722,256 @@ class ExecSubcommand:
                 f"Active evals ({len(comp)})",
                 fields = comp,
                 color = "invisible"
+            )
+        )
+
+class DMSubcommand:
+    async def run(message, resp, args, gdb, alternate_gdb, preferred_gdb):
+        if len(args) >= 3:
+            action = args[2].lower()
+
+            if action in ["reply"]:
+                await DMSubcommand.reply(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+            else:
+                await DMSubcommand.dm(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+        await resp.send(
+            embed = discordutils.error(
+                message.author,
+                "Invalid syntax!",
+                "Specify an action.\nValid actions: `reply` (or specify a user to DM)."
+            )
+        )
+
+    async def dm(
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        ):
+        # dev dm [user id] [message]
+
+        if len(args) < 3:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Invalid syntax!",
+                    "Specify a user to DM."
+                )
+            )
+            return
+
+        # Get user ID
+        if len(args) < 4:
+            if len(message.attachments) == 0:
+                await resp.send(
+                    embed = discordutils.error(
+                        message.author,
+                        "Invalid syntax!",
+                        "Specify a message to send, or attach something."
+                    )
+                ) 
+                return
+
+            else:
+                msg_args = []
+
+        else:
+            msg_args = args[3:]
+
+        await DMSubcommand.send_direct(
+            args[2], # User ID
+            message,
+            resp,
+            msg_args # Message
+        )
+
+    async def reply(
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        ):
+
+        if bot.mem_storage["reply"] is None:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Can't reply!",
+                    "No one has messaged me recently."
+                )
+            )
+            return
+
+        # dev dm reply [message]
+
+        # Get user ID
+        if len(args) < 4:
+            if len(message.attachments) == 0:
+                await resp.send(
+                    embed = discordutils.error(
+                        message.author,
+                        "Invalid syntax!",
+                        "Specify a message to send, or attach something."
+                    )
+                ) 
+                return
+
+            else:
+                msg_args = []
+
+        else:
+            msg_args = args[3:]
+
+            
+
+        await DMSubcommand.send_direct(
+            bot.mem_storage["reply"], # User ID
+            message,
+            resp,
+            msg_args # Message
+        )
+
+    async def send_direct(
+            user_id,
+            message,
+            resp,
+            msg_args
+        ):
+
+        # Get user
+        try:
+            user = discordutils.get_user(
+                user_id,
+                True,
+                message
+            )
+
+        except Exception as e:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Invalid user!",
+                    str(e)
+                )
+            )
+            return
+
+        # Compile message
+        # 1 - check if it's an embed
+        if len(msg_args) != 0:
+            if msg_args[0].lower() == "--embed":
+                # No
+                await resp.send(
+                    embed = discordutils.error(
+                        message.author,
+                        "Not implemented yet!",
+                        "This feature is disabled until I finish the embed parser."
+                    )
+                )
+                return
+                
+                msg_args = msg_args[1:]
+
+        # Check for attachments
+        kw = {
+            "content": ""
+        }
+        warn = []
+        fields = []
+
+        if len(message.attachments) > 0:
+            # Try to attach
+
+            attachment = message.attachments[0]
+
+            attach_manual = False
+            if attachment.size < 8000000:
+                filename = f"data/tmp/{attachment.filename}"
+                # Download & re-attach
+                await resp.send(
+                    embed = discordutils.create_embed(
+                        "Downloading attachment...",
+                        f"• **Name**: `{attachment.filename}`\n• **Size**: `{miscutils.get_size(attachment.size)}`",
+                        color = "yellow"
+                    )
+                )
+
+                async with aiohttp.ClientSession(headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"}) as session:
+                    async with session.get(attachment.url) as resp_:
+                        if resp_.status == 200:
+                            async with aiofiles.open(filename, mode = "wb") as f:
+                                await f.write(await resp_.read())
+
+                            # Attach
+                            kw["file"] = discord.File(filename, attachment.filename)
+
+                            fields.append(
+                                {
+                                    "name": "→ Attachment",
+                                    "value": f"• **Name**: `{attachment.filename}`\n• **Size**: `{miscutils.get_size(attachment.size)}`"
+                                }
+                            )
+
+                        else:
+                            attach_manual = True
+                            
+
+            else:
+                attach_manual = True
+
+            if attach_manual:
+                # Just append the link to content
+                kw["content"] = f"{attachment.url}\n"
+                fields.append(
+                    {
+                        "name": "→ Attachment (not embedded)",
+                        "value": f"• **URL**: {attachment.url}\n• **Name**: `{attachment.filename}`\n• **Size**: `{miscutils.get_size(attachment.size)}`"
+                    }
+                )
+
+
+        kw["content"] += " ".join(msg_args)
+
+        if len(kw["content"]) > 2000:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Can't send message!",
+                    f"Your message was {len(kw['content'])} characters long, which exceeds the limit of 2000. Shorten it and try again."
+                )
+            )
+            return
+
+        # Send it
+        try:
+            await user.send(
+                **kw
+            )
+
+        except:
+            traceback.print_exc()
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Failed to send DM!",
+                    "Either the user blocked me, or I don't share mutual servers with them."
+                )
+            )
+            return
+
+        await resp.send(
+            embed = discordutils.create_embed(
+                f"Sent DM to {user.name}!",
+                description = f"→ **Content**:\n{kw['content'][:1900]}{'**...**' if len(kw['content']) > 1900 else ''}",
+                fields = fields,
+                color = "green"
             )
         )

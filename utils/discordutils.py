@@ -108,3 +108,72 @@ def generate_activity(
 
         return activity
 
+def get_user(
+        user: str,
+        allow_guild_lookup: bool = False,
+        message = None
+    ):
+
+    if type(user) != int:
+        # Format out characters
+        for char in "<@!>":
+            user = user.replace(char, "")
+
+        # Try to turn into int
+        try:
+            user = int(user)
+
+        except:
+            # Check if the user's in the guild
+            if allow_guild_lookup:
+                if message is None:
+                    raise humecord.utils.exceptions.NotFound(f"Specify a user's ID, or mention them.")
+
+                matches = []
+                name = user.lower()
+
+                if len(name) > 5:
+                    if name[-5] == "#":
+                        name, discrim = name.rsplit("#", 1)
+
+                        try:
+                            discrim = int(discrim)
+
+                        except:
+                            name = f"{name}#{discrim}"
+                            discrim = None
+
+                    else:
+                        discrim = None
+
+                else:
+                    discrim = None
+
+                for member in message.guild.members:
+                    if name in member.name.lower():
+                        if discrim is not None:
+                            if int(member.discriminator) != discrim:
+                                continue
+
+                        matches.append(member)
+
+                if len(matches) == 0:
+                    raise humecord.utils.exceptions.NotFound(f"Member `{user}` doesn't exist.")
+
+                elif len(matches) > 1:
+                    raise humecord.utils.exceptions.NotFound(f"Too many matches found for `{user}` in this server. Mention them instead.")
+        
+                else:
+                    return matches[0]
+
+            else:
+                raise humecord.utils.exceptions.NotFound(f"Specify a user's ID, or mention them.")
+
+    user_ = humecord.bot.client.get_user(
+        user
+    )
+
+    if user_ is None:
+        raise humecord.utils.exceptions.NotFound(f"User `{user}` doesn't exist.")
+
+    return user_

@@ -38,7 +38,7 @@ async def check_ping(message):
                 )
 
 async def check_dm(message):
-    if type(message.channel) == discord.DMChannel:
+    if type(message.channel) == discord.DMChannel and message.author.id != humecord.bot.client.user.id:
         # Make sure user isn't BLOCKED
         if message.author.id in humecord.bot.files.files["__users__.json"]["blocked"]:
             await message.channel.send(
@@ -112,6 +112,9 @@ async def check_dm(message):
             ),
             **msg_kw
         )
+
+        # Update mem storage
+        humecord.bot.mem_storage["reply"] = message.author.id
 
         return False
 

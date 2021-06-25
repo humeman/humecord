@@ -12,6 +12,9 @@ class FileInterface:
         if not os.path.exists("data"):
             humecord.utils.subprocess.sync_run("mkdir data")
 
+        if not os.path.exists("data/tmp"):
+            humecord.utils.subprocess.sync_run("mkdir data/tmp")
+
         self.default_files = {
             "__loops__.json": {
                 "loops": {}
