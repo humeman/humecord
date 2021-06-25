@@ -268,3 +268,11 @@ default_commands:
 
   overrides:
     __category__: config
+
+# Will embed through Embed.set_image().
+embeddable_media:
+  - png
+  - jpg
+  - jpeg
+  - webm
+  - gif

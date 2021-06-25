@@ -1,5 +1,12 @@
 import humecord
 
+from humecord.utils import (
+    discordutils,
+    miscutils
+)
+
+import discord
+
 async def check_ping(message):
     if not message.author.bot and message.author.id != humecord.bot.client.user.id:
         if message.content.startswith("<@"):
@@ -29,6 +36,84 @@ async def check_ping(message):
                     None,
                     pdb
                 )
+
+async def check_dm(message):
+    if type(message.channel) == discord.DMChannel:
+        # Make sure user isn't BLOCKED
+        if message.author.id in humecord.bot.files.files["__users__.json"]["blocked"]:
+            await message.channel.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Can't forward DM!",
+                    f"You've been ignore added for today, you can apologize later.\n{humecord.bot.files.files['__users__.json']['blocked'][message.author.id]['reason']} "
+                )
+            )
+            return
+
+        # Send the
+        msg_kw = {}
+        kw = {}
+        if len(message.attachments) > 0:
+            for i, attachment in enumerate(message.attachments):
+                extra = "\n"
+                name = attachment.filename.lower()
+
+                embedded = False
+                for mtype in humecord.bot.config.embeddable_media:
+                    if name.endswith(f".{mtype}"):
+                        # Embed
+                        kw["image"] = attachment.url
+                        embedded = True
+
+                if not embedded:
+                    if "content" not in msg_kw:
+                        msg_kw["content"] = ""
+                        extra = ""
+
+                    msg_kw["content"] += f"{extra}{attachment.url}"
+
+                if "fields" not in kw:
+                    kw["fields"] = []
+
+                kw["fields"].append(
+                    {
+                        "name": f"→ Attachment {i + 1}",
+                        "value": f"• **Filename**: `{attachment.filename}`\n• **URL**: `{attachment.url}`\n• **Size**: `{miscutils.get_size(attachment.size, True)}`"
+                    }
+                )
+                
+
+        msg_long = len(message.content) > 1900
+
+        """
+        if " " not in message.content:
+            if message.content.startswith("https://") or message.content.startswith("http://"):
+                extra = "\n"
+                if "content" not in msg_kw:
+                    msg_kw["content"] = ""
+                    extra = ""
+
+                msg_kw["content"] += f"{extra}{message.content}"
+        """
+
+        if msg_long:
+            # Attach file
+            with open("data/msg_tmp.txt", "w+") as f:
+                f.write(message.content)
+
+            msg_kw["file"] = discord.File("data/msg_tmp.txt", "message.txt")
+
+        await humecord.bot.debug_channel.send(
+            embed = discordutils.create_embed(
+                description = f"{message.content[:1900]}{'**...**' if msg_long else ''}",
+                author = message.author,
+                footer = f"ID: {message.author.id}",
+                **kw
+            ),
+            **msg_kw
+        )
+
+        return False
 
 async def run_command(message):
     if not message.author.bot and message.author.id != humecord.bot.client.user.id:

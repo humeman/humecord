@@ -33,6 +33,9 @@ class FileInterface:
                     }
                 }
             },
+            "__users__.json": {
+                "blocked": {}
+            },
             **bot.config.req_files
         }
 

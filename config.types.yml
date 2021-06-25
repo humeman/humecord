@@ -97,3 +97,5 @@ command_categories: "dict[str:any]"
 commands_per_page: "int"
 
 default_commands: "dict[str:dict]"
+
+embeddable_media: "list[str]"

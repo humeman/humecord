@@ -60,3 +60,44 @@ def follow(
         current = current[name]
 
     return current
+
+sizes = {
+    "byte": "B",
+    "kilobyte": "KB",
+    "megabyte": "MB",
+    "gigabyte": "GB",
+    "terabyte": "TB",
+    "petabyte": "PB"
+}
+
+def get_size(
+        size: int,
+        round_: bool = False,
+        short: bool = True
+    ):
+
+    comp = []
+    
+    while size > 0:
+        for i, name in reversed(list(enumerate(sizes))):
+            unit = 1024 ** i
+            if unit > size:
+                # Unit is too large
+                continue
+
+            # Find remainder
+            if i == 0: # bytes (can't divide by 0)
+                count = size
+                size = 0
+
+            else:
+                count = size // unit
+                size = size % unit
+
+            if round_:
+                return f"{count}.{str(round((size / unit) * 100, 1))[:2].strip('.')} {sizes[name] if short else name}"
+
+            else:
+                comp.append(f"{count}{sizes[name] if short else f' {name}'}")
+
+    return ", ".join(comp)
