@@ -65,7 +65,7 @@ class Events:
             return
 
         for function in self.events[event]:
-            await errorhandler.wrap(
+            result = await errorhandler.wrap(
                 function(*args),
                 context = {
                     "Event details": [
@@ -73,6 +73,10 @@ class Events:
                     ]
                 }
             )
+
+            if result is not None:
+                if result == False:
+                    break
 
     async def register(
             self

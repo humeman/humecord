@@ -12,7 +12,7 @@ async def wrap(
     ):
 
     try:
-        await function
+        value = await function
 
     except Exception as e:
         if type(e) in exclude:
@@ -76,6 +76,9 @@ async def wrap(
                 on_fail[0](*on_fail[1])
             )
 
+    else:
+        return value
+
 async def discord_wrap(
         function,
         message,
@@ -83,7 +86,7 @@ async def discord_wrap(
     ):
 
     try:
-        await function
+        value = await function
 
     except Exception as e:
         tb = traceback.format_exc().strip()
@@ -149,6 +152,9 @@ async def discord_wrap(
             eid,
             e
         )
+
+    else:
+        return value
 
 async def send_error(
         message,
