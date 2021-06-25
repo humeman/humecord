@@ -44,7 +44,7 @@ def get_profile(
         embed: discord.Embed
     ):
 
-    if type(member) in [discord.Member, discord.User]:
+    if type(member) in [discord.Member, discord.User, discord.ClientUser]:
         name = f"{member.name}#{member.discriminator}"
 
         if type(member) == discord.Member:
