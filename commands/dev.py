@@ -969,7 +969,7 @@ class DMSubcommand:
 
         await resp.send(
             embed = discordutils.create_embed(
-                f"Sent DM to {user.name}!",
+                f"Sent DM to {user.name}#{user.discriminator}!",
                 description = f"→ **Content**:\n{kw['content'][:1900]}{'**...**' if len(kw['content']) > 1900 else ''}",
                 fields = fields,
                 color = "green"
