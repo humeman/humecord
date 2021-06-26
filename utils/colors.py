@@ -35,7 +35,9 @@ col = {
     "shit": 0x3e2724,
     "error": 0xff4141,
     "success": 0x009300,
-    "warning": 0xFFBB00
+    "warning": 0xFFBB00,
+    "icon_gray": 0x959595,
+    "icon_blue": 0x1565c0
 }
 
 termcolors = {
