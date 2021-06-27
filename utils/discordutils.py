@@ -23,8 +23,17 @@ def create_embed(
     if footer:
         embed.set_footer(text = footer)
 
+    placeholders = {
+        f"%-{x}%": y for x, y in humecord.bot.config.lang["embed_shortcuts"].items()
+    }
+
     for field in fields:
         inline = field.get("inline") if "inline" in field else None
+
+        for name, value in field.items():
+            if type(value) == str:
+                for placeholder, val in placeholders.items():
+                    field[name] = field[name].replace(placeholder, str(val))
 
         embed.add_field(name = field["name"], value = field["value"], inline = inline)
 

@@ -50,22 +50,52 @@ class Config:
 
         self.messages = fs.read_yaml(self.mesasges_path)
 
-    def validate(
+    def validate_all(
             self
+        ):
+        self.reserved = {
+            "samples": {},
+            "types": {}
+        }
+
+        for name, value in self.reserved.items():
+            if hasattr(self, name):
+                self.log_error("config", "Config", f"Config is using reserved keyword '{name}'. Please rename it.")
+
+            setattr(self, name, value)
+
+        check = {
+            "config": self,
+            "lang": self.lang,
+            "globals": self.globals
+        }
+
+        #if self.use_api:
+        #    check["endpoints"] = self.globals.endpoints
+
+        for name, obj in check.items():
+            self.validate(obj, name)
+
+    def validate(
+            self,
+            obj,
+            cat: str
         ):
         """
         Validates all config options.
         """
 
+        cat_name = f"{cat[0].upper()}{cat[1:]}"
+
         # Read config sample
-        with open(f"{os.path.dirname(inspect.getfile(humecord))}/config.default.yml", "r") as f:
-            self.config_sample = f.read().split("\n")
+        with open(f"{os.path.dirname(inspect.getfile(humecord))}/config/{cat}.default.yml", "r") as f:
+            self.samples[cat] = f.read().split("\n")
 
         # Read config types
-        self.types = fs.read_yaml(f"{os.path.dirname(inspect.getfile(humecord))}/config.types.yml")
+        self.types[cat] = fs.read_yaml(f"{os.path.dirname(inspect.getfile(humecord))}/config/{cat}.types.yml")
 
         # Parse
-        for name, expected in self.types.items():
+        for name, expected in self.types[cat].items():
             # Check if conditional
             if name.startswith("__") and name.endswith("__"):
                 name = name.strip("__")
@@ -84,18 +114,27 @@ class Config:
                     for check in args:
                         var, sep = check.split(":", 1)
 
-                        if not hasattr(self, var):
-                            self.log_error(f"Config requires value '{var}' for validation, but it is not present.", var = var)
+                        if type(obj) == dict:
+                            if var not in obj:
+                                self.log_error(cat, cat_name, f"{cat_name} file requires value '{var}' for validation, but it is not present.", var = var)
+
+                            search = f"obj['{var}']"
+
+                        else:
+                            if not hasattr(obj, var):
+                                self.log_error(cat, cat_name, f"{cat_name} file requires value '{var}' for validation, but it is not present.", var = var)
+                            
+                            search = f"obj.{var}"
 
                         # Exec it
                         try:
-                            result = eval(f"self.{var} {sep}", locals())
+                            result = eval(f"{search} {sep}", locals())
 
                             if type(result) != bool:
                                 raise "Result must be a boolean"
 
                         except:
-                            self.log_error(f"Config validator could not evaluate: '{var}{sep}'. Incompatible types?", tb = True)
+                            self.log_error(cat, cat_name, f"Config validator could not evaluate: '{var}{sep}' in {cat_name}. Incompatible types?", tb = True)
 
                         if result:
                             use = True
@@ -103,31 +142,43 @@ class Config:
                 if use:
                     # Validate everything inside
                     for name_, value_ in expected.items():
-                        self.validate_item_feedback(name_, value_)
+                        self.validate_item_feedback(obj, cat, cat_name, name_, value_)
 
             else:
                 # Make sure variable is valid
-                self.validate_item_feedback(name, expected)
+                self.validate_item_feedback(obj, cat, cat_name, name, expected)
 
     def validate_item_feedback(
             self,
+            obj,
+            cat,
+            cat_name,
             name,
             expected
         ):
 
-        result = self.validate_item(name, expected)
+        result = self.validate_item(obj, cat, cat_name, name, expected)
 
         if not result:
-            self.log_error(f"Config value '{name}' is of invalid type (required: '{expected}')", var = name)
+            self.log_error(cat, cat_name, f"Config value '{name}' is of invalid type (required: '{expected}')", var = name)
             
     def validate_item(
             self,
+            obj,
+            cat,
+            cat_name,
             name,
             expected
         ):
 
-        if not hasattr(self, name):
-            self.log_error(f"Config requires value '{name}' (type: '{expected}').", var = name)
+        if type(obj) == dict:
+            if name not in obj:
+                self.log_error(cat, cat_name, f"{cat_name} file requires value '{name}' (type: '{expected}').", var = name)
+
+        else:
+            if not hasattr(obj, name):
+                self.log_error(cat, cat_name, f"{cat_name} file requires value '{name}' (type: '{expected}').", var = name)
+
 
         # Parse rule
         if "[" in expected:
@@ -139,19 +190,27 @@ class Config:
             args = []
 
         if var_type not in rules:
-            self.log_error(f"Config validator asked for variable of type '{var_type}', but I don't know how to parse that. Open an issue on GitHub.")
+            self.log_error(cat, cat_name, f"Config validator asked for variable of type '{var_type}' in {cat} file, but I don't know how to parse that. Open an issue on GitHub.")
 
         try:
-            return rules[var_type](self, getattr(self, name), args)
+            if type(obj) == dict:
+                val = obj[name]
+
+            else:
+                val = getattr(obj, name)
+
+            return rules[var_type](cat, cat_name, self, val, args)
 
         except Exception as e:
             if type(e) == SystemExit:
                 return
             
-            self.log_error(f"Config validator could not validate var '{name}' (type: '{expected}').", tb = True)
+            self.log_error(cat, cat_name, f"Config validator could not validate var '{name}' (type: '{expected}').", tb = True)
         
     def log_error(
             self,
+            cat,
+            cat_name,
             message,
             tb = False,
             var = None
@@ -173,13 +232,13 @@ class Config:
             print("\033[96m-- \033[1mHere's a sample for this config option:\033[0m\033[96m --\033[0m")
             #logger.log_step("Here's a sample for this config option:", "light_cyan", bold = True)
 
-            for i, line in enumerate(self.config_sample):
+            for i, line in enumerate(self.samples[cat]):
                 if line.startswith(f"{var}:"):
                     # Find everything before & after
                     comp = []
                     
                     # First, go above & look for comments
-                    active = self.config_sample[i - 1]
+                    active = self.samples[cat][i - 1]
                     active_i = i - 1
                     while active.startswith("#"):
                         comp.append(active)
@@ -188,7 +247,7 @@ class Config:
                             active = ""
 
                         else:
-                            active = self.config_sample[active_i]
+                            active = self.samples[cat][active_i]
 
                     # Reverse comp
                     comp.reverse()
@@ -196,17 +255,17 @@ class Config:
                     comp.append(f"\033[1m{line}") # Add actual line
 
                     # Find everything after
-                    active = self.config_sample[i + 1]
+                    active = self.samples[cat][i + 1]
                     active_i = i + 1
                     while active.startswith(" "):
                         comp.append(active)
 
                         active_i += 1
-                        if active_i > len(self.config_sample) - 1:
+                        if active_i > len(self.samples[cat]) - 1:
                             active = ""
 
                         else:
-                            active = self.config_sample[active_i]
+                            active = self.samples[cat][active_i]
 
                     for line in comp:
                         print(f"\033[96m{line}\033[0m")
@@ -229,22 +288,22 @@ class Globals:
             self.endpoints = fs.read_yaml(self.parent.endpoint_path)
 
 class ValidationRules:
-    def _str(conf, var, args):
+    def _str(cat, cat_name, conf, var, args):
         return type(var) == str
 
-    def _int(conf, var, args):
+    def _int(cat, cat_name, conf, var, args):
         return type(var) == int
 
-    def _float(conf, var, args):
+    def _float(cat, cat_name, conf, var, args):
         return type(var) == float
 
-    def _number(conf, var, args):
+    def _number(cat, cat_name, conf, var, args):
         return type(var) in [int, float]
 
-    def _bool(conf, var, args):
+    def _bool(cat, cat_name, conf, var, args):
         return type(var) == bool
 
-    def _list(conf, var, args):
+    def _list(cat, cat_name, conf, var, args):
         if not type(var) == list:
             return False
 
@@ -254,14 +313,14 @@ class ValidationRules:
         for item in var:
             for rule in args:
                 if rule not in rules:
-                    conf.log_error(f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
+                    conf.log_error(cat, cat_name, f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
 
-                if not rules[rule](conf, item, []):
+                if not rules[rule](cat, cat_name, conf, item, []):
                     return False
 
         return True
 
-    def _dict(conf, var, args):
+    def _dict(cat, cat_name, conf, var, args):
         if type(var) != dict:
             return False
 
@@ -283,23 +342,23 @@ class ValidationRules:
                 values += rule.split(",")
             
             else:
-                conf.log_error(f"Config validator rule 'dict[{'&'.join(args)}]' is invalid. Open an issue on GitHub.")
+                conf.log_error(cat, cat_name, f"Config validator rule 'dict[{'&'.join(args)}]' is invalid. Open an issue on GitHub.")
 
         for name, value in var.items():
             if name_type is not None:
                 for rule in name_type:
                     if rule not in rules:
-                        conf.log_error(f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
+                        conf.log_error(cat, cat_name, f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
 
-                    if not rules[rule](conf, name, []):
+                    if not rules[rule](cat, cat_name, conf, name, []):
                         return False
             
             if value_type is not None:
                 for rule in value_type:
                     if rule not in rules:
-                        conf.log_error(f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
+                        conf.log_error(cat, cat_name, f"Config validator asked for variable of type '{rule}', but I don't know how to parse that. Open an issue on GitHub.")
 
-                    if not rules[rule](conf, value, []):
+                    if not rules[rule](cat, cat_name, conf, value, []):
                         return False
 
         # Make sure each key is included
@@ -309,7 +368,7 @@ class ValidationRules:
 
         return True
 
-    def _any(conf, var, args):
+    def _any(cat, cat_name, conf, var, args):
         return True
 
 rules = {

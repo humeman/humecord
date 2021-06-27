@@ -1,0 +1,18 @@
+# Placeholder for use in about_response in lang.yml.
+# Should show off all the other bots you have, if any.
+other_bots: |
+  → **HumeBot**
+  • The ultimate Discord bot, featuring every feature in every other
+  ​ ​ ​ ​bot I have.
+  • [Learn more](https://humeman/bots/humebot) | [Invite](https://discord.com/api/oauth2/authorize?client_id=768606643780190218&permissions=8&scope=bot)
+
+  → **teck tip bot**
+  • An advanced copypasta bot, featuring cross-server, fully customizable, 
+  ​ ​ ​ ​user-curated content. Also includes the HumeTunes music system.
+  • [Learn more](https://humeman/bots/tecktip) | [Invite](https://discord.com/oauth2/authorize?client_id=679005043361447973&permissions=104188992&scope=bot)
+
+# Bots to check for in !overrides.
+# Only applies to API enabled bot.
+override_bots: 
+  - humebot
+  - tecktip

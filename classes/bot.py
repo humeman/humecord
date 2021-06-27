@@ -57,7 +57,7 @@ class Bot:
         self.config.load_lang()
 
         # Validate
-        self.config.validate()
+        self.config.validate_all()
 
         # Log things
         placeholders = {

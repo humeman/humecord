@@ -1,0 +1,120 @@
+# HumeBots/                    ____              _ 
+# | | | |_   _ _ __ ___   ___ / ___|___  _ __ __| |
+# | |_| | | | | '_ ` _ \ / _ \ |   / _ \| '__/ _` |
+# |  _  | |_| | | | | | |  __/ |__| (_) | | | (_| |
+# |_| |_|\__,_|_| |_| |_|\___|\____\___/|_|  \__,_|
+
+# This is the language configuration file for HumeCord.
+
+# -- EMOJIS --
+
+# Emojis, used by a number of commands.
+# Accessible via bot.config.lang["emoji"]["name"].
+# Defaults:
+#   success, warning, error, blocked, unknown
+#   status_green, status_yellow, status_red
+#   fontawesome, info, play, pause, stop
+#   toggle_on, toggle_off
+#   undo, shuffle, trash
+# Should be a fully expanded Discord-style snowflake
+# emoji: <:name:id>
+emoji:
+  success: "<:success:858193695005343744>"
+  warning: "<:warning:858193695034703892>"
+  error: "<:error:858193695086084136>"
+  blocked: "<:blocked:858193695215058945>"
+  unknown: "<:unknown:858193695164334110>"
+
+  status_green: "<:status_green:858193695164334080>"
+  status_yellow: "<:status_yellow:858193694889082921>"
+  status_red: "<:status_red:858193695345868830>"
+
+  fontawesome: "<:fontawesome:858193694963793951>"
+  info: "<:info:858193695194349608>"
+  play: "<:play:858193695463440414>"
+  pause: "<:pause:858193695291342850>"
+  stop: "<:stop:858193695320047636>"
+
+  toggle_on: "<:toggle_on:858193695542738944>"
+  toggle_off: "<:toggle_off:858193695420317745>"
+
+  undo: "<:undo:858193695429623828>"
+  shuffle: "<:shuffle:858193695459508234>"
+  trash: "<:trash:858193695341543494>"
+
+# Format to be used when an exception is caught during
+# command execution.
+error:
+  title: "An unexpected error occurred!"
+  description: "Details have been forwarded to the bot's developer. You may receive a DM from me if he needs more info on it. If you need to contact him about this error, please mention the exception ID below so he knows what to look for."
+  only_share_if_humecord: false
+  share_args: true
+  exception_details: "\n\n__ID__:  `%id%`\n__Details__:  `%ex%`"
+  thumbnail: null
+
+# Command info message - for example, for shortcut syntax
+# errors, or called manually.
+command_info:
+  # Valid placeholders:
+    # command, prefix (or p), syntax, description
+
+  title:
+    syntax_error: "Invalid syntax!"
+    info_message: "Usage information: %p%%command%"
+
+  description: "%description%\nSyntax: `%syntax%`"
+
+# !about response
+# Normal embed keys - all passed as kwargs.
+# Placeholders:
+#   %prefix%, %bot%, %version%, %humecord%, %owner%, 
+#   %support%, %invite%, %guide%
+# To eval some code, start the string with:
+#   eval::: 
+about_response:
+  home:
+    __button__:
+      style: primary
+      text: 🏠
+    title: I'm %bot% 👋
+
+    description: |
+      I'm a Discord bot, running on HumeCord!
+      
+      Created by %owner% using [HumeCord %humecord%](https://github.com/humeman/humecord).
+      
+      **If you need support, [join my discord server](%support%)!**
+
+    fields:
+      - name: My prefix
+        value: |
+          My prefix in this server is `%prefix%`.
+          Try running `%prefix%help` for a list of commands.
+  
+    color: invisible
+
+  attributions:
+    __button__:
+      style: secondary
+      text: Attributions
+
+    title: Attributions 📜
+
+    description: |
+      This bot uses third party media from:
+
+    fields:
+      - name: → FontAwesome
+        value: Some emoji icons were created by [FontAwesome](https://fontawesome.com), and licensed under CC 4.0. FontAwesome does not endorse this bot in any way. You can view the license [here](https://fontawesome.com/license). Some icons are modified.
+
+# Available in create_embed (and by extension error()) in discordutils.
+# Expanded out with the string %-char%.
+# So, for example:
+#   embed_shortcuts:
+#     a: →
+#   create_embed():
+#     title = "%-a%"
+#     turns into: title = "→"
+embed_shortcuts:
+  a: →
+  b: •

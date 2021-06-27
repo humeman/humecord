@@ -1,0 +1,9 @@
+emoji: "dict[str:str]"
+
+error: "dict[str:any]"
+
+command_info: "dict[str:any]"
+
+about_response: "dict[str:dict]"
+
+embed_shortcuts: "dict[str:str]"
