@@ -40,6 +40,10 @@ class DevCommand:
             "dm": {
                 "function": DMSubcommand.run,
                 "description": "DMs someone."
+            },
+            "profile": {
+                "function": ProfileSubcommand.run,
+                "description": "Manages the bot's profile."
             }
         }
 
@@ -973,5 +977,26 @@ class DMSubcommand:
                 description = f"→ **Content**:\n{kw['content'][:1900]}{'**...**' if len(kw['content']) > 1900 else ''}",
                 fields = fields,
                 color = "green"
+            )
+        )
+
+class ProfileSubcommand:
+    async def run(message, resp, args, gdb, alternate_gdb, preferred_gdb):
+        if len(args) >= 3:
+            action = args[2].lower()
+
+            if action in ["reply"]:
+                await DMSubcommand.reply(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+            else:
+                await DMSubcommand.dm(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+        await resp.send(
+            embed = discordutils.error(
+                message.author,
+                "Invalid syntax!",
+                "Specify an action.\nValid actions: `reply` (or specify a user to DM)."
             )
         )

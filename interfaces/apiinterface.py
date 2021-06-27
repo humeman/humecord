@@ -46,7 +46,11 @@ class APIInterface:
 
         if botapi_adapt:
             if not data.get("success"):
-                raise humecord.utils.exceptions.UnsuccessfulRequest(data.get("reason"))
+                # Check if bot ready error
+                resend = await self.check_errors(data.get("error"), data.get("reason"))
+
+                if resend:
+                    return await self.get(category, endpoint, args, botapi_adapt)
 
             return data.get("data")
 
@@ -85,12 +89,40 @@ class APIInterface:
 
         if botapi_adapt:
             if not data.get("success"):
-                raise humecord.utils.exceptions.UnsuccessfulRequest(data.get("reason"))
+                # Check if bot ready error
+                resend = await self.check_errors(data.get("error"), data.get("reason"))
+
+                if resend:
+                    return await self.put(category, endpoint, json, botapi_adapt)
 
             if "data" in data:
                 return data["data"]
 
         return data
+
+    async def check_errors(
+            self,
+            etype: str,
+            reason: str
+        ):
+
+        if type(reason) == str:
+            # Check if "bot not ready" error
+            if etype == "AuthError" and reason == f"Bot {humecord.bot.config.self_api} isn't ready":
+                # Send ready info again
+                await humecord.bot.debug_channel.send(
+                    embed = humecord.utils.discordutils.create_embed(
+                        description = f"{humecord.bot.config.lang['emoji']['warning']}  **API has restarted - sending ready data again.**",
+                        color = "warning"
+                    )
+                )
+
+                await humecord.bot.events.call("on_ready", [None])
+
+                # Resend request
+                return True
+
+        raise humecord.utils.exceptions.UnsuccessfulRequest(reason)
 
     async def handle_api_error(
             self
