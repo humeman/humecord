@@ -64,11 +64,12 @@ async def wrap(
         )
 
         if message is not None:
-            await send_error(
-                message,
-                eid,
-                e
-            )
+            if message.channel.id != humecord.bot.debug_channel.id:
+                await send_error(
+                    message,
+                    eid,
+                    e
+                )
 
 
         if on_fail:
@@ -147,11 +148,13 @@ async def discord_wrap(
             )
         )
 
-        await send_error(
-            message,
-            eid,
-            e
-        )
+
+        if message.channel.id != humecord.bot.debug_channel.id:
+            await send_error(
+                message,
+                eid,
+                e
+            )
 
     else:
         return value
