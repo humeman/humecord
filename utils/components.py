@@ -82,20 +82,12 @@ def create_button(
 
     # Generate the component
 
-    if _style == "emoji":
-        if not emoji:
-            raise exceptions.InvalidComponent("Emoji must be specified for emoji-style components")
+    kw = {}
 
-        return Button(
-            style = d_style,
-            custom_id = _id,
-            emoji = emoji,
-            disabled = disabled,
-            label = label,
-            callback = humecord.bot.interactions.process_interaction()
-        )
+    if emoji:
+        kw["emoji"] = emoji
 
-    elif _style == "link":
+    if _style == "link":
         if not url:
             raise exceptions.InvalidComponent("URL must be specified for url-style components")
 
@@ -104,7 +96,8 @@ def create_button(
             custom_id = _id,
             url = url,
             disabled = disabled,
-            label = label
+            label = label,
+            **kw
         )
 
     else:
@@ -112,7 +105,8 @@ def create_button(
             style = d_style,
             custom_id = _id,
             disabled = disabled,
-            label = label
+            label = label,
+            **kw
         )
         
 def create_dropdown(
