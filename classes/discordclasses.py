@@ -39,10 +39,10 @@ class ComponentResponseChannel(ResponseChannel):
         super().__init__("component", interaction.channel)
 
     async def send(self, *args, **kwargs):
-        await self.interaction.response.send_message(*args, **kwargs)
+        return await self.interaction.response.send_message(*args, **kwargs)
 
     async def edit(self, *args, **kwargs):
-        await self.interaction.response.edit_message(*args, **kwargs)
+        return await self.interaction.response.edit_message(*args, **kwargs)
 
 class MessageResponseChannel(ResponseChannel):
     def __init__(self, message):
@@ -50,4 +50,4 @@ class MessageResponseChannel(ResponseChannel):
         super().__init__("message", message.channel)
 
     async def send(self, *args, **kwargs):
-        await self.message.channel.send(*args, **kwargs)
+        return await self.message.channel.send(*args, **kwargs)
