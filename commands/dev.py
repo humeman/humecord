@@ -489,7 +489,7 @@ class ExecSubcommand:
                 tb = traceback.format_exc()
                 result_title = f"{humecord.bot.config.lang['emoji']['error']} Exec task raised an exception"
                 result_name = "Exception"
-                result_content = f"```py\n{tb[:1000] + ('...' if len(tb) >= 1000 else '')}\n```"
+                result_content = f"```py\n{tb[-1000:] + ('...' if len(tb) >= 1000 else '')}\n```"
                 color = "error"
 
         elif result:

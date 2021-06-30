@@ -37,6 +37,11 @@ async def check_ping(message):
                     pdb
                 )
 
+async def check_reply(message):
+    await humecord.bot.replies.read_reply(
+        message
+    )
+
 async def check_dm(message):
     if type(message.channel) == discord.DMChannel and message.author.id != humecord.bot.client.user.id:
         # Make sure user isn't BLOCKED

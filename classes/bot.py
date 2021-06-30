@@ -21,6 +21,7 @@ from .debugconsole import DebugConsole
 from .interactions import Interactions
 from .permissions import Permissions
 from .overrides import OverrideHandler
+from .replies import Replies
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -123,6 +124,7 @@ class Bot:
         self.commands = Commands({})
         self.loops = Loops()
         self.events = Events(self)
+        self.replies = Replies()
         self.interactions = Interactions()
         self.files = FileInterface(self)
         # self.overrides = Overrides()

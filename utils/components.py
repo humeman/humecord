@@ -44,7 +44,8 @@ def create_button(
         callback = None,
         url: Optional[str] = None,
         disabled: bool = False,
-        emoji: Optional[str] = None
+        emoji: Optional[str] = None,
+        only_sender: bool = True
     ):
 
     # Parse type
@@ -71,10 +72,17 @@ def create_button(
 
     # Store the callback
     if _style != "link":
+        if only_sender:
+            arg = [message.author.id]
+
+        else:
+            arg = [None]
+
         humecord.bot.interactions.register_component(
             "button",
             _id,
-            callback
+            callback,
+            *arg
         )
 
     # Update component type

@@ -344,14 +344,16 @@ class HelpCommand:
                     label = "🡸",
                     id = "back",
                     style = backward_button[0],
-                    callback = backward_button[1]
+                    callback = backward_button[1],
+                    only_sender = False
                 ),
                 components.create_button(
                     message,
                     label = "🡺",
                     id = "forward",
                     style = forward_button[0],
-                    callback = forward_button[1]
+                    callback = forward_button[1],
+                    only_sender = False
                 )
             ]
         )

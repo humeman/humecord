@@ -23,10 +23,11 @@ def log(
         message: str = "",
         bold: bool = False,
         color: str = "default",
-        condition: bool = True
+        condition: str = None
     ):
-    if not condition:
-        return
+    if condition is not None:
+        if not humecord.bot.config.logging[condition]:
+            return
 
     color = color.lower()
 
@@ -98,8 +99,13 @@ def ask(
 def log_step(
         content: str,
         color: str = "default",
-        bold: bool = False
+        bold: bool = False,
+        condition: str = None
     ):
+
+    if condition is not None:
+        if not humecord.bot.config.logging[condition]:
+            return
     
     color = TermColors.get_color(color)
     bold_col = TermColors.get_color("bold")
@@ -113,8 +119,14 @@ def log_long(
         content: str,
         color: str,
         remove_blank_lines: bool = False,
-        extra_line: bool = True
+        extra_line: bool = True,
+        condition: str = None
     ):
+    
+    if condition is not None:
+        if not humecord.bot.config.logging[condition]:
+            return
+
     color = TermColors.get_color(color)
     bold = TermColors.get_color("bold")
     reset = TermColors.get_color("reset")

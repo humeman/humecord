@@ -95,7 +95,8 @@ class AboutCommand:
                     label = details["__button__"]["text"],
                     style = "success" if page == category else details["__button__"]["style"],
                     id = page,
-                    callback = self.pass_ if page == category else lambda *args, page = page: self.swap(False, str(page), *args)
+                    callback = self.pass_ if page == category else lambda *args, page = page: self.swap(False, str(page), *args),
+                    only_sender = False
                 )
             )
 
@@ -115,6 +116,6 @@ class AboutCommand:
                 view = view
             )
 
-    def pass_(self, *args):
+    async def pass_(self, *args):
         return
 

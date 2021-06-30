@@ -1,6 +1,9 @@
 import time
 import discord
 import asyncio
+import traceback
+
+from typing import Optional
 
 from humecord.utils import exceptions
 import humecord
@@ -25,7 +28,8 @@ class Interactions:
             self,
             _type: str,
             _id: str,
-            callback
+            callback,
+            author: Optional[int]
         ):
 
         # Format the id
@@ -48,6 +52,7 @@ class Interactions:
 
         self.components[mid]["interactions"][cid] = {
             "callback": callback,
+            "author": author,
             "type": _type
         }
 
@@ -93,6 +98,8 @@ class Interactions:
 
             mid = int(mid)
 
+            interaction_data = self.components[mid]["interactions"][cid]
+
             humecord.utils.logger.log("int", f"Dispatching interaction ID {str(hex(mid)).replace('0x', '')}.{cid}", bold = True)
 
             # Get message
@@ -119,12 +126,26 @@ class Interactions:
                     embed = humecord.utils.discordutils.error(
                         message.author,
                         "Couldn't respond to interaction!",
-                        "Button presses expire after 60 seconds to save resources. If this error occured but you responded within this time period, please tell me and try again."
+                        "Button presses expire after 60 minutes to save resources. If this error occured but you responded within this time period, please tell me and try again."
                     )
                 )
                 return
 
-            
+            if interaction_data["author"] is not None:
+                if interaction_data["author"] != interaction.user.id:
+                    try:
+                        await interaction.message.channel.send(
+                            embed = humecord.utils.discordutils.error(
+                                interaction.user,
+                                "Can't respond to interaction!",
+                                f"I can only accept responses from the original sender, <@{interaction_data['author']}>."
+                            )
+                        )
+
+                    except:
+                        pass
+
+                    return
 
             if cid is None:
                 humecord.utils.logger.log_step("Component ID not registered in component store - disregarding", "blue")
