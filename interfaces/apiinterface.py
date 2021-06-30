@@ -166,20 +166,19 @@ class DirectAPI:
             if len(args) > 0:
                 url += f"?{'&'.join(args)}"
 
-        async with self.client as c:
-            try:
-                response = await c.get(url)
+        try:
+            response = await self.client.get(url)
 
-                response.raise_for_status()
+            response.raise_for_status()
 
-            except httpx.HTTPStatusError as e:
-                raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
+        except httpx.HTTPStatusError as e:
+            raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
 
-            except httpx.ConnectError as e:
-                raise humecord.utils.exceptions.APIOffline()
+        except httpx.ConnectError as e:
+            raise humecord.utils.exceptions.APIOffline()
 
-            except httpx.RequestError as e:
-                raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
+        except httpx.RequestError as e:
+            raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
 
         try:
             return response.json()
@@ -193,20 +192,19 @@ class DirectAPI:
             json: Union[dict, None]
         ):
 
-        async with self.client as c:
-            try:
-                response = await c.put(url, json = json)
+        try:
+            response = await self.client.put(url, json = json)
 
-                response.raise_for_status()
+            response.raise_for_status()
 
-            except httpx.HTTPStatusError as e:
-                raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
+        except httpx.HTTPStatusError as e:
+            raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
 
-            except httpx.ConnectError as e:
-                raise humecord.utils.exceptions.APIOffline()
+        except httpx.ConnectError as e:
+            raise humecord.utils.exceptions.APIOffline()
 
-            except httpx.RequestError as e:
-                raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
+        except httpx.RequestError as e:
+            raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
 
         try:
             return response.json()
