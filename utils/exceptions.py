@@ -1,3 +1,5 @@
+import humecord
+
 # *
 class NotImplemented(Exception):
     pass
@@ -55,6 +57,9 @@ class DevError(Exception):
     pass
 
 class NotFound(Exception):
+    pass
+
+class InitError(Exception):
     pass
 
 # -- argparse --
