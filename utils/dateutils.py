@@ -7,6 +7,8 @@ import time
 import re
 import pytz
 
+from typing import Optional
+
 specs = {
     "second": "%Y-%m-%d %H:%M-%S",
     "minute": "%Y-%m-%d %H:%M",
@@ -27,8 +29,10 @@ aliases = {
     "year": ["yearly"]
 }
 
-
-def get_datetime(specificity, timedelta = None):
+def get_datetime(
+        specificity: str, 
+        timedelta: Optional[dict] = None
+    ):
     time_format = None
 
     if specificity in specs:
