@@ -36,7 +36,8 @@ from humecord.utils import (
     discordutils,
     miscutils,
     subprocess,
-    exceptions
+    exceptions,
+    errorhandler
 )
 
 class Bot:
@@ -46,6 +47,17 @@ class Bot:
         pass
 
     def init(
+            self,
+            *args,
+            **kwargs
+        ):
+        errorhandler.base_wrap(
+            self._init,
+            args,
+            kwargs
+        )
+
+    def _init(
             self,
             imports_imp,
             imports_class
@@ -111,8 +123,16 @@ class Bot:
         self.timer = time.time()
         intents = discord.Intents().all()
         self.client = discord.Client(intents = intents)
-        self.client.on_error = on_error
-        discord.on_error = on_error
+        #self.client.on_error = on_error
+        #discord.on_error = on_error
+
+        @self.client.event
+        async def on_error(*args, **kwargs):
+            errorhandler.base_wrap(
+                on_error_ext,
+                args,
+                kwargs
+            )
 
         self.timezone = pytz.timezone(self.config.timezone)
 
@@ -204,24 +224,18 @@ class Bot:
     def start(
             self
         ):
+
+        errorhandler.base_wrap(
+            self._start
+        )
+
+    def _start(
+            self
+        ):
         try:
             logger.log_step("Starting client...", "cyan")
 
             self.client.loop.run_until_complete(self.client.start(self.config.token))
-
-        except exceptions.InitError:
-            # Forward it off to the logger
-            debug.print_traceback(
-                f"An initialization error occurred!"
-            )
-            sys.exit(1)
-
-        except exceptions.CriticalError:
-            # Forward it off to the logger
-            debug.print_traceback(
-                f"A critical error occurred!"
-            )
-            sys.exit(1)
 
         except KeyboardInterrupt:
             print()
@@ -250,11 +264,23 @@ class Bot:
             logger.log_step("Bye bye!", "cyan", bold = True)
             sys.exit(0)
 
-        except:
-            debug.print_traceback(
-                f"An unexpected error occurred!"
-            )
-            sys.exit(1)
-
-async def on_error(*args, **kwargs):
+def on_error_ext(*args, **kwargs):
     raise
+
+def catch_asyncio(loop, context):
+    if "exception" in context:
+        if type(context["exception"] in [SystemExit, KeyboardInterrupt]):
+            return
+
+    # Just log it
+    logger.log(
+        "warn",
+        "An asyncio exception wasn't handled!",
+        bold = True
+    )
+    logger.log_step(
+        str(context.get("exception")),
+        "yellow"
+    )
+
+asyncio.get_event_loop().set_exception_handler(catch_asyncio)

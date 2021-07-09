@@ -1,5 +1,12 @@
 import humecord
 
+from humecord.utils import (
+    logger,
+    exceptions,
+    debug
+)
+
+import sys
 import traceback
 from typing import Union
 
@@ -198,3 +205,45 @@ async def send_error(
             description
         )
     )
+
+def base_wrap(
+        function,
+        args: list = [],
+        kwargs: dict = {}
+    ):
+
+    try:
+        function(*args, **kwargs)
+
+    except (exceptions.InitError, exceptions.CriticalError) as e:
+        print()
+
+        if type(e) == exceptions.InitError:
+            title = "An initialization error occurred!"
+
+        elif type(e) == exceptions.CriticalError:
+            title = "A critical error occurred!"
+
+        # Forward it off to the logger
+        if e.traceback:
+            debug.print_traceback(
+                title
+            )
+            print()
+            logger.log_step(e.message, 'red', bold = True)
+
+        else:
+            logger.log("error", title, bold = True)
+            logger.log_step(e.message, "red")
+
+        sys.exit(1)
+
+    except SystemExit:
+        return
+
+    except:
+        print()
+        debug.print_traceback(
+            f"An unexpected initialization error occurred!"
+        )
+        sys.exit(1)

@@ -58,10 +58,12 @@ class Commands:
                 comp[overrides["__category__"]] = []
 
             # Create command
-            comp[command] = {
-                **defaults[command],
-                "attrs": overrides
-            }
+            comp[overrides["__category__"]].append(
+                {
+                    **defaults[command],
+                    "attrs": overrides
+                }
+            )
 
 
         return comp

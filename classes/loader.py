@@ -166,21 +166,21 @@ class Loader:
             )
 
             # Create a class
-            loop = exec(f"{loop['module']}.{loop['class']}()")
+            _loop = eval(f"{loop['module']}.{loop['class']}()")
 
             if "attrs" in loop:
                 # Set attrs
                 for attr, value in loop["attrs"].items():
                     if not attr.startswith("__"):
-                        setattr(loop, attr, value)
+                        setattr(_loop, attr, value)
 
             # Validate it
             await self.validate(
                 "loop",
-                loop
+                _loop
             )
 
-            humecord.bot.loops.loops.append(loop)
+            humecord.bot.loops.loops.append(_loop)
 
         # Prep loops
         await humecord.bot.loops.prep()
@@ -218,21 +218,21 @@ class Loader:
                     )
 
                 # Create a class, append to comp
-                command = exec(f"__cmd = {command['module']}.{command['class']}()")
+                _command = eval(f"{command['module']}.{command['class']}()")
 
                 if "attrs" in command:
                     # Set attrs
                     for attr, value in command["attrs"].items():
                         if not attr.startswith("__"):
-                            setattr(command, attr, value)
+                            setattr(_command, attr, value)
 
                 # Validate it
                 await self.validate(
                     "command",
-                    command
+                    _command
                 )
 
-                humecord.bot.commands.commands['{category}'].append(command)
+                humecord.bot.commands.commands[category].append(_command)
 
     async def load_events(
             self
@@ -260,21 +260,21 @@ class Loader:
                 )
 
             # Create a class, append to comp
-            event = exec(f"{event['module']}.{event['class']}()")
+            _event = eval(f"{event['module']}.{event['class']}()")
 
             if "attrs" in event:
                 # Set attrs
                 for attr, value in event["attrs"].items():
                     if not attr.startswith("__"):
-                        setattr(event, attr, value)
+                        setattr(_event, attr, value)
 
             # Validate it
             await self.validate(
                 "event",
-                event
+                _event
             )
 
-            humecord.bot.events.events.append(event)
+            humecord.bot.events.events.append(_event)
 
         # Do the thing
         await humecord.bot.events.prep()
@@ -288,7 +288,7 @@ class Loader:
         ):
 
 
-        for key, details in validators["object_type"]["keys"].items():
+        for key, details in validators[object_type]["keys"].items():
             # Check if this is required
             if details.get("optional") == True:
                 if not hasattr(object, key):
@@ -437,7 +437,7 @@ class LoopValidators:
             return f"Loop {loop.name} has invalid type {loop.type}"
 
 validators = {
-    "commands": {
+    "command": {
         "keys": {
             "name": {
                 "type": [str]

@@ -18,8 +18,7 @@ class Events:
         # Force register
         self.force = [
             events.on_ready.OnReadyEvent,
-            events.on_message.OnMessageEvent,
-            events.on_interaction.OnInteractionEvent
+            events.on_message.OnMessageEvent
         ]
 
         """

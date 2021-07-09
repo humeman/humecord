@@ -67,6 +67,15 @@ class InitError(Exception):
 
         self.traceback = traceback
 
+class CriticalError(Exception):
+    def __init__(self, message, traceback = True):
+        super().__init__(message)
+
+        self.message = message
+
+        self.traceback = traceback
+
+
 # -- argparse --
 class InvalidRule(Exception):
     pass
