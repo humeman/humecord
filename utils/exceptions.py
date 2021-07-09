@@ -56,3 +56,7 @@ class DevError(Exception):
 
 class NotFound(Exception):
     pass
+
+# -- argparse --
+class InvalidRule(Exception):
+    pass

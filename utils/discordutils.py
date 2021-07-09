@@ -186,3 +186,26 @@ def get_user(
         raise humecord.utils.exceptions.NotFound(f"User `{user}` doesn't exist.")
 
     return user_
+
+perm_defs = {
+    "general": [
+
+    ]
+}
+
+def has_perms(
+        channel: discord.TextChannel,
+        member: discord.Member,
+        perms: str
+    ):
+
+    perms = perm_defs[perms]
+
+    channel_perms = channel.permissions_for(member)
+
+    for perm in perms:
+        if getattr(channel_perms, perm) == False:
+            return False
+
+    return True
+

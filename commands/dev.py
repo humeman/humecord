@@ -29,6 +29,10 @@ class DevCommand:
                 "function": self.error,
                 "description": "Forces an error."
             },
+            "reload": {
+                "function": self.reload,
+                "description": "Reloads the bot."
+            },
             "loops": {
                 "function": LoopsSubcommand.run,
                 "description": "Manages the bot's loops."
@@ -52,7 +56,8 @@ class DevCommand:
             "loop": "dev loops",
             "exec": "dev exec",
             "dm": "dev dm",
-            "reply": "dev dm reply"
+            "reply": "dev dm reply",
+            "reload": "dev reload"
         }
 
         global bot
@@ -61,6 +66,32 @@ class DevCommand:
 
     async def error(self, message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):
         raise humecord.utils.exceptions.TestException("dev.error call")
+
+    async def reload(self, message, resp, args, gdb, alternate_gdb, preferred_gdb):
+        if len(args) > 2:
+            safe = args[2].lower() not in ["f", "force"]
+
+        else:
+            safe = True
+
+        await resp.send(
+            embed = discordutils.create_embed(
+                "Reloading bot.",
+                description = f"Safe reload: `{'Yes' if safe else 'No'}`",
+                color = "yellow"
+            )
+        )
+
+        await bot.loader.load(safe_stop = safe)
+
+        await resp.send(
+            embed = discordutils.create_embed(
+                "Reloaded!",
+                color = "green"
+            )
+        )
+
+
 
 class LoopsSubcommand:
     async def run(message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):

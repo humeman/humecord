@@ -23,8 +23,8 @@ Currently, the type list is as follows:
 | float       | A float.                 | between(), greater(), less()                  |
 | number      | An integer or float.     | between(), greater(), less()                  |
 | bool        | A boolean.               |                                               |
-| list        | A list.                  | (another parser string)                       |
-| dict        | A dict.                  | (key parser string):(value parser string)     |
+| list        | A list.                  | item()                                        |
+| dict        | A dict.                  | key(), value()                                |
 | channel     | A Discord channel.       | perms(), inguild(), type()                    |
 | user        | A Discord user.          | canedit(), inguild()                          |
 | perms       | A HumeCord perms string. | category(), has()                             |

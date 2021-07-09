@@ -8,7 +8,11 @@ class Loops:
             self
         ):
 
+        self.loops = []
+
         self.task = None
+
+        self.stop = False
 
 
     async def prep(
@@ -85,7 +89,7 @@ class Loops:
 
         await humecord.bot.client.wait_until_ready()
 
-        while True:
+        while not self.stop:
             await asyncio.sleep(0.5)
 
             if not humecord.bot.client.is_ready:

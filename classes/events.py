@@ -10,6 +10,8 @@ class Events:
             bot
         ):
 
+        self.events = {}
+
         # Force register
         self.force = {
             "on_ready": [
@@ -42,19 +44,22 @@ class Events:
         await self.load()
         await self.register()
 
-        await self.call("on_ready", [None])
-
     async def load(
             self
         ):
-        
-        self.events = bot.imports.events
 
         for event, functions in self.force.items():
             if event not in self.events:
                 self.events[event] = []
 
-            self.events[event] += functions
+            if event == "on_ready": # Take priority
+                self.events[event] = [
+                    *functions,
+                    *self.events[event]
+                ]
+
+            else:
+                self.events[event] += functions
 
     async def call(
             self,
@@ -86,11 +91,12 @@ class Events:
         # Registers all the events we need.
 
         for event in self.events: # Only the name
-            exec("\n".join([x[12:] for x in f"""
-            @bot.client.event
-            async def {event}(*args):
-                await bot.events.call("{event}", args)
-            """.split("\n")]))
+            if not event.startswith("hh_"):
+                exec("\n".join([x[16:] for x in f"""
+                @bot.client.event
+                async def {event}(*args):
+                    await bot.events.call("{event}", args)
+                """.split("\n")]))
 
         logger.log_step(f"Registered {len(self.events)} events", "cyan")
 

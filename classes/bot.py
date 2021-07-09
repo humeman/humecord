@@ -10,9 +10,11 @@ import time
 import pytz
 import os
 import inspect
+import asyncio
 
 import humecord
 
+from .loader import Loader
 from .config import Config
 from .events import Events
 from .commands import Commands
@@ -22,6 +24,7 @@ from .interactions import Interactions
 from .permissions import Permissions
 from .overrides import OverrideHandler
 from .replies import Replies
+from .argparser import ArgumentParser
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -42,23 +45,18 @@ class Bot:
 
     def init(
             self,
+            imports_imp,
             imports_class
         ):
 
-        self.imports_class = imports_class
+        # Create a loader
+        self.loader = Loader(
+            imports_imp,
+            imports_class
+        )
 
-        # -- CONFIG --
-        # Load the config
-        self.load_config()
-
-        # Load globals
-        self.config.load_globals()
-
-        # Load lang
-        self.config.load_lang()
-
-        # Validate
-        self.config.validate_all()
+        # Tell the loader to only do config things :)
+        asyncio.get_event_loop().run_until_complete(self.loader.load_config())
 
         # Log things
         placeholders = {
@@ -131,6 +129,7 @@ class Bot:
         # self.console = Console()
         self.debug_console = DebugConsole()
         self.permissions = Permissions(self)
+        self.args = ArgumentParser({})
 
         logger.log_step("Initialized handlers", "cyan")
         
@@ -175,6 +174,14 @@ class Bot:
     async def populate_imports(
             self
         ):
+
+        # Now we just tell the loader to do it
+        await self.loader.load(
+            starting = True,
+            safe_stop = False
+        ) # Not a safe stop - don't stop anything
+
+        """
         self.imports = self.imports_class()
         
         self.loops.loops = self.imports.loops
@@ -184,6 +191,7 @@ class Bot:
         self.commands.register_internal()
 
         await self.events.prep()
+        """
 
 
         print()
