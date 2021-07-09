@@ -19,9 +19,60 @@ class Commands:
 
         self.commands = commands
 
+    def get_imports(
+            self
+        ):
+
+        comp = {
+
+        }
+
+        defaults = {
+            "dev": {
+                "imp": "from humecord.commands import dev",
+                "module": "dev",
+                "class": "DevCommand"
+            },
+            "about": {
+                "imp": "from humecord.about import about",
+                "module": "about",
+                "class": "AboutCommand"
+            },
+            "help": {
+                "imp": "from humecord.commands import help",
+                "module": "help",
+                "class": "HelpCommand"
+            },
+            "overrides": {
+                "imp": "from humecord.commands import overrides",
+                "module": "overrides",
+                "class": "OverridesCommand"
+            }
+        }
+
+        for command, overrides in humecord.bot.config.default_commands.items():
+            if command not in defaults:
+                raise humecord.utils.exceptions.NotFound(f"Default command {command} does not exist.")
+
+            if overrides["__category__"] not in comp:
+                comp[overrides["__category__"]] = []
+
+            # Create command
+            comp[command] = {
+                **defaults[command],
+                "attrs": overrides
+            }
+
+
+        return comp
+
+            
+
     def register_internal(
             self
         ):
+
+        raise DeprecationWarning("This feature is deprecated in favor of the HumeCord loader.")
 
         self.defaults = {
             "dev": humecord.commands.dev.DevCommand,
@@ -52,8 +103,6 @@ class Commands:
             self.commands[command_overrides["__category__"]].append(cmd)
             if override_count > 0:
                 humecord.utils.logger.log_step(f"Registered default command {command} with {override_count} override{'' if override_count == 1 else 's'}", "cyan")
-
-
 
     async def run(
             self, 

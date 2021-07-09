@@ -60,7 +60,12 @@ class NotFound(Exception):
     pass
 
 class InitError(Exception):
-    pass
+    def __init__(self, message, traceback = True):
+        super().__init__(message)
+
+        self.message = message
+
+        self.traceback = traceback
 
 # -- argparse --
 class InvalidRule(Exception):
