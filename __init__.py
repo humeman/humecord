@@ -1,5 +1,8 @@
 version = "0.1.1"
 
+# Base functions
+from .funcs import *
+
 from .classes.bot import Bot
 
 bot = Bot()

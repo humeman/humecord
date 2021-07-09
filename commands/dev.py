@@ -76,9 +76,9 @@ class DevCommand:
 
         await resp.send(
             embed = discordutils.create_embed(
-                "Reloading bot.",
+                f"{bot.config.lang['emoji']['loading']}  Reloading bot...",
                 description = f"Safe reload: `{'Yes' if safe else 'No'}`",
-                color = "yellow"
+                color = "icon_blue"
             )
         )
 
