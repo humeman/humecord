@@ -1,6 +1,7 @@
 from ..utils import logger
 from ..utils import debug
 from ..utils import errorhandler
+from ..utils import exceptions
 
 from .. import events
 
@@ -10,10 +11,18 @@ class Events:
             bot
         ):
 
-        self.events = {}
+        self.events = []
+
+        self.registered = []
 
         # Force register
-        self.force = {
+        self.force = [
+            events.on_ready.OnReadyEvent,
+            events.on_message.OnMessageEvent,
+            events.on_interaction.OnInteractionEvent
+        ]
+
+        """
             "on_ready": [
                 events.on_ready.populate_debug_channel,
                 events.on_ready.tell_api,
@@ -30,6 +39,7 @@ class Events:
                 events.on_interaction.check_interaction
             ]
         }
+        """
 
         @bot.client.event
         async def on_ready():
@@ -41,6 +51,12 @@ class Events:
     async def prep(
             self
         ):
+
+        self.events = [
+            *self.events,
+            *self.force
+        ]
+
         await self.load()
         await self.register()
 
@@ -48,6 +64,37 @@ class Events:
             self
         ):
 
+        # Format event database into a less intensive dict.
+        self.edb = {}
+
+        for event in self.events:
+            if event.event not in self.valid_events:
+                raise exceptions.InitError(
+                    f"Event {event.name} tried to register event {event.event}, but it doesn't exist"
+                )
+
+            # Check if event exists
+            if event.event not in self.edb:
+                self.edb[event.event] = []
+
+            # Find out where to insert
+            for name, function in event.functions:
+                index = 0
+                prio = function["priority"]
+                for i, event in enumerate(self.edb[event.event]):
+                    if event.priority <= prio:
+                        index = i + 1
+
+                # Insert
+                self.edb[event.event].insert(
+                    index,
+                    {
+                        "name": name,
+                        **function
+                    }
+                )
+
+        """
         for event, functions in self.force.items():
             if event not in self.events:
                 self.events[event] = []
@@ -60,6 +107,7 @@ class Events:
 
             else:
                 self.events[event] += functions
+        """
 
     async def call(
             self,
@@ -67,16 +115,19 @@ class Events:
             args: list
         ):
 
-        if event not in self.events:
-            logger.log("warn", f"Event {event} called, but isn't registered in the event handler")
+        if event not in self.edb:
+            logger.log("warn", f"Event {event} called, but isn't registered in the event database")
             return
 
-        for function in self.events[event]:
+        for function in self.edb[event]:
             result = await errorhandler.wrap(
-                function(*args),
+                function["function"](*args),
                 context = {
                     "Event details": [
-                        f"Event name: {event}"
+                        f"Event name: {event}",
+                        f"Function: {function['name']}",
+                        f"Function description: {function.get('description')}",
+                        f"Priority: {function['priority']}"
                     ]
                 }
             )
@@ -90,7 +141,10 @@ class Events:
         ):
         # Registers all the events we need.
 
-        for event in self.events: # Only the name
+        for event in self.edb: # Only the name
+            if event in self.registered:
+                continue # Don't register twice
+
             if not event.startswith("hh_"):
                 exec("\n".join([x[16:] for x in f"""
                 @bot.client.event
@@ -98,7 +152,9 @@ class Events:
                     await bot.events.call("{event}", args)
                 """.split("\n")]))
 
-        logger.log_step(f"Registered {len(self.events)} events", "cyan")
+                self.registered.append(event)
+
+        logger.log_step(f"Registered {len(self.edb)} events", "cyan")
 
 
 
