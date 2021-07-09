@@ -1,5 +1,10 @@
 import humecord
 
+from humecord.utils import (
+    exceptions,
+    dateutils
+)
+
 import importlib
 import traceback
 import asyncio
@@ -14,6 +19,11 @@ class Loader:
         self.imports_imp = imports_imp
         self.imports_module = imports_module
 
+        self.force = {
+            "commands": {
+
+            }
+        }
 
     async def load(
             self,
@@ -50,7 +60,11 @@ class Loader:
         self.data = self.imports.loader
 
         # Load in the imports
-        await self.load_imports(safe_stop)
+        await self.stop_all(safe_stop)
+
+        await self.load_loops()
+        await self.load_commands()
+        await self.load_events()
 
         if (not safe_stop) or starting:
             # Call ready again
@@ -72,7 +86,7 @@ class Loader:
         # Validate
         humecord.bot.config.validate_all()
 
-    async def load_imports(
+    async def stop_all(
             self,
             safe_stop: bool = False
         ):
@@ -127,6 +141,9 @@ class Loader:
 
         humecord.bot.loops.task = None
 
+    async def load_loops(
+            self
+        ):
         # Set up loops
         humecord.bot.loops.loops = []
 
@@ -148,24 +165,36 @@ class Loader:
                 globals()
             )
 
-            #print(updater)
+            # Create a class
+            loop = exec(f"{loop['module']}.{loop['class']}()")
 
-            # Import the class
-            #exec(
-            #    f"from {loop['module']} import {loop['class']}",
-            #    globals()
-            #)
+            if "attrs" in loop:
+                # Set attrs
+                for attr, value in loop["attrs"].items():
+                    if not attr.startswith("__"):
+                        setattr(loop, attr, value)
 
-            # Create a class, append to comp
-            exec(f"__loop = {loop['module']}.{loop['class']}()", globals())
+            # Validate it
+            await self.validate(
+                "loop",
+                loop
+            )
 
-            exec("humecord.bot.loops.loops.append(__loop)")
+            humecord.bot.loops.loops.append(loop)
 
         # Prep loops
         await humecord.bot.loops.prep()
 
+
+    async def load_commands(
+            self
+        ):
         # Set up commands
         humecord.bot.commands.commands = {}
+
+        self.data["commands"].update(
+            humecord.bot.commands.get_imports()
+        )
 
         for category, commands in self.data["commands"].items():
             humecord.bot.commands.commands[category] = []
@@ -188,44 +217,293 @@ class Loader:
                         globals()
                     )
 
-                # Import the class
-                #exec(
-                #    f"from {command['module']} import {command['class']}",
-                #    globals()
-                #)
-
                 # Create a class, append to comp
-                exec(f"__cmd = {command['module']}.{command['class']}()", globals())
+                command = exec(f"__cmd = {command['module']}.{command['class']}()")
 
-                exec(f"humecord.bot.commands.commands['{category}'].append(__cmd)")
+                if "attrs" in command:
+                    # Set attrs
+                    for attr, value in command["attrs"].items():
+                        if not attr.startswith("__"):
+                            setattr(command, attr, value)
 
-        # Tell it to register internal commands
-        humecord.bot.commands.register_internal()
+                # Validate it
+                await self.validate(
+                    "command",
+                    command
+                )
 
-        # Load up events
-        humecord.bot.events.events = {}
+                humecord.bot.commands.commands['{category}'].append(command)
 
-        for name, events in self.data["events"].items():
-            for event in events:
-                # Check if old import exists
-                if event["class"] not in globals():
-                    # Run the import
-                    exec(event["imp"], globals())
+    async def load_events(
+            self
+        ):
+        # Set up events
+        humecord.bot.events.edb = {}
+        humecord.bot.events.events = []
 
-                # Reload it
+        for event in self.data["events"]:
+            # Check if the old event exists
+            if event["class"] not in globals():
+                # Run the import
+                exec(event["imp"], globals())
+        
+            exec(
+                f"importlib.reload({event['module']})",
+                globals()
+            )
+
+            # Delete the old class
+            if event["class"] in globals():
                 exec(
-                    f"importlib.reload({event['class']})",
+                    f"del {event['class']}",
                     globals()
                 )
 
-                # Create events
-                humecord.bot.events.events[name] = []
+            # Create a class, append to comp
+            event = exec(f"{event['module']}.{event['class']}()")
 
-                for func in event["funcs"]:
-                    exec(
-                        f"humecord.bot.events.events['{name}'].append({event['class']}.{func})", 
-                        globals()
-                    )
+            if "attrs" in event:
+                # Set attrs
+                for attr, value in event["attrs"].items():
+                    if not attr.startswith("__"):
+                        setattr(event, attr, value)
+
+            # Validate it
+            await self.validate(
+                "event",
+                event
+            )
+
+            humecord.bot.events.events.append(event)
 
         # Do the thing
         await humecord.bot.events.prep()
+
+
+
+    async def validate(
+            self,
+            object_type: str,
+            object: str
+        ):
+
+
+        for key, details in validators["object_type"]["keys"].items():
+            # Check if this is required
+            if details.get("optional") == True:
+                if not hasattr(object, key):
+                    continue # Still good
+
+            else:
+                # Check if the object has that attribute
+                if not hasattr(object, key):
+                    # Log an error
+                    raise exceptions.InitError(
+                        f"{object_type[0].upper()}{object_type[1:]} {object.name} is missing required attribute {key}.",
+                        traceback = False
+                    )
+
+            # Check type
+            if type(getattr(object, key)) not in details["type"]:
+                raise exceptions.InitError(
+                    f"{object_type[0].upper()}{object_type[1:]} {object.name}'s attribute {key} is of invalid type.",
+                    traceback = False
+                )
+
+            # Run validators
+            for validator in validators[object_type]["validators"]:
+                await validator(
+                    object
+                )
+
+class CommandValidators:
+    async def validate_subcommands(
+            command
+        ):
+
+        # Check if included
+        if hasattr(command, "subcommands"):
+            # Type already verified by key validator
+            matched = []
+
+            for name, value in command.subcommands.items():
+                if name in matched:
+                    return f"Command {command.name} has duplicate subcommand {name}"
+
+                if name.startswith("__"):
+                    if name not in ["__default__", "__syntax__"]:
+                        return f"Command {command.name} has nonexistant subcommand override {name}"
+
+                # Check if keys are included
+                if type(value.get("description")) != str:
+                    return f"Command {command.name}'s subcommand {name} has invalid description (not optional, must be a string)"
+                
+                if "function" not in value:
+                    return f"Command {command.name}'s subcommand {name} has no defined function"
+
+                # Need exactly 6 arguments (and self, optional)
+                args = value["function"].__code__.co_varnames
+
+                if args[0] == "self":
+                    args = args[1:]
+
+                if len(args) != 6:
+                    return f"Command {command.name}'s subcommand {name}'s function has invalid number of arguments: {len(args)}"
+
+                if "syntax" in value:
+                    if type(value["syntax"]) != str:
+                        return f"Command {command.name}'s subcommand {name} has invalid syntax (optional, must be a string)"
+
+                matched.append(name)
+
+    async def validate_function(
+            command
+        ):
+
+        if not hasattr(command, "subcommands"):
+            # Must have a run func instead.
+            if not hasattr(command, "run"):
+                return f"Command {command.name} has no callable element (define run() or subcommands)"
+
+            if not callable(command.run):
+                return f"Command {command.name}'s run attribute is not a function"
+
+            args = command.run.__code__.co_varnames
+
+            if args[0] == "self":
+                args = args[1:]
+
+            if len(args) != 6:
+                return f"Command {command.name}'s run function has invalid number of arguments: {len(args)}"
+
+    async def validate_aliases(
+            command
+        ):
+
+        if hasattr(command, "aliases"):
+            for alias in command.aliases:
+                if type(alias) != str:
+                    return f"Command {command.name} has alias of invalid type (must be a string)"
+
+class EventValidators:
+    async def validate_functions(
+            event
+        ):
+
+        matched = []
+
+        for name, function in event.functions():
+            if type(name) != str:
+                return f"Event {event.name} has function with invalid name (must be a string)"
+
+            if name in matched:
+                return f"Event {event.name} has duplicate function: {name}"
+
+            if "function" not in function:
+                return f"Event {event.name}'s function {name} has no function defined"
+
+            if not callable(function["function"]):
+                return f"Event {event.name}'s function isn't callable"
+
+            # Check priority
+            if type(function.get("priority")) != int:
+                return f"Event {event.name}'s function {name} has invalid priority (not optional, must be an int)"
+
+            if function["priority"] < 0 or function["priority"] > 100:
+                return f"Event {event.name}'s function {name} has priority not within 0 and 100"
+
+            if "description" in function:
+                if type(function["description"]) != str:
+                    return f"Event {event.name}'s function {name} has invalid description (optional, must be a string)"
+
+class LoopValidators:
+    async def validate_type(
+            loop
+        ):
+
+        if loop.type == "delay":
+            if not hasattr(loop, "delay"):
+                return f"Loop {loop.name} has no delay defined (not optional, must be an int)"
+
+        elif loop.type == "period":
+            if not hasattr(loop, "period"):
+                return f"Loop {loop.name} has no period defined (not optional, must be a str)"
+
+            for name, aliases in dateutils.aliases.items():
+                if loop.period != name and loop.period not in aliases:
+                    return f"Loop {loop.name} has invalid period {loop.period}"
+
+        else:
+            return f"Loop {loop.name} has invalid type {loop.type}"
+
+validators = {
+    "commands": {
+        "keys": {
+            "name": {
+                "type": [str]
+            },
+            "description": {
+                "type": [str]
+            },
+            "aliases": {
+                "type": [list]
+            },
+            "permission": {
+                "type": [str]
+            },
+            "subcommands": {
+                "optional": True,
+                "type": [dict]
+            },
+            "shortcuts": {
+                "optional": True,
+                "type": [list]
+            }
+        },
+        "validators": [
+            CommandValidators.validate_subcommands,
+            CommandValidators.validate_function
+        ]
+    },
+    "event": {
+        "keys": {
+            "name": {
+                "type": [str]
+            },
+            "description": {
+                "optional": True,
+                "type": [str]
+            },
+            "event": {
+                "type": [str]
+            },
+            "functions": {
+                "type": [dict]
+            }
+        },
+        "validators": [
+            EventValidators.validate_functions
+        ]
+    },
+    "loop": {
+        "keys": {
+            "name": {
+                "type": [str]
+            },
+            "type": {
+                "type": [str]
+            },
+            "delay": {
+                "optional": True,
+                "type": [int, float]
+            },
+            "time": {
+                "optional": True,
+                "type": [str]
+            }
+        },
+        "validators": [
+            LoopValidators.validate_type
+        ]
+    }
+}
