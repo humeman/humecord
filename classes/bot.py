@@ -29,13 +29,15 @@ from .argparser import ArgumentParser
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
 
-from humecord.utils import logger
-from humecord.utils import fs
-from humecord.utils import debug
-from humecord.utils import discordutils
-from humecord.utils import miscutils
-from humecord.utils import errorhandler
-from humecord.utils import subprocess
+from humecord.utils import (
+    logger,
+    fs,
+    debug,
+    discordutils,
+    miscutils,
+    subprocess,
+    exceptions
+)
 
 class Bot:
     def __init__(
@@ -109,6 +111,9 @@ class Bot:
         self.timer = time.time()
         intents = discord.Intents().all()
         self.client = discord.Client(intents = intents)
+        self.client.on_error = on_error
+        discord.on_error = on_error
+
         self.timezone = pytz.timezone(self.config.timezone)
 
         logger.log_step("Initialized storage", "cyan")
@@ -204,6 +209,20 @@ class Bot:
 
             self.client.loop.run_until_complete(self.client.start(self.config.token))
 
+        except exceptions.InitError:
+            # Forward it off to the logger
+            debug.print_traceback(
+                f"An initialization error occurred!"
+            )
+            sys.exit(1)
+
+        except exceptions.CriticalError:
+            # Forward it off to the logger
+            debug.print_traceback(
+                f"A critical error occurred!"
+            )
+            sys.exit(1)
+
         except KeyboardInterrupt:
             print()
             logger.log("close", "Shutting down...", bold = True)
@@ -230,3 +249,12 @@ class Bot:
 
             logger.log_step("Bye bye!", "cyan", bold = True)
             sys.exit(0)
+
+        except:
+            debug.print_traceback(
+                f"An unexpected error occurred!"
+            )
+            sys.exit(1)
+
+async def on_error(*args, **kwargs):
+    raise
