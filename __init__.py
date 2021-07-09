@@ -8,26 +8,33 @@ from .funcs import *
 from .classes.bot import Bot
 
 from .utils.exceptions import InitError
-from .utils import debug
+
+from . import classes
+from . import utils
+from . import interfaces
+from . import loops
+from . import commands
 
 try:
     bot = Bot()
 
-    from . import classes
-    from . import utils
-    from . import interfaces
-    from . import loops
-    from . import commands
 
-except InitError:
+except InitError as e:
     # Forward it off to the logger
-    debug.print_traceback(
-        f"An initialization error occurred!"
-    )
+    if e.traceback:
+        utils.debug.print_traceback(
+            f"An initialization error occurred!"
+        )
+        print()
+        utils.logger.log_step(e.message, 'red', bold = True)
+
+    else:
+        utils.logger.log("error", e.message, bold = True)
+
     sys.exit(1)
 
 except:
-    debug.print_traceback(
+    utils.debug.print_traceback(
         f"An unexpected initialization error occurred!"
     )
     sys.exit(1)
