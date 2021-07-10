@@ -39,6 +39,26 @@ class OnMessageEvent:
             }
         }
 
+        global bot
+        from humecord import bot
+
+    async def check_bot(
+            self,
+            message
+        ):
+
+        if message.author.id == bot.client.user.id:
+            return False
+
+        if message.author.bot:
+            return False
+
+    async def check_blocked(
+            self,
+            message
+        ):
+        if message.author.id in bot.files.files["__users__.json"]["blocked"]:
+            return
 
     async def check_ping(
             self,

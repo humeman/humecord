@@ -189,9 +189,12 @@ class Loader:
         # Set up commands
         humecord.bot.commands.commands = {}
 
-        self.data["commands"].update(
-            humecord.bot.commands.get_imports()
-        )
+
+        for category, commands in humecord.bot.commands.get_imports().items():
+            if category not in self.data["commands"]:
+                self.data["commands"][category] = []
+
+            self.data["commands"][category] += commands
 
         for category, commands in self.data["commands"].items():
             humecord.bot.commands.commands[category] = []

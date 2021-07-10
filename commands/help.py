@@ -39,6 +39,10 @@ class HelpCommand:
                 comp_commands = []
 
                 for command in commands:
+                    if hasattr(command, "hide"):
+                        if command.hide == True:
+                            continue
+
                     if await bot.permissions.check(
                         message.author,
                         command.permission
@@ -66,6 +70,9 @@ class HelpCommand:
         
                 c = bot.config.command_categories[category]
 
+                if c.get("hide") == True:
+                    continue
+
                 fields.append(
                     {
                         "name": f"{c['emoji']}  {c['name']}",
@@ -90,10 +97,13 @@ class HelpCommand:
             active = None
 
             for cat, info in bot.config.command_categories.items():
+                if info.get("hide") == True:
+                    continue
+
                 if category == cat or category in info["aliases"]:
                     name = cat
                     active = info
-            
+
             if active is not None:
                 await self.update_page(
                     None,
@@ -114,6 +124,10 @@ class HelpCommand:
                 # See if it's a command
                 for cat, commands in bot.commands.commands.items():
                     for command in commands:
+                        if hasattr(command, "hide"):
+                            if command.hide == True:
+                                continue
+
                         valid = [command.name]
                         cd = dir(command)
 
@@ -199,12 +213,13 @@ class HelpCommand:
         )
 
         if "aliases" in cd:
-            comp.append(
-                {
-                    "name": "→ Aliases",
-                    "value": ", ".join([f"`{prefix}{x}`" for x in command.aliases])
-                }
-            )
+            if len(command.aliases) > 0:
+                comp.append(
+                    {
+                        "name": "→ Aliases",
+                        "value": ", ".join([f"`{prefix}{x}`" for x in command.aliases])
+                    }
+                )
 
         if "shortcuts" in cd:
             if one_line_safe:
