@@ -89,7 +89,7 @@ class OnReadyEvent:
             f"Events: {len(humecord.bot.events.events)}",
         ] + [
             f"  {name}: {len(value)} function{'' if len(value) == 1 else 's'}"
-            for name, value in humecord.bot.events.events.items()
+            for name, value in humecord.bot.events.edb.items()
         ]
 
         description += [

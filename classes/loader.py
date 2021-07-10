@@ -8,6 +8,7 @@ from humecord.utils import (
 import importlib
 import traceback
 import asyncio
+import inspect
 
 class Loader:
     def __init__(
@@ -18,12 +19,6 @@ class Loader:
 
         self.imports_imp = imports_imp
         self.imports_module = imports_module
-
-        self.force = {
-            "commands": {
-
-            }
-        }
 
     async def load(
             self,
@@ -147,6 +142,8 @@ class Loader:
         # Set up loops
         humecord.bot.loops.loops = []
 
+        self.data["loops"] += humecord.bot.loops.get_imports()
+
         for loop in self.data["loops"]:
             # Delete the old class
             if loop["class"] in globals():
@@ -241,6 +238,8 @@ class Loader:
         humecord.bot.events.edb = {}
         humecord.bot.events.events = []
 
+        self.data["events"] += humecord.bot.events.get_imports()
+
         for event in self.data["events"]:
             # Check if the old event exists
             if event["class"] not in globals():
@@ -279,8 +278,6 @@ class Loader:
         # Do the thing
         await humecord.bot.events.prep()
 
-
-
     async def validate(
             self,
             object_type: str,
@@ -312,9 +309,15 @@ class Loader:
 
             # Run validators
             for validator in validators[object_type]["validators"]:
-                await validator(
+                result = await validator(
                     object
                 )
+
+                if result is not None:
+                    raise exceptions.InitError(
+                        result,
+                        traceback = False
+                    )
 
 class CommandValidators:
     async def validate_subcommands(
@@ -342,7 +345,16 @@ class CommandValidators:
                     return f"Command {command.name}'s subcommand {name} has no defined function"
 
                 # Need exactly 6 arguments (and self, optional)
-                args = value["function"].__code__.co_varnames
+                params = inspect.signature(value["function"]).parameters #.__code__.co_varnames
+
+                args = []
+
+                for name, param in params.items():
+                    if param.kind in [inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD]:
+                        # Accepts any amount
+                        return
+
+                    args.append(name)
 
                 if args[0] == "self":
                     args = args[1:]
@@ -368,7 +380,16 @@ class CommandValidators:
             if not callable(command.run):
                 return f"Command {command.name}'s run attribute is not a function"
 
-            args = command.run.__code__.co_varnames
+            params = inspect.signature(command.run).parameters #.__code__.co_varnames
+
+            args = []
+
+            for name, param in params.items():
+                if param.kind in [inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD]:
+                    # Accepts any amount
+                    return
+
+                args.append(name)
 
             if args[0] == "self":
                 args = args[1:]
@@ -392,7 +413,7 @@ class EventValidators:
 
         matched = []
 
-        for name, function in event.functions():
+        for name, function in event.functions.items():
             if type(name) != str:
                 return f"Event {event.name} has function with invalid name (must be a string)"
 
@@ -426,12 +447,16 @@ class LoopValidators:
                 return f"Loop {loop.name} has no delay defined (not optional, must be an int)"
 
         elif loop.type == "period":
-            if not hasattr(loop, "period"):
-                return f"Loop {loop.name} has no period defined (not optional, must be a str)"
+            if not hasattr(loop, "time"):
+                return f"Loop {loop.name} has no time defined (not optional, must be a str)"
 
+            valid = False
             for name, aliases in dateutils.aliases.items():
-                if loop.period != name and loop.period not in aliases:
-                    return f"Loop {loop.name} has invalid period {loop.period}"
+                if loop.time == name or loop.time in aliases:
+                    valid = True
+
+            if not valid:
+                return f"Loop {loop.name} has invalid time {loop.time}"
 
         else:
             return f"Loop {loop.name} has invalid type {loop.type}"
@@ -457,7 +482,7 @@ validators = {
             },
             "shortcuts": {
                 "optional": True,
-                "type": [list]
+                "type": [dict]
             }
         },
         "validators": [

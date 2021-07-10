@@ -14,20 +14,32 @@ class Loops:
 
         self.stop = False
 
+    def get_imports(
+            self
+        ):
+
+        comp = [
+            {
+                "imp": "from humecord.loops import refresh_status",
+                "module": "refresh_status",
+                "class": "RefreshStatusLoop"
+            }
+        ]
+
+        if humecord.bot.config.use_api:
+            comp.append(
+                {
+                    "imp": "from humecord.loops import update_overrides",
+                    "module": "update_overrides",
+                    "class": "UpdateOverridesLoop"
+                }
+            )
+
+        return comp
 
     async def prep(
             self
         ):
-
-        self.force = [
-            humecord.loops.refresh_status.RefreshStatusLoop()
-        ]
-
-
-        if humecord.bot.config.use_api:
-            self.force.append(humecord.loops.update_overrides.UpdateOverridesLoop())
-
-        await self.load()
         self.expand()
 
         for loop in self.loops:
@@ -41,15 +53,6 @@ class Loops:
         self.recover_api = humecord.loops.recover_api.RecoverAPILoop()
 
         await self.start()
-
-    async def load(
-            self
-        ):
-        
-        self.loops = [
-            *self.loops,
-            *self.force
-        ]
 
     def expand(
             self

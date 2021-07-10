@@ -15,11 +15,86 @@ class Events:
 
         self.registered = []
 
+        self.valid_events = [
+            "hh_on_stop",
+            "hh_on_ready",
+            "hh_on_reload",
+            "hh_on_command",
+            "on_connect",
+            "on_shard_connect",
+            "on_disconnect",
+            "on_shard_disconnect",
+            "on_ready",
+            "on_shard_ready",
+            "on_resumed",
+            "on_shard_resumed",
+            "on_socket_raw_receive",
+            "on_socket_raw_send",
+            "on_typing",
+            "on_message",
+            "on_message_delete",
+            "on_bulk_message_delete",
+            "on_raw_message_delete",
+            "on_raw_bulk_message_delete",
+            "on_message_edit",
+            "on_raw_message_edit",
+            "on_reaction_add",
+            "on_raw_reaction_add",
+            "on_reaction_remove",
+            "on_raw_reaction_remove",
+            "on_reaction_clear",
+            "on_raw_reaction_clear",
+            "on_reaction_clear_emoji",
+            "on_raw_reaction_clear_emoji",
+            "on_interaction",
+            "on_private_channel_update",
+            "on_private_channel_pins_update",
+            "on_guild_channel_create",
+            "on_guild_channel_delete",
+            "on_guild_channel_update",
+            "on_guild_channel_pins_update",
+            "on_thread_join",
+            "on_thread_remove",
+            "on_thread_delete",
+            "on_thread_member_join",
+            "on_thread_member_remove",
+            "on_thread_update",
+            "on_guild_integrations_update",
+            "on_integration_create",
+            "on_integration_update",
+            "on_raw_integration_delete",
+            "on_webhooks_update",
+            "on_member_join",
+            "on_member_remove",
+            "on_member_update",
+            "on_presence_update",
+            "on_user_update",
+            "on_guild_join",
+            "on_guild_remove",
+            "on_guild_update",
+            "on_guild_role_create",
+            "on_guild_role_delete",
+            "on_guild_role_update",
+            "on_guild_emojis_update",
+            "on_guild_available",
+            "on_guild_unavailable",
+            "on_voice_state_update",
+            "on_stage_instance_create",
+            "on_stage_instance_delete",
+            "on_stage_instance_update",
+            "on_member_ban",
+            "on_member_unban",
+            "on_invite_create",
+            "on_invite_delete",
+            "on_group_join",
+            "on_group_remove"
+        ]
+
         # Force register
-        self.force = [
+        """self.force = [
             events.on_ready.OnReadyEvent,
             events.on_message.OnMessageEvent
-        ]
+        ]"""
 
         """
             "on_ready": [
@@ -47,14 +122,26 @@ class Events:
 
             await bot.populate_imports()
 
-    async def prep(
+    def get_imports(
             self
         ):
 
-        self.events = [
-            *self.events,
-            *self.force
+        return [
+            {
+                "imp": "from humecord.events import on_message",
+                "module": "on_message",
+                "class": "OnMessageEvent"
+            },
+            {
+                "imp": "from humecord.events import on_ready",
+                "module": "on_ready",
+                "class": "OnReadyEvent"
+            }
         ]
+
+    async def prep(
+            self
+        ):
 
         await self.load()
         await self.register()
@@ -77,11 +164,11 @@ class Events:
                 self.edb[event.event] = []
 
             # Find out where to insert
-            for name, function in event.functions:
+            for name, function in event.functions.items():
                 index = 0
                 prio = function["priority"]
-                for i, event in enumerate(self.edb[event.event]):
-                    if event.priority <= prio:
+                for i, func in enumerate(self.edb[event.event]):
+                    if func["priority"] <= prio:
                         index = i + 1
 
                 # Insert

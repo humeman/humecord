@@ -34,7 +34,7 @@ class Commands:
                 "class": "DevCommand"
             },
             "about": {
-                "imp": "from humecord.about import about",
+                "imp": "from humecord.commands import about",
                 "module": "about",
                 "class": "AboutCommand"
             },
