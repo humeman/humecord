@@ -16,4 +16,3 @@ from . import loops
 from . import commands
 
 bot = Bot()
-    

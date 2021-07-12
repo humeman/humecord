@@ -443,7 +443,7 @@ class ExecSubcommand:
                 await ExecSubcommand.eval(message, resp, args, gdb, alternate_gdb, preferred_gdb)
                 return
 
-            elif action.startswith("```"):
+            elif " ".join(args[2:]).strip().startswith("```"):
                 await ExecSubcommand.exec(message, resp, args, gdb, alternate_gdb, preferred_gdb)
                 return
 
@@ -456,7 +456,7 @@ class ExecSubcommand:
         )
 
     async def exec(message, resp, args, gdb, alternate_gdb, preferred_gdb):
-        function = " ".join(args[2:])
+        function = " ".join(args[2:]).strip()
 
         if function.endswith("silent"):
             silent = True
