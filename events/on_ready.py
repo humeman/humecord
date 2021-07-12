@@ -1,8 +1,15 @@
 import humecord
 import sys
 import discord
+import glob
+import os
+import inspect
 
-from humecord.utils import logger
+from humecord.utils import (
+    logger,
+    fs,
+    discordutils
+)
 
 
 class OnReadyEvent:
@@ -26,6 +33,10 @@ class OnReadyEvent:
             "ready": {
                 "function": self.ready,
                 "priority": 2
+            },
+            "post_changelog": {
+                "function": self.post_changelog,
+                "priority": 3
             }
         }
 
@@ -103,9 +114,111 @@ class OnReadyEvent:
         linebreak = "\n"
 
         await humecord.bot.debug_channel.send(
-            embed = humecord.utils.discordutils.create_embed(
+            embed = discordutils.create_embed(
                 f"{humecord.bot.config.lang['emoji']['success']}  Client ready!",
                 description = f"```yaml\n{linebreak.join(description)}```",
                 color = "success"
             )
         )
+
+    async def post_changelog(
+            self,
+            __
+        ):
+
+        # Check if it's enabled
+        if humecord.bot.config.send_changelogs:
+            # Check if our version differs
+            if humecord.bot.files.files["__humecord__.json"]["version"] != humecord.version:
+                # Check for a changelog
+                files = glob.glob(f"{os.path.dirname(inspect.getfile(humecord))}/changelogs/*.yml")
+
+                current = humecord.version.replace(".", "-").lower()
+
+                # Check for our version
+                for file in files:
+                    # Get filename
+                    try:
+                        name = file.rsplit("/", 1)[-1].split(".", 1)[0].lower()
+
+                    except:
+                        continue
+
+                    if current == name:
+                        # Found it!
+                        # Read the file
+                        try:
+                            details = fs.read_yaml(file)
+
+                        except:
+                            logger.log("warn", f"Tried to read changelog {name}, but the YAML parser threw an error.")
+
+                        else:
+                            # Paginate the changelog.
+                            #   Create a new embed after every 6,000 characters, or 25 fields.
+                            comp = [[]]
+                            i = 0
+
+                            # Generate a running total - first embed will be longer
+                            total = 30 + len(details["version"]) + len(details["description"])
+
+                            for change in details["changes"]:
+                                # Add to the total (+10, for our added characters)
+                                cur_total = len(change["name"]) + len(change["value"]) + 10
+
+                                # Check if we're too long
+                                if len(comp[i]) >= 25 or total + cur_total >= 6000:
+                                    # Reset it
+                                    i += 1
+                                    total = 0
+                                    comp.append([])
+
+                                total += cur_total
+
+                                comp[i].append(
+                                    {
+                                        "name": f"%-a% {change['name']}",
+                                        "value": change["value"]
+                                    }
+                                )
+
+
+                            # Create an embed
+                            for i, fields in enumerate(comp):
+                                if i == 0:
+                                    embed = discordutils.create_embed(
+                                        f"Humecord was updated to {details['version']}!",
+                                        description = details["description"],
+                                        fields = fields,
+                                        color = "blue"
+                                    )
+
+                                else:
+                                    embed = discordutils.create_embed(
+                                        fields = fields,
+                                        color = "blue"
+                                    )
+
+                                # Send the embed
+                                await humecord.bot.debug_channel.send(
+                                    embed = embed
+                                )
+
+                            # Log it
+                            logger.log_step(f"Humecord updated to {humecord.version}!", "cyan", bold = True)
+                            logger.log_step(f"Read the changelog in your debug channel.", "cyan")
+
+                            # Store the new version
+                            humecord.bot.files.files["__humecord__.json"]["version"] = humecord.version
+                            humecord.bot.files.write("__humecord__.json")
+                            return
+
+                await humecord.bot.debug_channel.send(
+                    embed = discordutils.create_embed(
+                        f"Humecord was updated to {humecord.version}!",
+                        description = "There is no changelog for this update.",
+                        color = "blue"
+                    )
+                )
+                            
+                logger.log_step(f"Humecord updated to {humecord.version}!", "cyan", bold = True)

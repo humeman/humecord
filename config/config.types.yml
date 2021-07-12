@@ -63,6 +63,8 @@ logging: "dict[str:bool]"
 
 debug_channel: "int"
 
+send_changelogs: "bool"
+
 start_calls: "list[str]"
 
 devs: "list[int]"

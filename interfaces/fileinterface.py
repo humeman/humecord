@@ -39,6 +39,9 @@ class FileInterface:
             "__users__.json": {
                 "blocked": {}
             },
+            "__humecord__.json": {
+                "version": None
+            },
             **bot.config.req_files
         }
 

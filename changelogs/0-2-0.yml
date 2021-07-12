@@ -1,0 +1,9 @@
+version: 0.2.0
+
+title: Settings Update
+description: This update adds a number of features which make configuring your bot from Discord and parsing user input easier. 
+changes:
+  - name: Added an argument parser
+    value: Accessible via `bot.args`, this argument parser allows you to easily validate and parse user input in any form. It's fully customizable, and will now be in use in several areas of HumeCord - the new settings command, configuration validation, and (soon) automatic command argument validation. Learn more [here](https://github.com/humeman/humecord/blob/main/docs/misc/argparser.md)!
+  - name: Added !settings
+    value: This command allows you to let users configure your bot, from discord - without the need to make a bunch of commands for each setting. Configured entirely in config.yml (check for `settings` and `settings_categories`).

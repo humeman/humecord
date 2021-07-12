@@ -33,6 +33,17 @@ mem_storage:
 #   through the file interface.
 req_files: {}
 
+# Each command is called in the subprocess on start.
+# REALLY DANGEROUS. Be careful with the placeholders.
+# If anyone has the ability to edit the content of the
+# placeholders, they have access to do whatever they want
+# on your server.
+# Placeholders: %bot%, %version%, %humecord%
+# Eval code with eval:::
+start_calls:
+  #- toilet -f ascii9 --filter border:metal "%bot%"
+  - eval:::humecord.utils.logger.log("start", "Running %bot%[%version%] on HumeCord[%humecord%]", bold = True)
+
 # -- Bot --
 
 name: ""
@@ -159,21 +170,16 @@ logging:
 # Error reporting channel
 debug_channel: 0
 
-# Each command is called in the subprocess on start.
-# REALLY DANGEROUS. Be careful with the placeholders.
-# If anyone has the ability to edit the content of the
-# placeholders, they have access to do whatever they want
-# on your server.
-# Placeholders: %bot%, %version%, %humecord%
-# Eval code with eval:::
-start_calls:
-  #- toilet -f ascii9 --filter border:metal "%bot%"
-  - eval:::humecord.utils.logger.log("start", "Running %bot%[%version%] on HumeCord[%humecord%]", bold = True)
+# HumeCord changelogs
+# If enabled, whenever an update is pushed to HumeCord,
+#   it will be logged in your debug channel on first
+#   start with the update installed.
+send_changelogs: true
 
 # -- Permissions --
 
 # Permission overrides for everything but evals.
-# First one is defined as the "bot owner".
+# First one is the "bot owner".
 devs:
   - 337758812465528833
 
