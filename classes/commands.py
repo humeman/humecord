@@ -189,8 +189,32 @@ class Commands:
         for match in matched_commands:
             category, command, header = match.values()
 
-            if args_lower[0] == f"{gdb['prefix']}{header['match'][0]}":
-                full_match = match
+            # Check guild prefix & universal prefixes
+            for prefix in [gdb["prefix"]] + humecord.bot.config.universal_prefixes:
+                if args_lower[0] == f"{prefix}{header['match'][0]}":
+                    full_match = match
+
+            # Check universal prefixes
+            if full_match is None:
+                for prefix in humecord.bot.config.conditional_prefixes:
+                    if args_lower[0].startswith(prefix["start"]):
+                        # Get everything after
+                        arg1 = args_lower[0][len(prefix["start"]):]
+
+                        # Check if end is specified
+                        if prefix["end"] not in arg1:
+                            continue
+
+                        bots = arg1.split(prefix["end"])[0].split(",")
+
+                        for bot_name in humecord.bot.names:
+                            if bot_name in bots:
+                                full_match = match
+                                break
+
+                        if full_match is not None:
+                            break
+
 
         if full_match is None:
             return

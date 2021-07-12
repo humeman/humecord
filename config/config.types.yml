@@ -22,6 +22,8 @@ name: "str"
 cool_name: "str"
 version: "str"
 
+name_aliases: "list[str]"
+
 owner_name: "str"
 
 invite: "str"
@@ -99,5 +101,9 @@ command_categories: "dict[str:any]"
 commands_per_page: "int"
 
 default_commands: "dict[str:dict]"
+
+universal_prefixes: "list[str]"
+
+conditional_prefixes: "list[dict]"
 
 embeddable_media: "list[str]"

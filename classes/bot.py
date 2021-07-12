@@ -73,6 +73,9 @@ class Bot:
         # Tell the loader to only do config things :)
         asyncio.get_event_loop().run_until_complete(self.loader.load_config())
 
+        # Load up bot names
+        self.names = [self.config.name, self.config.cool_name.lower()] + self.config.name_aliases
+
         # Log things
         placeholders = {
             "bot": self.config.cool_name,
