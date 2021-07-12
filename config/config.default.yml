@@ -306,7 +306,7 @@ universal_prefixes:
 #   that list, the command will fire.
 # So, for example:
 # - start: "hc!" end: "!"
-# and the command "hb!test,the!command"
+# and the command "hc!test,the!command"
 # will fire bots "test" and "the" for command "command".
 conditional_prefixes:
   - start: "hc!"
