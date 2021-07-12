@@ -87,6 +87,21 @@ activities:
   watching: discord.ActivityType.watching
   competing: discord.ActivityType.competing
 
+# Intents to request from Discord.
+# Find valid intents at:
+# https://discordpy.readthedocs.io/en/stable/api.html#intents
+# List them, starting each intent with a "-", if you're going to
+#   individually specify intents, like so:
+# intents:
+#   - bans
+#   - dm_messages
+#   (...)
+# Alternatively, specify as a string:
+#   intents: all      # All intents
+#   intents: default  # Default set of intents
+#   intents: none     # No intents
+intents: all
+
 # -- API --
 
 # Enable or disable API support.

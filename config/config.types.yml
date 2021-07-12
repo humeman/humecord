@@ -32,13 +32,13 @@ discord_server: "str"
 
 token: "str"
 
-intents: "list[str]||str"
-
 placeholders: "dict[str:str]"
 
 visibilities: "dict[str:str]"
 
 activities: "dict[str:str]"
+
+intents: "list[str]||str"
 
 # -- API --
 use_api: "bool"
