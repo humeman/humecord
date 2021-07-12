@@ -187,7 +187,7 @@ class OnReadyEvent:
                             for i, fields in enumerate(comp):
                                 if i == 0:
                                     embed = discordutils.create_embed(
-                                        f"Humecord was updated to {details['version']}!",
+                                        f"Humecord was updated to version {details['version']}!",
                                         description = details["description"],
                                         fields = fields,
                                         color = "blue"
@@ -205,7 +205,7 @@ class OnReadyEvent:
                                 )
 
                             # Log it
-                            logger.log_step(f"Humecord updated to {humecord.version}!", "cyan", bold = True)
+                            logger.log_step(f"Humecord was updated to version {humecord.version}!", "cyan", bold = True)
                             logger.log_step(f"Read the changelog in your debug channel.", "cyan")
 
                             # Store the new version
@@ -215,10 +215,10 @@ class OnReadyEvent:
 
                 await humecord.bot.debug_channel.send(
                     embed = discordutils.create_embed(
-                        f"Humecord was updated to {humecord.version}!",
+                        f"Humecord was updated to version {humecord.version}!",
                         description = "There is no changelog for this update.",
                         color = "blue"
                     )
                 )
                             
-                logger.log_step(f"Humecord updated to {humecord.version}!", "cyan", bold = True)
+                logger.log_step(f"Humecord was updated to version {humecord.version}!", "cyan", bold = True)
