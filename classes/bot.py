@@ -37,7 +37,8 @@ from humecord.utils import (
     miscutils,
     subprocess,
     exceptions,
-    errorhandler
+    errorhandler,
+    dateutils
 )
 
 class Bot:
@@ -121,10 +122,9 @@ class Bot:
         # -- STARTUP VARS --
         self.started = False
         self.timer = time.time()
-        intents = discord.Intents().all()
-        self.client = discord.Client(intents = intents)
-        #self.client.on_error = on_error
-        #discord.on_error = on_error
+        self.client = discord.Client(
+            intents = discordutils.generate_intents(self.config.intents)
+        )
 
         @self.client.event
         async def on_error(*args, **kwargs):
@@ -245,7 +245,7 @@ class Bot:
                 self.debug_channel.send(
                     embed = discordutils.create_embed(
                         title = f"{self.config.lang['emoji']['success']}  Shutting down client.",
-                        description = f"```yml\nRuntime: {miscutils.get_duration(time.time() - self.timer)}\nSession started: {miscutils.get_datetime(self.timer)}\nSession closed: {miscutils.get_datetime(time.time())}\n\nBye bye!```",
+                        description = f"```yml\nRuntime: {miscutils.get_duration(time.time() - self.timer)}\nSession started: {dateutils.get_timestamp(self.timer)}\nSession closed: {dateutils.get_timestamp(time.time())}\n\nBye bye!```",
                         color = "success"
                     )
                 )
@@ -269,7 +269,7 @@ def on_error_ext(*args, **kwargs):
 
 def catch_asyncio(loop, context):
     if "exception" in context:
-        if type(context["exception"] in [SystemExit, KeyboardInterrupt]):
+        if type(context["exception"]) in [SystemExit, KeyboardInterrupt]:
             raise context["exception"] # Reraise
 
     # Just log it

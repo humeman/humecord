@@ -21,8 +21,6 @@ def get_duration(seconds):
     else:
         return time.strftime("%Hh, %Mm, %Ss", time.gmtime(seconds))
 
-def get_datetime(seconds):
-    return f"{datetime.datetime.fromtimestamp(seconds).strftime('%b %d, %Y at %H:%M %Z')}"
 
 def expand_placeholders(
         message: str,

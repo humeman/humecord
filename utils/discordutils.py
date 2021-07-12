@@ -2,6 +2,7 @@ from typing import Union, Optional
 import discord
 
 from .colors import Colors
+from . import exceptions
 import humecord
 
 def create_embed(
@@ -209,3 +210,34 @@ def has_perms(
 
     return True
 
+def generate_intents(
+        intents: Union[list, str]
+    ):
+    if type(intents) == str:
+        intents = intents.lower()
+
+        if intents == "all":
+            return discord.Intents.all()
+
+        elif intents == "default":
+            return discord.Intents.default()
+
+        elif intents == "none":
+            return discord.Intents.none()
+
+        else:
+            raise exceptions.InitError(f"Invalid intent: {intents}")
+
+    elif type(intents) == list:
+        # Generate intents
+        intents_ = discord.Intents.none()
+
+        # Add in everything we want
+        for intent in intents:
+            try:
+                setattr(intents_, intent, True)
+
+            except:
+                raise exceptions.InitError(f"Can't set intent {intent}")
+
+        return intents_

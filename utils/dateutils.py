@@ -71,7 +71,7 @@ friendly_names = {
     "minute": "m",
     "second": "s"
 }
-
+    
 def get_duration(
         seconds: int,
         short: bool = True
@@ -133,4 +133,5 @@ def parse_duration(
 
     return total
 
-        
+def get_timestamp(seconds):
+    return f"{datetime.datetime.fromtimestamp(seconds).strftime('%b %d, %Y at %H:%M %Z')}"

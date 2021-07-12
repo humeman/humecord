@@ -48,7 +48,7 @@ class Config:
         Loads global message defaults.
         """
 
-        self.messages = fs.read_yaml(self.mesasges_path)
+        self.messages = fs.read_yaml(self.messages_path)
 
     def validate_all(
             self
@@ -181,31 +181,35 @@ class Config:
 
 
         # Parse rule
-        if "[" in expected:
-            var_type, args = expected.rsplit("]", 1)[0].split("[", 1)
-            args = args.split("&")
-
-        else:
-            var_type = expected
-            args = []
-
-        if var_type not in rules:
-            self.log_error(cat, cat_name, f"Config validator asked for variable of type '{var_type}' in {cat} file, but I don't know how to parse that. Open an issue on GitHub.")
-
-        try:
-            if type(obj) == dict:
-                val = obj[name]
+        comp = []
+        for rule in expected.split("||"):
+            if "[" in rule:
+                var_type, args = rule.rsplit("]", 1)[0].split("[", 1)
+                args = args.split("&")
 
             else:
-                val = getattr(obj, name)
+                var_type = rule
+                args = []
 
-            return rules[var_type](cat, cat_name, self, val, args)
+            if var_type not in rules:
+                self.log_error(cat, cat_name, f"Config validator asked for variable of type '{var_type}' in {cat} file, but I don't know how to parse that. Open an issue on GitHub.")
 
-        except Exception as e:
-            if type(e) == SystemExit:
-                return
-            
-            self.log_error(cat, cat_name, f"Config validator could not validate var '{name}' (type: '{expected}').", tb = True)
+            try:
+                if type(obj) == dict:
+                    val = obj[name]
+
+                else:
+                    val = getattr(obj, name)
+
+                comp.append(rules[var_type](cat, cat_name, self, val, args))
+
+            except Exception as e:
+                if type(e) == SystemExit:
+                    return
+                
+                self.log_error(cat, cat_name, f"Config validator could not validate var '{name}' (type: '{expected}').", tb = True)
+                
+        return True in comp
         
     def log_error(
             self,
@@ -270,7 +274,7 @@ class Config:
                     for line in comp:
                         print(f"\033[96m{line}\033[0m")
 
-        sys.exit(-1)
+        sys.exit(1)
 
 class Globals:
     def __init__(

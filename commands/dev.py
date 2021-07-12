@@ -4,6 +4,7 @@ import asyncio
 import traceback
 import aiohttp
 import aiofiles
+import math
 
 import humecord
 
@@ -11,7 +12,8 @@ from humecord.utils import (
     dateutils,
     discordutils,
     hcutils,
-    miscutils
+    miscutils,
+    components
 )
 
 class DevCommand:
@@ -33,6 +35,10 @@ class DevCommand:
                 "function": self.reload,
                 "description": "Reloads the bot."
             },
+            "close": {
+                "function": self.close,
+                "description": "Closes the bot."
+            },
             "loops": {
                 "function": LoopsSubcommand.run,
                 "description": "Manages the bot's loops."
@@ -48,6 +54,10 @@ class DevCommand:
             "profile": {
                 "function": ProfileSubcommand.run,
                 "description": "Manages the bot's profile."
+            },
+            "botban": {
+                "function": BotBanSubcommand.run,
+                "description": "Manages bot-banned users."
             }
         }
 
@@ -57,7 +67,10 @@ class DevCommand:
             "exec": "dev exec",
             "dm": "dev dm",
             "reply": "dev dm reply",
-            "reload": "dev reload"
+            "reload": "dev reload",
+            "close": "dev close",
+            "botban": "dev botban",
+            "literallyjustfuckingdieihateyousomuch": "dev close"
         }
 
         global bot
@@ -86,12 +99,20 @@ class DevCommand:
 
         await resp.send(
             embed = discordutils.create_embed(
-                "Reloaded!",
-                color = "green"
+                f"{bot.config.lang['emoji']['success']}  Reloaded!",
+                color = "success"
             )
         )
 
-
+    async def close(self, message, resp, args, gdb, alternate_gdb, preferred_gdb):
+        await resp.send(
+            embed = discordutils.create_embed(
+                f"{bot.config.lang['emoji']['loading']}  Shutting down...",
+                color = "icon_blue"
+            )
+        )
+        
+        raise KeyboardInterrupt
 
 class LoopsSubcommand:
     async def run(message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):
@@ -1031,3 +1052,280 @@ class ProfileSubcommand:
                 "Specify an action.\nValid actions: `reply` (or specify a user to DM)."
             )
         )
+
+
+class BotBanSubcommand:
+    async def run(message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):
+        # Map:
+        # !dev botban
+        #   list -> List banned users
+        #   add [user] [duration] [description] -> Ban user
+        #   remove [user] [duration] [description] -> Unban user
+
+        if len(args) >= 3:
+            action = args[2].lower()
+
+            if action in ["list"]:
+                await LoopsSubcommand.list_(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+            elif action in ["add"]:
+                await LoopsSubcommand.add(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+            elif action in ["remove", "del"]:
+                await LoopsSubcommand.remove(message, resp, args, gdb, alternate_gdb, preferred_gdb)
+                return
+
+        await resp.send(
+            embed = discordutils.error(
+                message.author,
+                "Invalid syntax!",
+                f"Specify an action.\nValid actions: `list`, `add`, `remove`"
+            )
+        )
+
+    async def list(message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):
+        await BotBanSubcommand.generate_list(
+            True, # Send new
+            0, # Page 1
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        )
+
+    async def generate_list(
+            gen_new,
+            page,
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        ):
+
+        # Compile a list
+        comp = []
+
+        for uid, details in bot.files.files["__users__.json"]["blocked"].items():
+            user = bot.client.get_user(user)
+
+            if user is None:
+                name = f"%-b% {uid}"
+                u = [
+                    f"  %-b% <@{uid}> (*unknown*)"
+                ]
+
+            else:
+                name = f"%-a% {user.name}#{user.discriminator}",
+
+                u = [
+                    f"  %-b% <@{uid}>"
+                    f"  %-b% Banned: `{dateutils.get_datetime(u['banned_on'])}`"
+                ]
+
+                if u['duration'] is None:
+                    u.append(
+                        f"  %-b% Duration: `Permanent`"
+                    )
+                    
+                else:
+                    u.append(
+                        f"  %-b% Duration: `{dateutils.get_duration(u['duration'])}`"
+                    )
+
+                if u['reason'] is not None:
+                    u.append(
+                        f"  %-b% Reason: `{u['reason'][:75]}{'...' if len(u['reason']) > 75 else ''}"
+                    )
+
+            comp.append(
+                {
+                    "name": name,
+                    "value": "\n".join(u)
+                }
+            )
+
+        if len(comp) == 0:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Can't list botbans!",
+                    "No one is botbanned right now."
+                )
+            )
+
+        # Find page bounds
+        max_pages = math.floor(len(comp) / 15)
+
+        if page > max_pages:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Invalid page!",
+                    f"Page {page + 1} exceeds max page of {max_pages}."
+                )
+            )
+
+        # Determine page
+        comp = comp[15 * page:15 * (page + 1)]
+
+        embed = discordutils.create_embed(
+            f"{bot.config.cool_name}'s botbanned users (Page {page + 1}/{max_pages})",
+            fields = comp,
+            color = "invisible"
+        )
+
+        if page == 0:
+            backward_button = ["secondary", BotBanSubcommand.pass_]
+
+        else:
+            backward_button = ["primary", lambda *args: BotBanSubcommand.generate_list(False, int(page - 1), *args)]
+
+        if page + 1 >= max_pages:
+            forward_button = ["secondary", BotBanSubcommand.pass_]
+
+        else:
+            forward_button = ["primary", lambda *args: BotBanSubcommand.generate_list(False, int(page + 1), *args)]
+
+        # Create view
+        view = components.create_action_row(
+            [
+                components.create_button(
+                    message,
+                    label = "🡸",
+                    id = "back",
+                    style = backward_button[0],
+                    callback = backward_button[1]
+                ),
+                components.create_button(
+                    message,
+                    label = "🡺",
+                    id = "forward",
+                    style = forward_button[0],
+                    callback = forward_button[1]
+                )
+            ]
+        )
+
+        # Send
+        if gen_new:
+            await resp.send(
+                embed = embed,
+                view = view
+            )
+
+        else:
+            await resp.edit(
+                embed = embed,
+                view = view
+            )
+
+    async def pass_(*args):
+        pass
+
+    async def add(
+            message,
+            resp,
+            args,
+            gdb,
+            alternate_gdb,
+            preferred_gdb
+        ):
+        # Check args
+
+        # dev botban add [user] [duration] [reason]
+        if len(args) < 4:
+            await resp.send(
+                embed = discordutils.error(
+                    message.author,
+                    "Invalid syntax!",
+                    "Specify a user, and optionally, a duration and reason.\nAdditionally, end the message with `-s` to not send a DM to the user."
+                )
+            )
+            return
+
+        try:
+            user = discordutils.get_user(args[3])
+
+        except:
+            for char in "<@!>":
+                user = user.replace(char, "")
+
+            try:
+                uid = int(user)
+
+            except:
+                await resp.send(
+                    embed = discordutils.error(
+                        message.author,
+                        "Invalid user!",
+                        f"Mention a user, or paste their ID."
+                    )
+                )
+                return
+
+            else:
+                details = str(uid)
+
+                dm = False
+        
+        else:
+            # Get user's details
+            uid = int(user.id)
+
+            details = f"{user.name}#{user.discriminator} ({user.id})"
+
+            dm = True
+
+        if args[-1].lower() == "-s":
+            silent = True
+            args = args[:-1]
+
+        else:
+            silent = False
+
+        # Check if duration is defined
+        reason = "Not specified"
+        try:
+            duration = dateutils.get_duration(args[4])
+
+            if len(args) > 5:
+                reason = " ".join(args[5:])
+
+        except:
+            duration = None
+
+            if len(args) > 4:
+                reason = " ".join(args[4:])
+
+        # Send to API
+        details = await bot.api.put(
+            "users",
+            "blocked",
+            {
+                "id": uid,
+                "reason": reason,
+                "duration": duration
+            }
+        )
+
+        # Check if we should dm
+        if dm and (not silent):
+            await user.send(
+                **(
+                    await bot.messages.get(
+                        gdb,
+                        [""],
+                        {
+                            "bot": bot.config.bot_name,
+                            "duration": "Permanent" if duration is None else duration,
+                            "reason": reason
+                        }
+                    )
+                )
+            )

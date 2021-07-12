@@ -32,7 +32,8 @@ class Messenger:
             self,
             message: str,
             placeholders: dict,
-            conditions: dict
+            conditions: dict,
+            allow_config_placeholders: bool = False
         ):
         comp = []
 
@@ -61,10 +62,67 @@ class Messenger:
 
                         continue
 
-        message = "\n".join(comp)
+        # Add in config placeholders
+        if allow_config_placeholders:
+            comp_ = []
+            for word in "\n".join(comp).split(" "):
+                if not word.startswith("%-"):
+                    continue
+
+                ext = ""
+                if word.endswith("\n"):
+                    ext = "\n"
+                    word = word[:-1]
+
+                if word.startswith("%-lang:::"):
+                    search = humecord.bot.config.lang
+
+                elif word.startswith("%-config:::"):
+                    search = humecord.bot.config
+
+                elif word.startswith("%-globals:::"):
+                    search = humecord.bot.config.globals
+
+                else:
+                    comp_.append(f"{word}{ext}")
+                    continue
+
+                # Get location
+                location = word.split(":::", 1)[1]
+
+                if location.endswith("%"):
+                    location = location[:-1]
+
+                    # Get value
+                    if type(search) == dict:
+                        current = search
+
+                        for path in location.split("."):
+                            if path in current:
+                                current = current["path"]
+
+                            else:
+                                comp_.append(f"{word}{ext}")
+                                continue
+
+                        if type(current) not in [str, int, float, bool, None]:
+                            comp_.append(f"{word}{ext}")
+                            continue
+
+                        # Add
+                        comp_.append(str(current))
+                    
+                else:
+                    comp_.append(f"{word}{ext}")
+
+            message = " ".join(comp_)
+
+        else:
+            message = "\n".join(comp)
 
         for placeholder, value in placeholders.items():
             message = message.replace(f"%{placeholder}%", str(value))
+
 
     def parse_embed(
             self,
