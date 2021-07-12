@@ -238,8 +238,8 @@ def base_wrap(
 
         sys.exit(1)
 
-    except SystemExit:
-        return
+    except (SystemExit, KeyboardInterrupt):
+        raise
 
     except:
         print()

@@ -270,7 +270,7 @@ def on_error_ext(*args, **kwargs):
 def catch_asyncio(loop, context):
     if "exception" in context:
         if type(context["exception"] in [SystemExit, KeyboardInterrupt]):
-            return
+            raise SystemExit
 
     # Just log it
     logger.log(
