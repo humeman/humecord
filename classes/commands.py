@@ -174,9 +174,6 @@ class Commands:
         if len(matched_commands) == 0:
             return
 
-        if len(matched_commands) > 1:
-            humecord.utils.logger.log("warn", f"Command has multiple matches: {', '.join([x['command'].name for x in matched_commands])} ")
-
         # Get the guild database
         # -> API method
         if humecord.bot.config.use_api:
@@ -214,7 +211,6 @@ class Commands:
 
                         if full_match is not None:
                             break
-
 
         if full_match is None:
             return
