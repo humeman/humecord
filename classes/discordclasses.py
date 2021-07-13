@@ -15,6 +15,18 @@ class Button(discord.ui.Button):
             interaction.message
         )
 
+class Select(discord.ui.Select):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def callback(self, interaction):
+        await humecord.utils.errorhandler.discord_wrap(
+            humecord.bot.interactions.recv_interaction(
+                interaction
+            ),
+            interaction.message
+        )
+
 
 class ResponseChannel:
     def __init__(

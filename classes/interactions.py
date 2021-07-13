@@ -172,6 +172,15 @@ class Interactions:
             for key in humecord.bot.config.preferred_gdb:
                 pdb[key] = gdb[key]
 
+            # Get type
+            comp_type = interaction_data["type"]
+
+            ext_args = []
+
+            if comp_type == "select":
+                # Append selection
+                ext_args = [interaction.data["values"]]
+
             humecord.utils.logger.log_long(
                 f"""Type:           components.button
                 Component:      {cid}
@@ -186,7 +195,7 @@ class Interactions:
             humecord.utils.logger.log_step("Creating callback task...", "blue")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
-                    self.components[mid]["interactions"][cid]["callback"](message, resp, gdb, interaction, None, pdb),
+                    self.components[mid]["interactions"][cid]["callback"](message, resp, [], gdb, None, pdb, *ext_args),
                     message
                 )
             )

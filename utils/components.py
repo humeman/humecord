@@ -2,7 +2,10 @@ from typing import Union, Optional
 import discord
 
 from humecord.utils import exceptions
-from humecord.classes.discordclasses import Button
+from humecord.classes.discordclasses import (
+    Button,
+    Select
+)
 import humecord
 
 button_styles = {
@@ -25,7 +28,7 @@ class CoolView(discord.ui.View):
     def __init__(self, children):
         self.children = children
 
-def create_action_row(
+def create_view(
         components: list = []
     ):
 
@@ -36,6 +39,12 @@ def create_action_row(
 
     return view
 
+def create_action_row(
+        components: list = []
+    ):
+
+    pass
+
 def create_button(
         message,
         style: str = "primary",
@@ -45,7 +54,8 @@ def create_button(
         url: Optional[str] = None,
         disabled: bool = False,
         emoji: Optional[str] = None,
-        only_sender: bool = True
+        only_sender: bool = True,
+        row: int = 0
     ):
 
     # Parse type
@@ -105,6 +115,7 @@ def create_button(
             url = url,
             disabled = disabled,
             label = label,
+            row = row,
             **kw
         )
 
@@ -114,6 +125,7 @@ def create_button(
             custom_id = _id,
             disabled = disabled,
             label = label,
+            row = row,
             **kw
         )
         
@@ -124,17 +136,18 @@ def create_dropdown(
         max_values: int = 1,
         id: Optional[str] = None,
         callback = None,
-        options: dict = {}
+        options: dict = {},
+        row: int = 0
     ):
 
     # Define items
     items = []
 
-    for _id, option in options.items():
+    for opt_id, option in options.items():
         items.append(
             discord.SelectOption(
                 label = option["name"],
-                value = _id,
+                value = opt_id,
                 description = option.get("description"),
                 emoji = option.get("emoji"),
                 default = option.get("default") if "default" in option else False
@@ -146,13 +159,15 @@ def create_dropdown(
     humecord.bot.interactions.register_component(
         "select",
         _id,
-        callback
+        callback,
+        message.author.id
     )
 
-    return discord.ui.Select(
+    return Select(
         custom_id = _id,
         placeholder = placeholder,
         min_values = min_values,
         max_values = max_values,
-        options = items
+        options = items,
+        row = row
     )
