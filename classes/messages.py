@@ -1,6 +1,11 @@
 import humecord
 from typing import Optional
 
+from humecord.utils import (
+    discordutils,
+    exceptions
+)
+
 class Messenger:
     def __init__(
             self,
@@ -37,6 +42,7 @@ class Messenger:
         ):
         comp = []
 
+        # Add in default placeholders
         for line in message.split("\n"):
             if ":::" in line and line.startswith("if"):
                 condition, msg = line.split(":::", 1)
@@ -123,6 +129,7 @@ class Messenger:
         for placeholder, value in placeholders.items():
             message = message.replace(f"%{placeholder}%", str(value))
 
+        return message
 
     def parse_embed(
             self,
@@ -134,7 +141,7 @@ class Messenger:
         comp = {}
 
         for key, value in embed.items():
-            if key in ["title", "description", "footer", "thumbnail", "image"]:
+            if key in ["title", "description", "footer", "thumbnail", "image", "color"]:
                 comp[key] = self.parse_placeholders(value, placeholders, conditions)
 
             elif key in ["profile"]:
@@ -171,7 +178,8 @@ class Messenger:
             path: list,
             placeholders: dict,
             conditions: dict = {},
-            force_type: Optional[str] = None
+            force_type: Optional[str] = None,
+            ext_placeholders: dict = {}
         ):
 
         # Follow path
@@ -196,6 +204,12 @@ class Messenger:
         if msg["allow_override"]:
             if "type_override" in msg:
                 m_type = msg["type_override"]
+
+        # Add extra placeholders
+        placeholders = {
+            **(await self.get_ext_placeholders(ext_placeholders)),
+            **placeholders
+        }
 
         kwargs = {}
 
@@ -229,7 +243,44 @@ class Messenger:
                 conditions
             )
 
+        else:
+            raise exceptions.DevError(f"mtype '{m_type}' doesn't exist")
+
         return kwargs
 
+    async def get_ext_placeholders(
+            self,
+            data: dict
+        ):
+
+        comp = {}
+
+        if "message" in data:
+            m = data["message"]
+            comp.update(
+                {
+                    "message_id": str(m.id),
+                    "guild": m.guild.name,
+                    "guild_id": str(m.guild.id),
+                    "guild_avatar": m.guild.icon.url,
+                    "channel": m.channel.name,
+                    "channel_mention": m.channel.mention,
+                    "channel_id": str(m.channel.id),
+                    "user": f"{m.author.name}#{m.author.discriminator}",
+                    "user_id": str(m.author.id),
+                    "user_avatar": str(m.author.avatar.url)
+                }
+            )
         
-    
+        if "user" in data:
+            u = data["user"]
+            comp.update(
+                {
+                    "user": f"{u.name}#{u.discriminator}",
+                    "user_id": str(u.id),
+                    "user_avatar": str(u.avatar.url)
+                }
+            )
+        
+        return comp
+        

@@ -78,6 +78,9 @@ class Loader:
         # Load lang
         humecord.bot.config.load_lang()
 
+        # Load messages
+        humecord.bot.config.load_messages()
+
         # Validate
         humecord.bot.config.validate_all()
 
@@ -357,6 +360,9 @@ class CommandValidators:
                         # Accepts any amount
                         return
 
+                    elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 6:
+                        continue
+
                     args.append(name)
 
                 if args[0] == "self":
@@ -391,6 +397,9 @@ class CommandValidators:
                 if param.kind in [inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD]:
                     # Accepts any amount
                     return
+
+                elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 6:
+                    continue
 
                 args.append(name)
 

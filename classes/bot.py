@@ -25,6 +25,7 @@ from .permissions import Permissions
 from .overrides import OverrideHandler
 from .replies import Replies
 from .argparser import ArgumentParser
+from .messages import Messenger
 
 from ..interfaces.apiinterface import APIInterface
 from ..interfaces.fileinterface import FileInterface
@@ -158,6 +159,7 @@ class Bot:
         self.debug_console = DebugConsole()
         self.permissions = Permissions(self)
         self.args = ArgumentParser({})
+        self.messages = Messenger(self)
 
         logger.log_step("Initialized handlers", "cyan")
         

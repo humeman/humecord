@@ -59,6 +59,21 @@ def follow(
 
     return current
 
+def follow_path(
+        current: dict,
+        path: str
+    ):
+
+    path = path.strip("/").split("/")
+
+    for name in path:
+        if name not in current:
+            raise exceptions.NotFound(f"Path {'/'.join(path)} doesn't exist ({name})")
+
+        current = current[name]
+
+    return current
+
 sizes = {
     "byte": "B",
     "kilobyte": "KB",

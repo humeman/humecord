@@ -79,3 +79,10 @@ class CriticalError(Exception):
 # -- argparse --
 class InvalidRule(Exception):
     pass
+
+class InvalidData(Exception):
+    pass
+
+# -- messenger --
+class InvalidKey(Exception):
+    pass
