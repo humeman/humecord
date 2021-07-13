@@ -1,4 +1,8 @@
-from ..utils import exceptions
+from ..utils import (
+    exceptions,
+    debug,
+    argrules
+)
 
 class ArgumentParser:
     def __init__(
@@ -9,12 +13,12 @@ class ArgumentParser:
         Constructs an ArgumentParser.
         """
 
-
         self.rules = {
+            **argrules.rules,
             **extra_rules
         }
 
-    async def recursive_compile(
+    async def compile_recursive(
             self,
             parsestr: str
         ):
@@ -48,7 +52,7 @@ class ArgumentParser:
                     break
 
         # Parse the current string
-        checks, groups = await self.compile(
+        checks, groups, ret = await self.compile(
             parsestr
         )
 
@@ -57,7 +61,7 @@ class ArgumentParser:
         # Check if checks should be processed too
         for check in checks:
             if "&&" in check or "||" in check:
-                check_comp.append(await self.recursive_compile(
+                check_comp.append(await self.compile_recursive(
                     check
                 ))
 
@@ -66,7 +70,8 @@ class ArgumentParser:
 
         return {
             "checks": check_comp, 
-            "groups": groups
+            "groups": groups,
+            "ret": ret
         }
 
     async def compile(
@@ -116,6 +121,7 @@ class ArgumentParser:
             #   If total is 0 (excluding start) and we're at a sep, we're good
             #   Take everything in between
 
+            ret = 0
             count = 0
             sep = None
             for i, char in enumerate(parsestr):
@@ -153,56 +159,6 @@ class ArgumentParser:
                 if sep is not None:
                     break
 
-            """after = 0
-            before = len(parsestr) - 1
-            par = parsestr.find("(")
-            if par != -1:
-                # Check for separator after 2nd
-                # Can be nested - so we want the last one before next sep
-                sep = None
-                for name in separators:
-                    location = parsestr.find(name, after, before)
-
-                    if location != -1:
-                        if sep is None:
-                            sep = location
-
-                        else:
-                            if location < sep:
-                                sep = location
-
-                # Try to find closing between 0 and separator
-                closing = -1
-
-                i = sep
-                for char in reversed(parsestr[:sep]):
-                    i -= 1
-
-                    print(char, i)
-
-                    if char == ")":
-                        closing = i
-                        break
-
-                if closing == -1:
-                    raise exceptions.InvalidRule("Unmatched '('")
-
-                # If ( is index 0, search for separator after )
-                # Otherwise, search for separator before (
-                
-                if par == 0:
-                    after = closing
-
-                else:
-                    before = par
-
-            for name in separators:
-                location = parsestr.find(name, after, before)
-
-                if location != -1:
-                    separators[name] = location
-            """
-
             # Find the bounds that we should split at.
             location = None
             next_ = None
@@ -237,6 +193,11 @@ class ArgumentParser:
                         }
                     )
 
+                # Check if we want to save the data for this check
+                if parsestr.startswith("@"):
+                    parsestr = parsestr[1:]
+                    ret = len(checks)
+
                 # Append the check
                 checks.append(
                     parsestr
@@ -255,6 +216,11 @@ class ArgumentParser:
                 before = parsestr[:location]
                 after = parsestr[location + 2:]
 
+                # Check if we want to save the data for this check
+                if before.startswith("@"):
+                    before = before[1:]
+                    ret = len(checks)
+
                 # Add the current group
                 groups.append(
                     {
@@ -272,9 +238,9 @@ class ArgumentParser:
                 # Prep parsestr for next iteration
                 parsestr = after
 
-        return checks, groups
+        return checks, groups, ret
 
-    async def is_valid(
+    async def parse(
             self,
             rules: dict,
             istr: str,
@@ -282,7 +248,7 @@ class ArgumentParser:
         ):
         """
         Automatically validates something,
-        and returns any errors as a string.
+        and returns either errors or a parsed value.
         
         Arguments:
             rules: (dict, str) - Rules to validate.
@@ -292,8 +258,10 @@ class ArgumentParser:
             data: (dict) - Data to pass along to the validator.
 
         Returns:
-            error (str, None): Error. If this isn't None, the 
-                input is invalid.    
+            valid (bool) - Whether or not the data is valid
+            value - Value returned from validator
+                If valid: The actual parsed value
+                Else: A list of errors (failed checks) 
         """
 
         if type(rules) != dict:
@@ -302,15 +270,11 @@ class ArgumentParser:
             )
 
         # Validate it
-        try:
-            await self.validate(
-                rules,
-                istr,
-                data
-            )
-
-        except Exception as e:
-            return str(e)
+        return await self.validate(
+            rules,
+            istr,
+            data
+        )
 
     async def validate(
             self,
@@ -322,6 +286,10 @@ class ArgumentParser:
 
         results = []
 
+        errors = []
+
+        final_value = None
+
         # Iterate over each group.
         for group in rules["groups"]:
             # See what we have to check
@@ -329,35 +297,85 @@ class ArgumentParser:
                 # Check the only arg
                 if group["index"] not in checked:
                     # Check it
-                    try:
+                    valid, value = await self.check_rule(rules["checks"][group["index"]], istr, data)
+
+                    if valid:
+                        # Check if this is the result we should return
+                        if rules["ret"] == group["index"] or final_value is None:
+                            # Set value
+                            final_value = value
+
                         checked[group["index"]] = {
-                            "value": await self.check_rule(rules["checks"][group["index"]], istr, data)
+                            "valid": True,
+                            "value": value
                         }
+                        results.append(True)
 
-                    except:
-                        checked[group["index"]] = False
-
-                # Append check result to results
-                results.append(type(checked[group["index"]]) == dict)
-                # (Valid only if result is a dict)
+                    else:
+                        errors.append(value)
+                        checked[group["index"]] = {
+                            "valid": False
+                        }
+                        results.append(False)
 
             elif group["type"] == "group":
                 result = []
                 check = {}
                 # Check each index.
                 for ind in group["groups"]:
-                    if group["index"] not in checked:
+                    if ind not in checked:
                         # Check it
-                        try:
-                            checked[group["index"]] = {
-                                "value": await self.check_rule(rules["checks"][group["index"]], istr, data)
+                        valid, value = await self.check_rule(rules["checks"][ind], istr, data)
+
+                        if valid:
+                            if rules["ret"] == ind:
+                                # Set value
+                                final_value = value
+
+                            # Check if this is the result we should return
+                            if rules["ret"] == ind or final_value is None:
+                                # Set value
+                                final_value = value
+
+                            checked[ind] = {
+                                "valid": True,
+                                "value": value
+                            }
+                            result.append(True)
+
+                        else:
+                            errors.append(value)
+                            checked[ind] = {
+                                "valid": False
                             }
 
-                        except:
-                            checked[group["index"]] = False
+                            result.append(False)
 
-                    # Append check result to results
-                    result.append(checked[group["index"]])
+
+                        """
+                        try:
+                            value = await self.check_rule(rules["checks"][ind], istr, data)
+
+                            # Check if this is the result we should return
+                            if rules["ret"] == ind:
+                                # Set value
+                                final_value = value
+
+                            checked[ind] = {
+                                "value": value
+                            }
+
+                            result.append(True)
+
+                        except:
+                            debug.print_traceback()
+
+                            checked[ind] = {
+                                "valid": False
+                            }
+
+                            result.append(False)
+                        """
 
                 # Check how we're comparing
                 if group["check"] == "&&":
@@ -367,9 +385,14 @@ class ArgumentParser:
                     results.append(True in result)
 
         # Check if any results are True
-        return not (False in result), checked
+        valid = not (False in results)
+        if valid:
+            return True, final_value
+
+        else:
+            return False, errors
             # If any check is False, the entire thing is invalid
-            # Then, return the result list
+            # Then, return the chosen result
 
 
     async def check_rule(
@@ -384,21 +407,25 @@ class ArgumentParser:
         # If it's a dict, forward it to validate().
         if type(rules) == dict:
             # Run it through the dict validator
-            return await self.validate(
+            return (await self.validate(
                 rules,
                 istr,
-                str,
                 data
-            )
+            ))[:2]
 
         else:
             # Run it through the one-time validator
-            return await self.validate_one(
-                rules,
-                istr,
-                str,
-                data
-            )
+            try:
+                val = await self.validate_one(
+                    rules,
+                    istr,
+                    data
+                )
+
+                return True, val
+
+            except exceptions.InvalidData as e:
+                return False, str(e)
 
     async def validate_once(
             self,
@@ -456,6 +483,7 @@ class ArgumentParser:
         rule = self.rules[rtype]
 
         # Make sure we have all the data we need.
+        comp_data = {}
         for key, types in rule["data"].items():
             if key not in data:
                 raise exceptions.MissingData(f"Missing key {key}")
@@ -466,8 +494,10 @@ class ArgumentParser:
                 if type(data[key]) not in types:
                     raise exceptions.MissingData(f"Key {key} is of wrong type")
 
+            comp_data[key] = data[key]
+
         # First, we have to parse it against the rule type
-        value = await rule["main"](istr, **data)
+        value = await rule["main"](istr, **comp_data)
 
         # Then, run all the arg functions
         for arg in args:
@@ -497,22 +527,68 @@ class ArgumentParser:
             func_data = rule["functions"][func]
 
             # Check if we have proper arg count
-            for i, req_types in enumerate(func_data["args"]):
-                if len(funcargs) - 1 < i:
-                    # Not included
-                    raise exceptions.InvalidRule(f"Function {func} requires {len(func_data['args'])} arguments")
+            if "args" in func_data:
+                for i, req_types in enumerate(func_data["args"]):
+                    if len(funcargs) - 1 < i:
+                        # Not included
+                        raise exceptions.InvalidRule(f"Function {func} requires {len(func_data['args'])} arguments")
 
-                # Check type
-                if type(req_types) == list:
-                    # Validate
+                    # Check type
                     if type(funcargs[i]) not in req_types:
-                        raise exceptions.MissingData(f"Function {func}'s {i}-index arg is of wrong type")
+                        try:
+                            funcargs[i] = req_types[0](funcargs[i])
+
+                        except:
+                            raise exceptions.MissingData(f"Function {func}'s {i}-index arg is of wrong type")
+
+            if "arg_types" in func_data:
+                # Make sure everything is this type
+                for i, arg in enumerate(funcargs):
+                    if type(arg) not in func_data["arg_types"]:
+                        try:
+                            funcargs[i] = func_data["arg_types"][0](funcargs[i])
+
+                        except:
+                            raise exceptions.MissingData(f"Function {func}'s {i}-index arg is of wrong type")
 
             # Run it
-            result = await func_data["function"](value, funcargs, **data)
+            result = await func_data["function"](value, funcargs, **comp_data)
 
             if result is not None:
                 value = result
 
         # Value is good - return result
         return value
+
+    async def format(
+            self,
+            rule: str,
+            value,
+            data: dict
+        ):
+
+        # Find if rule exists
+        if rule not in self.rules:
+            raise exceptions.InvalidRule(f"Rule type {rule} doesn't exist")
+
+        rule = self.rules[rule]
+
+        # Get all data
+        func_data = {}
+        for key, types in rule["format"]["data"].items():
+            if key not in data:
+                raise exceptions.MissingData(f"Missing key {key}")
+
+            # Check type
+            if type(types) == list:
+                # Validate
+                if type(data[key]) not in types:
+                    raise exceptions.MissingData(f"Key {key} is of wrong type")
+
+            func_data[key] = data[key]
+
+        # Run formatter
+        return await rule["format"]["function"](
+            value,
+            **data
+        )
