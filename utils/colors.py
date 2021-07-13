@@ -76,9 +76,9 @@ class Colors:
 
             try:
                 hex_val = int(color, base = 16)
-                
+
             except:
-                raise exceptions.InvalidColorException(f"Invalid hex code `{hex_val}`")
+                raise exceptions.InvalidColorException(f"Invalid hex code `{color}`")
             
             if hex_val > 0xFFFFFF or hex_val < 0x000000:
                 raise exceptions.InvalidColorException(f"Invalid hex code '{hex_val}'")

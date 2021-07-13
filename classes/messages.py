@@ -68,6 +68,8 @@ class Messenger:
 
                         continue
 
+            comp.append(line)
+
         # Add in config placeholders
         if allow_config_placeholders:
             comp_ = []
@@ -142,6 +144,13 @@ class Messenger:
 
         for key, value in embed.items():
             if key in ["title", "description", "footer", "thumbnail", "image", "color"]:
+                if value is None:
+                    continue
+
+                if type(value) == str:
+                    if value.strip() == "":
+                        continue
+
                 comp[key] = self.parse_placeholders(value, placeholders, conditions)
 
             elif key in ["profile"]:
@@ -163,7 +172,7 @@ class Messenger:
                     comp[key].append(
                         {
                             x: self.parse_placeholders(y, placeholders, conditions)
-                            for x, y in item.items() if type(y) != str
+                            for x, y in item.items() if type(y) == str
                         }
                     )
 
