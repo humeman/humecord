@@ -100,7 +100,7 @@ class AboutCommand:
                 )
             )
 
-        view = components.create_action_row(
+        view = components.create_view(
             buttons
         )
 

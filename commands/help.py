@@ -352,7 +352,7 @@ class HelpCommand:
             color = "invisible"
         )
 
-        view = components.create_action_row(
+        view = components.create_view(
             [
                 components.create_button(
                     message,

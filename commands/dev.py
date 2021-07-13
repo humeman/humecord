@@ -75,7 +75,6 @@ class DevCommand:
 
         global bot
         from humecord import bot
-        
 
     async def error(self, message, resp, args, gdb, alternate_gdb = None, preferred_gdb = None):
         raise humecord.utils.exceptions.TestException("dev.error call")
@@ -1193,7 +1192,7 @@ class BotBanSubcommand:
             forward_button = ["primary", lambda *args: BotBanSubcommand.generate_list(False, int(page + 1), *args)]
 
         # Create view
-        view = components.create_action_row(
+        view = components.create_view(
             [
                 components.create_button(
                     message,

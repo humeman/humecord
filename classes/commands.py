@@ -47,6 +47,11 @@ class Commands:
                 "imp": "from humecord.commands import overrides",
                 "module": "overrides",
                 "class": "OverridesCommand"
+            },
+            "settings": {
+                "imp": "from humecord.commands import settings",
+                "module": "settings",
+                "class": "SettingsCommand"
             }
         }
 
