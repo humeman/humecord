@@ -76,17 +76,19 @@ class Colors:
 
             try:
                 hex_val = int(color, base = 16)
+                
             except:
-                raise exceptions.InvalidColorException("Invalid hex code")
+                raise exceptions.InvalidColorException(f"Invalid hex code `{hex_val}`")
             
             if hex_val > 0xFFFFFF or hex_val < 0x000000:
-                raise exceptions.InvalidColorException("Invalid hex code")
+                raise exceptions.InvalidColorException(f"Invalid hex code '{hex_val}'")
             
             return hex_val
 
         if color.lower() in col:
             return col[color.lower()]
-        raise exceptions.InvalidColorException("Color not found")
+
+        raise exceptions.InvalidColorException(f"Color '{color}' not found")
 
     def get_color_string(
             color
