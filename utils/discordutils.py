@@ -22,7 +22,11 @@ def create_embed(
     embed = discord.Embed(title = title, description = description, color = color)
 
     if footer:
-        embed.set_footer(text = footer)
+        if type(footer) == list:
+            embed.set_footer(text = footer[1], icon_url = footer[1])
+
+        else:
+            embed.set_footer(text = footer)
 
     placeholders = {
         f"%-{x}%": y for x, y in humecord.bot.config.lang["embed_shortcuts"].items()
