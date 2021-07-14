@@ -70,9 +70,12 @@ def get_profile(
     else:
         kw = {}
         if len(member) == 3:
-            kw = {"url": member[2]}
+            kw["url"] = member[2]
+
+        if len(member) >= 2:
+            kw["icon_url"] = member[1]
             
-        embed.set_author(name = member[0], icon_url = member[1], **kw)
+        embed.set_author(name = member[0], **kw)
 
     return embed
 
