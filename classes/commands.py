@@ -52,6 +52,11 @@ class Commands:
                 "imp": "from humecord.commands import settings",
                 "module": "settings",
                 "class": "SettingsCommand"
+            },
+            "messages": {
+                "imp": "from humecord.commands import messages",
+                "module": "messages",
+                "class": "MessagesCommand"
             }
         }
 

@@ -54,6 +54,9 @@ class Replies:
 
         # Check if message is reply
         if message.reference is not None and message.type == discord.MessageType.reply:
+            if message.author.id == humecord.bot.client.user.id:
+                return
+
             # Get reference
             if message.reference.resolved is not None:
                 replied_to = message.reference.resolved

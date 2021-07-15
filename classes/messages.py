@@ -59,6 +59,24 @@ class Messenger:
                             
                             continue
 
+                        elif check_type == "equals":
+                            if "=" not in var:
+                                comp.append(f"**ERR**: `Invalid equals check (expected '=')`")
+                                continue
+
+                            name, compare = var.split("=", 1)
+
+                            # Check if name in placeholders
+                            if placeholders.get(name) is None:
+                                #comp.append(f"**ERR**: `Invalid equals check (var '{name}' doesn't exist)`")
+                                continue
+
+                            # Check equality
+                            if str(placeholders[name]) == compare:
+                                comp.append(msg)
+
+                            continue
+
                         else:
                             raise humecord.utils.exceptions.InvalidStatement(f"Can't use if condition with check type {check_type}")
 
@@ -69,12 +87,15 @@ class Messenger:
                         continue
 
             comp.append(line)
+            
+        message = "\n".join(comp)
 
         # Add in config placeholders
         if allow_config_placeholders:
             comp_ = []
-            for word in "\n".join(comp).split(" "):
+            for word in message.split(" "):
                 if not word.startswith("%-"):
+                    comp_.append(f"{word}")
                     continue
 
                 ext = ""
@@ -107,7 +128,7 @@ class Messenger:
 
                         for path in location.split("."):
                             if path in current:
-                                current = current["path"]
+                                current = current[path]
 
                             else:
                                 comp_.append(f"{word}{ext}")
@@ -125,9 +146,6 @@ class Messenger:
 
             message = " ".join(comp_)
 
-        else:
-            message = "\n".join(comp)
-
         for placeholder, value in placeholders.items():
             message = message.replace(f"%{placeholder}%", str(value))
 
@@ -137,7 +155,8 @@ class Messenger:
             self,
             embed: dict,
             placeholders: dict,
-            conditions: dict
+            conditions: dict,
+            allow_config_placeholders: bool
         ):
 
         comp = {}
@@ -151,7 +170,7 @@ class Messenger:
                     if value.strip() == "":
                         continue
 
-                comp[key] = self.parse_placeholders(value, placeholders, conditions)
+                comp[key] = self.parse_placeholders(value, placeholders, conditions, allow_config_placeholders)
 
             elif key in ["profile"]:
                 comp[key] = []
@@ -161,7 +180,8 @@ class Messenger:
                         self.parse_placeholders(
                             item,
                             placeholders,
-                            conditions
+                            conditions,
+                            allow_config_placeholders
                         )
                     )
 
@@ -171,7 +191,7 @@ class Messenger:
                 for item in value:
                     comp[key].append(
                         {
-                            x: self.parse_placeholders(y, placeholders, conditions)
+                            x: self.parse_placeholders(y, placeholders, conditions, allow_config_placeholders)
                             for x, y in item.items() if type(y) == str
                         }
                     )
@@ -222,11 +242,12 @@ class Messenger:
 
         kwargs = {}
 
-        if m_type == "str":
+        if m_type == "text":
             content = self.parse_placeholders(
-                msg["content"],
+                msg["text"],
                 placeholders,
-                conditions
+                conditions,
+                override is None
             )
 
             kwargs["content"] = content
@@ -235,21 +256,24 @@ class Messenger:
             embed = self.parse_embed(
                 msg["embed"],
                 placeholders,
-                conditions
+                conditions,
+                override is None
             )
 
             kwargs["embed"] = embed
 
         elif m_type == "both":
             kwargs["content"] = self.parse_placeholders(
-                msg["content"],
+                msg["text"],
                 placeholders,
-                conditions
+                conditions,
+                override is None
             )
             kwargs["embed"] = self.parse_embed(
                 msg["embed"],
                 placeholders,
-                conditions
+                conditions,
+                override is None
             )
 
         else:
@@ -262,7 +286,11 @@ class Messenger:
             data: dict
         ):
 
-        comp = {}
+        comp = {
+            "bot": humecord.bot.config.name,
+            "bot_version": humecord.bot.config.version,
+            "bot_name": humecord.bot.config.cool_name
+        }
 
         if "message" in data:
             m = data["message"]

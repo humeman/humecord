@@ -161,7 +161,7 @@ class SettingsCommand:
             ]
 
             embed = discordutils.create_embed(
-                f"{message.guild.name} → {category['details']['name']}",
+                f"{message.guild.name} → Settings → {category['details']['name']}",
                 fields = fields
             )
 
@@ -183,7 +183,8 @@ class SettingsCommand:
             buttons.append(
                 components.create_button(
                     message,
-                    label = f"{cat['emoji']} {cat['name']}",
+                    label = cat['name'],
+                    emoji = cat['emoji'],
                     id = category,
                     style = "success" if selected_category == category else "secondary",
                     callback = lambda *args: self.list_(*args, "category", str(category), False),
@@ -287,7 +288,7 @@ class SettingsCommand:
 
         # Generate embed
         embed = discordutils.create_embed(
-            f"{message.guild.name} → {category['name']} → {setting['name']}",
+            f"{message.guild.name} → Settings → {category['name']} → {setting['name']}",
             description = f"{setting['description']}\n\nSet to: {value}\n\nTo edit this setting, reply to this message with a new value."
         )
 
