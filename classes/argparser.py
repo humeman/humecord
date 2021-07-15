@@ -4,6 +4,8 @@ from ..utils import (
     argrules
 )
 
+from typing import Union
+
 class ArgumentParser:
     def __init__(
             self,
@@ -242,7 +244,7 @@ class ArgumentParser:
 
     async def parse(
             self,
-            rules: dict,
+            rules: Union[dict, str],
             istr: str,
             data: dict
         ):
