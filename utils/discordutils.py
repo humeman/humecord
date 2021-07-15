@@ -1,5 +1,8 @@
 from typing import Union, Optional
 import discord
+import aiofiles
+import aiohttp
+import time
 
 from .colors import Colors
 from . import exceptions
@@ -17,13 +20,14 @@ def create_embed(
         profile: Union[list, None] = None
     ):
 
-    color = Colors.get_color(color)
+    if type(color) != int:
+        color = Colors.get_color(color)
 
     embed = discord.Embed(title = title, description = description, color = color)
 
     if footer:
         if type(footer) == list:
-            embed.set_footer(text = footer[1], icon_url = footer[1])
+            embed.set_footer(text = footer[0], icon_url = footer[1])
 
         else:
             embed.set_footer(text = footer)
@@ -248,3 +252,29 @@ def generate_intents(
                 raise exceptions.InitError(f"Can't set intent {intent}")
 
         return intents_
+
+async def download_file(
+        attachment: discord.Attachment,
+        write: bool = False
+    ):
+
+    async with aiohttp.ClientSession(
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
+            }
+        ) as session:
+
+        async with session.get(attachment.url) as resp:
+            if resp.status == 200:
+                if write:
+                    filename = f"hc-dl-{time.time()}.txt"
+
+                    async with aiofiles.open(filename, mode = "wb") as f:
+                        await f.write(await resp.read())
+
+                    return filename
+
+                return await resp.read()
+
+            else:
+                raise exceptions.APIError(f"Discord returned non-200 status code: {resp.status}")
