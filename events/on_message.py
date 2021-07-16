@@ -106,17 +106,6 @@ class OnMessageEvent:
             message
         ):
         if type(message.channel) == discord.DMChannel and message.author.id != humecord.bot.client.user.id:
-            # Make sure user isn't BLOCKED
-            if message.author.id in humecord.bot.files.files["__users__.json"]["blocked"]:
-                await message.channel.send(
-                    embed = discordutils.error(
-                        message.author,
-                        "Can't forward DM!",
-                        f"You've been ignore added for today, you can apologize later.\n{humecord.bot.files.files['__users__.json']['blocked'][message.author.id]['reason']} "
-                    )
-                )
-                return
-
             # Send the
             msg_kw = {}
             kw = {}
