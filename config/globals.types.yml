@@ -1,3 +1,5 @@
 other_bots: "str"
 
 override_bots: "list[str]"
+
+groups: "dict[str:dict]"

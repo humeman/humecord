@@ -36,6 +36,7 @@ class OverridesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb = None,
             preferred_gdb = None
@@ -72,6 +73,7 @@ class OverridesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb = None,
             preferred_gdb = None

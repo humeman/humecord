@@ -51,6 +51,7 @@ class AboutCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb

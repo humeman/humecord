@@ -1,5 +1,5 @@
 """
-HumeCord/classes/bot.py
+Humecord/classes/bot.py
 
 The main Bot object.
 """
@@ -120,6 +120,7 @@ class Bot:
         # -- MEM STORAGE --
         self.mem_storage = {
             "reply": None,
+            "error_ratelimit": {},
             **dict(self.config.mem_storage)
         }
 
@@ -191,7 +192,7 @@ class Bot:
                     f.write("\n".join(config_sample))
 
                 logger.log("info", f"Wrote default config file to 'config.yml'.", color = "cyan", bold = True)
-                logger.log_step("Edit the file as needed, then start HumeCord again to get going!", color = "cyan")
+                logger.log_step("Edit the file as needed, then start Humecord again to get going!", color = "cyan")
 
             else:
                 logger.log("info", "Not creating config file.", color = "cyan")

@@ -20,22 +20,29 @@ class RefreshStatusLoop:
         ):
 
         # Retrieve status
-        status = str(humecord.bot.files.files["__bot__.json"]["status"])
+        status = humecord.bot.files.files["__bot__.json"]["status"]
 
-        # Compile placeholders
-        if "%" in status:
-            for name, script in humecord.bot.config.placeholders.items():
-                try:
-                    status = status.replace(f"%{name}%", str(eval(script, globals())))
+        kw = {}
 
-                except:
-                    humecord.utils.debug.print_traceback(f"Status placeholder {name}'s eval failed.")
+        if status is not None:
+            status = str(status)
+
+            # Compile placeholders
+            if "%" in status:
+                for name, script in humecord.bot.config.placeholders.items():
+                    try:
+                        status = status.replace(f"%{name}%", str(eval(script, globals())))
+
+                    except:
+                        humecord.utils.debug.print_traceback(f"Status placeholder {name}'s eval failed.")
+
+            # Get activity
+            activity = humecord.bot.files.files["__bot__.json"]["activity"]
+
+            kw["activity"] = humecord.utils.discordutils.generate_activity(details = status, **activity)
 
         # Find visibility
         visibility = eval(humecord.bot.config.visibilities[humecord.bot.files.files["__bot__.json"]["visibility"]], globals())
 
-        # Get activity
-        activity = humecord.bot.files.files["__bot__.json"]["activity"]
-
         # Update it
-        await humecord.bot.client.change_presence(status = visibility, activity = humecord.utils.discordutils.generate_activity(details = status, **activity))
+        await humecord.bot.client.change_presence(status = visibility, **kw)

@@ -12,7 +12,7 @@ class OnMessageEvent:
             self
         ):
         self.name = "hh_on_message"
-        self.description = "Internal HumeCord hooks for Discord's on_message event."
+        self.description = "Internal Humecord hooks for Discord's on_message event."
 
         self.event = "on_message"
 

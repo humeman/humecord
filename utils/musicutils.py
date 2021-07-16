@@ -33,6 +33,9 @@ class VoiceController:
         """
 
         # Bot
+        global bot
+        from humecord import bot
+
         self.bot = humecord.bot
 
         # Discord guild

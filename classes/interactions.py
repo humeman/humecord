@@ -102,6 +102,22 @@ class Interactions:
 
             humecord.utils.logger.log("int", f"Dispatching interaction ID {str(hex(mid)).replace('0x', '')}.{cid}", bold = True)
 
+            # Get user
+            user = await humecord.bot.api.get(
+                "users",
+                "user",
+                {
+                    "id": interaction.user.id,
+                    "autocreate": True
+                }
+            )
+
+            # Check if banned
+            if user["botban"] is not None:
+                if user["botban"]["endsat"] > time.time():
+                    humecord.utils.logger.log_step(f"User {interaction.user} ({interaction.user.id}) is botbanned, skipping", "red")
+                    return
+
             # Get message
             try:
                 message = await interaction.channel.fetch_message(mid)
@@ -195,7 +211,7 @@ class Interactions:
             humecord.utils.logger.log_step("Creating callback task...", "blue")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
-                    self.components[mid]["interactions"][cid]["callback"](message, resp, [], gdb, None, pdb, *ext_args),
+                    self.components[mid]["interactions"][cid]["callback"](message, resp, [], user, gdb, None, pdb, *ext_args),
                     message
                 )
             )

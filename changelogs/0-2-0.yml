@@ -1,9 +1,76 @@
 version: 0.2.0
 
-title: Settings Update
-description: This update adds a number of features which make configuring your bot from Discord and parsing user input easier. 
+title: Update (awesome 💅)
+description: |
+  Biggest update since... humecord, I guess.
+
+  Added a bunch of things on my to-do list, as well as some things that weren't. This includes a refresh on components (dropdowns & misc improvements), streamlined argument parsing & validation, !settings, the messenger (lol like the Markle Zuckleberg app hahaha), and !messages.
+
+  NOTE: This update introduces four new built-in commands, and moves three more out of !dev. They are **not** enabled by default - you have to add them to config.yml yourself. Here's a snippet you can paste into your config.yml:
+  
+  Add to `config/default_commands`: ```yml
+    settings:
+      __category__: config
+
+    messages:
+      __category__: config
+
+    exec:
+      __category__: dev
+
+    loops:
+      __category__: dev
+
+    dm:
+      __category__: dev
+
+    profile:
+      __category__: dev
+
+    botban:
+      __category__: dev
+  ```
+
 changes:
   - name: Added an argument parser
-    value: Accessible via `bot.args`, this argument parser allows you to easily validate and parse user input in any form. It's fully customizable, and will now be in use in several areas of HumeCord - the new settings command, configuration validation, and (soon) automatic command argument validation. Learn more [here](https://github.com/humeman/humecord/blob/main/docs/misc/argparser.md)!
+    value: Accessible via `bot.args`, this argument parser allows you to easily validate and parse user input in any form. It's fully customizable, and will now be in use in several areas of Humecord - the new settings command, configuration validation, and (soon) automatic command argument validation. Learn more [here](https://github.com/humeman/humecord/blob/main/docs/misc/argparser.md)!
   - name: Added !settings
     value: This command allows you to let users configure your bot, from discord - without the need to make a bunch of commands for each setting. Configured entirely in config.yml (check for `settings` and `settings_categories`).
+  - name: Added dropdown support
+    value: Created with `utils.components.create_dropdown`. Allows you to make interactive dropdown menus through Discord components.
+  - name: Refreshed interactions
+    value: |
+      * Renamed `components.create_action_row` to `components.create_view` - old name was misleading since it did not in fact create an action row
+      * Added support for rows on `.create_button` and `.create_action_row` - specify a number from 0 to 4 to order your components
+  - name: Added the messenger
+    value: This class (has to be, like, the 15th so far?) allows you to send dynamically edited messages and embeds - allowing for bot-level customization, or even user-level customization through !messages. Also allows for other nifty options, like forcing the bot to send only raw messages or only embeds. Lots of automatically-added placeholders too. Access it with `bot.messages`, and learn more [here](https://github.com/humeman/humecord/blob/main/docs/misc/messenger.md).
+  - name: Added !messages
+    value: This configuration command allows users to edit the messages that your bot sends. Strikingly similar to !settings, because I copied a ton of the code from it. All the messages that are configurable in here are edited in `messages.yml` (path defined in config). You can turn off customization for a message with `allow_override`.
+  - name: Split !dev subcommands to different commands
+    value: My original reasoning behind merging all development commands into one single command no longer stands - it's not as intrusive to have a bunch of reserved commands when you can edit everything about them in config if there are conflicts. !dev error and !dev reload will remain in the current command, but !exec, !loops, !dm, !profile, and !botban are now individual commands.
+  - name: Added & changed a bunch of utility functions
+    value: |
+    These utility functions let you code things easier without having to rewrite the same set of functions over and over again.
+    New in this update:
+      * `discordutils.download_file(attachment, write = False)` - Downloads a Discord attachment. If write is False, it'll return the content of the file. Otherwise, it'll return a path to the file that the content of the attachment has been written to.
+      * `discordutils.generate_file(content)` - Creates a discord file out of some value, without writing to the disk.
+  - name: Added user API
+    value: |
+      This feature includes an entire new section of the API, which allows you to store user data across bots. This API manages botbans, plus three new features: groups, ratelimits, and botbans.
+
+      In order to access these databases, you do have to accept an extra argument (`udb`, or user database) for all of your commands. The new order is:
+      `message, resp, args, udb, gdb, alternate_gdb, preferred_gdb`
+  - name: Added !botban
+    value: This allows you to block users from using your bot, temporarily or permanently. With this also comes the introduction of the new users system, operated entirely through the API (ask me for the blueprint).
+  - name: Added groups and ratelimits
+    value: |
+      Groups are permission groups. So, for example, instead of bot developers being defined in `bot.config.devs`, you just have to set their group to `dev`. You can also create custom groups, and give them special permissions through the permission system through a new permission node: `user.group[groups]`. Check out the [permissions docs](https://github.com/humeman/humecord/blob/main/docs/misc/permissions.md) for more info on that, and check the `!useredit` command details below for information on editing a user's group.
+
+      With the introduction of groups comes the first feature that will use them: ratelimits. Now, to prevent people from spamming commands or reusing particularly intensive commands too quickly, ratelimits allow you to restrict how quickly people can run commands. Define a ratelimit group in a command with `self.ratelimit`, and define ratelimit durations in `ratelimit_groups` in your config.
+  - name: Added !useredit
+    value: This command allows you to edit the groups of people - bot and global. Also displays some Humecord-related info about them. Will be used to change more internal data in the future.
+  - name: Rebrand :)
+    value: |
+      I removed the capital C from HumeCord. It's Humecord now. I dunno, it's cooler this way
+      
+      Tell me if I forgot anything, ctrl + h may not have been powerful enough.

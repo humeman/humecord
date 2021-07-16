@@ -350,25 +350,25 @@ class CommandValidators:
                 if "function" not in value:
                     return f"Command {command.name}'s subcommand {name} has no defined function"
 
-                # Need exactly 6 arguments (and self, optional)
+                # Need exactly 7 arguments (and self, optional)
                 params = inspect.signature(value["function"]).parameters #.__code__.co_varnames
 
                 args = []
 
-                for name, param in params.items():
+                for name_, param in params.items():
                     if param.kind in [inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD]:
                         # Accepts any amount
                         return
 
-                    elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 6:
+                    elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 7:
                         continue
 
-                    args.append(name)
+                    args.append(name_)
 
                 if args[0] == "self":
                     args = args[1:]
 
-                if len(args) != 6:
+                if len(args) != 7:
                     return f"Command {command.name}'s subcommand {name}'s function has invalid number of arguments: {len(args)}"
 
                 if "syntax" in value:
@@ -398,7 +398,7 @@ class CommandValidators:
                     # Accepts any amount
                     return
 
-                elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 6:
+                elif param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and len(args) >= 7:
                     continue
 
                 args.append(name)
@@ -406,7 +406,7 @@ class CommandValidators:
             if args[0] == "self":
                 args = args[1:]
 
-            if len(args) != 6:
+            if len(args) != 7:
                 return f"Command {command.name}'s run function has invalid number of arguments: {len(args)}"
 
     async def validate_aliases(

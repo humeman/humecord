@@ -1,15 +1,22 @@
 """
-HumeCord/classes/commands
+Humecord/classes/commands
 
-The HumeCord command handler.
+The Humecord command handler.
 """
 
 import humecord
+
+from humecord.utils import (
+    ratelimits,
+    discordutils,
+    dateutils
+)
 
 import textwrap
 import random
 import discord
 import sys
+import time
 
 class Commands:
     def __init__(
@@ -18,6 +25,9 @@ class Commands:
         ):
 
         self.commands = commands
+
+        global bot
+        from humecord import bot
 
     def get_imports(
             self
@@ -28,11 +38,6 @@ class Commands:
         }
 
         defaults = {
-            "dev": {
-                "imp": "from humecord.commands import dev",
-                "module": "dev",
-                "class": "DevCommand"
-            },
             "about": {
                 "imp": "from humecord.commands import about",
                 "module": "about",
@@ -48,6 +53,11 @@ class Commands:
                 "module": "overrides",
                 "class": "OverridesCommand"
             },
+            "dev": {
+                "imp": "from humecord.commands import dev",
+                "module": "dev",
+                "class": "DevCommand"
+            },
             "settings": {
                 "imp": "from humecord.commands import settings",
                 "module": "settings",
@@ -57,6 +67,36 @@ class Commands:
                 "imp": "from humecord.commands import messages",
                 "module": "messages",
                 "class": "MessagesCommand"
+            },
+            "dm": {
+                "imp": "from humecord.commands import dm",
+                "module": "dm",
+                "class": "DMCommand"
+            },
+            "exec": {
+                "imp": "from humecord.commands import exec_cmd",
+                "module": "exec_cmd",
+                "class": "ExecCommand"
+            },
+            "loops": {
+                "imp": "from humecord.commands import loops",
+                "module": "loops",
+                "class": "LoopsCommand"
+            },
+            "profile": {
+                "imp": "from humecord.commands import profile",
+                "module": "profile",
+                "class": "ProfileCommand"
+            },
+            "botban": {
+                "imp": "from humecord.commands import botban",
+                "module": "botban",
+                "class": "BotBanCommand"
+            },
+            "useredit": {
+                "imp": "from humecord.commands import useredit",
+                "module": "useredit",
+                "class": "UserEditCommand"
             }
         }
 
@@ -84,7 +124,7 @@ class Commands:
             self
         ):
 
-        raise DeprecationWarning("This feature is deprecated in favor of the HumeCord loader.")
+        raise DeprecationWarning("This feature is deprecated in favor of the Humecord loader.")
 
         self.defaults = {
             "dev": humecord.commands.dev.DevCommand,
@@ -184,6 +224,23 @@ class Commands:
         if len(matched_commands) == 0:
             return
 
+        # Get the user
+        user = await bot.api.get(
+            "users",
+            "user",
+            {
+                "id": message.author.id,
+                "autocreate": True
+            }
+        )
+
+        # Check if banned
+        if user["botban"] is not None:
+            if user["botban"]["duration"] is not None:
+                if user["botban"]["endsat"] > time.time():
+                    humecord.utils.logger.log("cmd", f"User {message.author} ({message.author.id}) is botbanned, skipping command dispatch", color = "red")
+                    return
+
         # Get the guild database
         # -> API method
         if humecord.bot.config.use_api:
@@ -214,7 +271,7 @@ class Commands:
 
                         bots = arg1.split(prefix["end"])[0].split(",")
 
-                        for bot_name in humecord.bot.names:
+                        for bot_name in ["all", *humecord.bot.names]:
                             if bot_name in bots:
                                 full_match = match
                                 break
@@ -224,6 +281,10 @@ class Commands:
 
         if full_match is None:
             return
+
+        command_id = str(hex(message.id)).replace("0x", "")
+
+        humecord.utils.logger.log("cmd", f"Dispatching command ID {command_id}", bold = True)
 
         category, command, header = full_match.values()
 
@@ -238,17 +299,19 @@ class Commands:
         )
 
         # Check perms
-        if not await humecord.bot.permissions.check(message.author, command.permission):
+        if not await humecord.bot.permissions.check(message.author, command.permission, user):
             await resp.send(
                 embed = humecord.utils.discordutils.error(
                     message.author,
                     "You don't have permission to run this command!",
-                    f"Contact an admin if you believe this is in error." 
+                    f"In order to run this command, you need the permission `{command.permission}`. Check with an admin if you believe this is in error." 
                 )
             )
             return
 
         args = message.content.split(" ")
+
+        rl_subcommand_name = "__main__"
 
         # Expand the args
         if header["type"] == "alias":
@@ -286,35 +349,79 @@ class Commands:
         if "subcommands" in dir(command):
             if len(args) == 1:
                 if "__default__" in command.subcommands:
-                    function = command.subcommands["__default__"]["function"](message, resp, args, gdb, None, pdb)
+                    function = command.subcommands["__default__"]["function"](message, resp, args, user, gdb, None, pdb)
                     subcommand_details = ".__default__"
+                    rl_subcommand_name = "__default__"
 
                 else:
                     function = self.syntax_error(message, resp, args, gdb, command.name)
                     subcommand_details = ".__syntax_internal__"
+                    rl_subcommand_name = None
 
             else:
                 action = args[1].lower()
 
                 if action in command.subcommands:
-                    function = command.subcommands[action]["function"](message, resp, args, gdb, None, pdb)
+                    function = command.subcommands[action]["function"](message, resp, args, user, gdb, None, pdb)
                     subcommand_details = f".{action}"
+                    rl_subcommand_name = action
 
                 else:   
                     if "__syntax__" in command.subcommands:
-                        function = command.subcommands["__syntax__"]["function"](message, resp, args, gdb, None, pdb)
+                        function = command.subcommands["__syntax__"]["function"](message, resp, args, user, gdb, None, pdb)
                         subcommand_details = ".__syntax__"
+                        rl_subcommand_name = "__syntax__"
 
                     else:
                         function = self.syntax_error(message, resp, args, gdb, command.name)
                         subcommand_details = ".__syntax_internal__"
+                        rl_subcommand_name = None
 
         else:
-            function = command.run(message, resp, args, gdb, None, pdb)
+            function = command.run(message, resp, args, user, gdb, None, pdb)
 
-        command_id = str(hex(message.id)).replace("0x", "")
+        # Check if they're rate limited
+        if rl_subcommand_name is not None and humecord.bot.config.use_api:
+            limited, limit, left, user, write = await ratelimits.check_command_ratelimit(
+                category,
+                command,
+                user,
+                rl_subcommand_name
+            )
 
-        humecord.utils.logger.log("cmd", f"Dispatching command ID {command_id}", bold = True)
+            if write:
+                # Write udb
+                await bot.api.put(
+                    "users",
+                    "user",
+                    {
+                        "id": message.author.id,
+                        "db": {
+                            "ratelimits": user["ratelimits"]
+                        }
+                    }
+                )
+
+            if limited:
+                # Check if error limited
+                if message.author.id in bot.mem_storage["error_ratelimit"]:
+                    if bot.mem_storage["error_ratelimit"][message.author.id] > time.time() - 1:
+                        # Don't say anything - they're spamming
+                        return
+
+                bot.mem_storage["error_ratelimit"][message.author.id] = float(time.time())
+
+                left = round(left)
+
+                await resp.send(
+                    embed = discordutils.error(
+                        message.author,
+                        "Can't run command!",
+                        f"This command has a ratelimit of {dateutils.get_duration(limit)}, which means you have to wait {dateutils.get_duration(left)} before running again."
+                    )
+                )
+                return
+
         linebreak = "\n"
         humecord.utils.logger.log_long(
             f"""Command:        {category}.{command.name}{subcommand_details}

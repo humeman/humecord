@@ -1,4 +1,4 @@
-# HumeCord Config Types
+# Humecord Config Types
 
 # Do not use this config directly. Instead, copy 'config.default.yml'.
 # This is only for validation purposes.
@@ -67,11 +67,9 @@ send_changelogs: "bool"
 
 start_calls: "list[str]"
 
-devs: "list[int]"
+bot_owner: "int"
 
 eval_perms: "list[int]"
-
-mods: "list[int]"
 
 mod_perms: "list[str]"
 
@@ -101,6 +99,12 @@ component_expire_time: "int"
 command_categories: "dict[str:any]"
 
 commands_per_page: "int"
+
+ratelimit_groups: "dict[str:dict]"
+
+default_ratelimit: "str"
+
+messages_default_category: "str"
 
 default_commands: "dict[str:dict]"
 

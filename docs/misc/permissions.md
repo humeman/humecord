@@ -1,6 +1,6 @@
 # permissions system
 
-This document outlines how the HumeCord discord permission system works.
+This document outlines how the Humecord discord permission system works.
 These permissions are used everywhere - command permissions, interactions,
 permission overrides, and so on.
 
@@ -54,18 +54,15 @@ For example:
 ### bot
 * `bot.any` - Anyone
 
-* `bot.dev` - Members listed in bot.config.devs
+* `bot.dev` - Shorthand for `user.group[dev]`
 
-* `bot.owner` - Bot's owner, first item in bot.config.devs
+* `bot.owner` - Bot's owner, found in bot.config.bot_owner
 
-* `bot.mod` - Members listed in bot.config.mods, also includes devs
-    * If you don't want to include devs (what), use this along with `!bot.dev`
+* `bot.mod` - Shorthand for `user.group[dev,mod]`
 
 * `bot.self` - Only the bot itself. Not sure why you'd want to use this though.
 
 * `bot.none` - No one.
-
-* `bot.vip` - VIP members (later will include those who've voted today, or patreon)
 
 ### guild
 * `guild.admin` - Members of a guild with the administrator permission
@@ -100,3 +97,6 @@ For example:
 * `user.flags[args]` - Checks if a user has a profile flag.
     * Ex: `user.flags[verified_bot_developer,partner]` will allow any verified bot developer or partner.
     * A full list of flags can be found [here](https://discordpy.readthedocs.io/en/master/api.html#discord.PublicUserFlags).
+
+* `user.group[groups]` - People with a certain group, defined via the new group system (see !useredit).
+    * Ex: `user.group[default]` will allow all members with default group. `user.group[default,vip]` will allow any default users or VIPs.

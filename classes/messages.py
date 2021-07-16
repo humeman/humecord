@@ -81,7 +81,7 @@ class Messenger:
                             raise humecord.utils.exceptions.InvalidStatement(f"Can't use if condition with check type {check_type}")
 
                     else:
-                        if conditions.get(detail) is not None:
+                        if conditions.get(detail) == True:
                             comp.append(msg)
 
                         continue

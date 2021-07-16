@@ -137,7 +137,8 @@ def create_dropdown(
         id: Optional[str] = None,
         callback = None,
         options: dict = {},
-        row: int = 0
+        row: int = 0,
+        only_sender: bool = True
     ):
 
     # Define items
@@ -156,11 +157,18 @@ def create_dropdown(
 
     _id = f"{message.id}.{id}"
 
+    
+    if only_sender:
+        arg = [message.author.id]
+
+    else:
+        arg = [None]
+
     humecord.bot.interactions.register_component(
         "select",
         _id,
         callback,
-        message.author.id
+        *arg
     )
 
     return Select(

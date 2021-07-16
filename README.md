@@ -32,28 +32,28 @@ An advanced discord.py wrapper, designed to allow for easy creation of bots with
     * Handlers and such to make writing any feature easier than ever
 
 ## Support
-You can get any support you need with developing using HumeCord, as well as help with using my own bots, in the [HumeBots discord](https://discord.gg/nhaRXY28Yn).
+You can get any support you need with developing using Humecord, as well as help with using my own bots, in the [HumeBots discord](https://discord.gg/nhaRXY28Yn).
 
 Feel free to create an issue here if you believe you found an issue or improvement in the code itself.
 
-And, head over to the Discussions tab for any HumeCord-related question if you don't want to use the discord.
+And, head over to the Discussions tab for any Humecord-related question if you don't want to use the discord.
 
 ## Extensions
-You can find details on implementing StatusReporter support, which is my monitoring bot for any HumeCord instance, at:
+You can find details on implementing StatusReporter support, which is my monitoring bot for any Humecord instance, at:
 * the [humeman/statusreporter](https://github.com/humeman/statusreporter) github repo
 * the docs: [docs/misc/status](docs/misc/status.md)
 
-Info on creating a HumeCord compatible API and websocket is listed at [docs/interfaces](docs/interfaces).
+Info on creating a Humecord compatible API and websocket is listed at [docs/interfaces](docs/interfaces).
 
 You can, alternatively, create your own interface to support whatever storage system you use. Learn more [here](docs/interfaces/create.md).
 
 ## Requirements
-HumeCord runs on:
+Humecord runs on:
 * Python 3.6 or higher
 * discord.py 2.0.0a
 
 ## Getting started
-Read the documentation for HumeCord by [clicking here](docs).
+Read the documentation for Humecord by [clicking here](docs).
 
 To install it:
 ```sh
@@ -61,7 +61,7 @@ $ git clone https://github.com/humeman/humecord
 $ mv humecord ~/.local/lib/python3.[press tab]/site-packages
 ```
 
-## Bots using HumeCord
+## Bots using Humecord
 | Created by           | Bots                                                              |
 |:--------------------:| ----------------------------------------------------------------- |
 | humeman (me)         | [humebot](https://humeman.com/bots/humebot) - all of the below, merged |
@@ -73,5 +73,5 @@ $ mv humecord ~/.local/lib/python3.[press tab]/site-packages
 |                      | [statusreporter](https://github.com/humeman/statusreporter) - bot monitoring & server status |
 |                      | [testcord](https://humeman.com/bots/testcord) - testing bot for new humecord releases |
 |                      | [yuno](https://humeman.com/bots/humebot) - reskin of humebot, requested by [theseconddiarykeeper](https://github.com/TheSecondDiaryKeeper) |
-| theseconddiarykeeper | Currently working on migrating his bots to HumeCord. 
+| theseconddiarykeeper | Currently working on migrating his bots to Humecord. 
 |                      | Check back soon.

@@ -26,6 +26,7 @@ class HelpCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb = None,
             preferred_gdb = None
@@ -45,7 +46,8 @@ class HelpCommand:
 
                     if await bot.permissions.check(
                         message.author,
-                        command.permission
+                        command.permission,
+                        udb
                     ):
                         comp_commands.append(command)
 
@@ -113,6 +115,7 @@ class HelpCommand:
                     message,
                     resp,
                     args,
+                    udb,
                     gdb,
                     alternate_gdb,
                     preferred_gdb
@@ -257,6 +260,7 @@ class HelpCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb

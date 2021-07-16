@@ -17,7 +17,7 @@ class OnReadyEvent:
             self
         ):
         self.name = "hh_on_ready"
-        self.description = "Internal HumeCord hooks for Discord's on_ready event."
+        self.description = "Internal Humecord hooks for Discord's on_ready event."
 
         self.event = "on_ready"
 

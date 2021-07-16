@@ -1,6 +1,6 @@
 # argument parser
 
-This document outlines how the HumeCord argument parser works. This system is used in a number of places to validate user input automatically - settings, the command argument validator, and so on. The system is also expandable via the imports file if you find something that's missing.
+This document outlines how the Humecord argument parser works. This system is used in a number of places to validate user input automatically - settings, the command argument validator, and so on. The system is also expandable via the imports file if you find something that's missing.
 
 ## basic outline
 
@@ -27,7 +27,7 @@ Currently, the type list is as follows:
 | dict        | A dict.                  | key(), value()                                |
 | channel     | A Discord channel.       | perms(), inguild(), type()                    |
 | user        | A Discord user.          | canedit(), inguild()                          |
-| perms       | A HumeCord perms string. | category(), has()                             |
+| perms       | A Humecord perms string. | category(), has()                             |
 | embed       | A Discord embed.         | has()                                         |
 (More coming as I develop it)
 

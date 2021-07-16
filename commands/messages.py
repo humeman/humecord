@@ -44,6 +44,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -65,7 +66,7 @@ class MessagesCommand:
         category = bot.config.messages[category_name]
 
         # Check permissions
-        if not await bot.permissions.check(message.author, category["__details__"]["permission"]):
+        if not await bot.permissions.check(message.author, category["__details__"]["permission"], udb):
             await resp.send(
                 embed = discordutils.error(
                     message.author,
@@ -82,7 +83,7 @@ class MessagesCommand:
                 continue
 
             # Verify perms
-            if not await bot.permissions.check(message.author, messages["__details__"]["permission"]):
+            if not await bot.permissions.check(message.author, messages["__details__"]["permission"], udb):
                 continue
 
             groups[group_name] = {
@@ -156,8 +157,6 @@ class MessagesCommand:
         else:
             selected = ""
             selected_group = item
-
-            print(groups)
 
             group = groups[item]
 
@@ -346,6 +345,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -615,6 +615,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -697,6 +698,7 @@ class MessagesCommand:
             message,
             new_resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -855,6 +857,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -874,6 +877,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,
@@ -936,6 +940,7 @@ class MessagesCommand:
             message,
             resp,
             args,
+            udb,
             gdb,
             alternate_gdb,
             preferred_gdb,

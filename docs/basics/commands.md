@@ -2,7 +2,7 @@
 ## creating commands
 
 Each command should be contained in its own class.
-This class does not have to extend any HumeCord class - 
+This class does not have to extend any Humecord class - 
 it will be parsed by the command handler instead.
 
 For example:
@@ -85,7 +85,7 @@ Below is a list of valid keys which can be used in your command class:
         * `__syntax__` - Called when an invalid subcommand is passed, or if no subcommand is specified and there's no __default__.
 
 * `info` - Overrides syntax error and info messages.
-    * If not specified, HumeCord will generate one based on other command info.
+    * If not specified, Humecord will generate one based on other command info.
 
     * Will fill in the embed's fields.
 

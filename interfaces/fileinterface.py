@@ -29,7 +29,7 @@ class FileInterface:
                 "activity": {
                     "type": "playing",
                     "streaming": {
-                        "game": "HumeCord",
+                        "game": "Humecord",
                         "url": "https://twitch.tv/hume_man",
                         "twitch_name": "humeman",
                         "platform": "twitch"
@@ -37,7 +37,8 @@ class FileInterface:
                 }
             },
             "__users__.json": {
-                "blocked": {}
+                "blocked": {},
+                "ratelimits": {}
             },
             "__humecord__.json": {
                 "version": None

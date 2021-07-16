@@ -7,6 +7,7 @@ import time
 from .colors import Colors
 from . import exceptions
 import humecord
+import io
 
 def create_embed(
         title = discord.Embed.Empty,
@@ -254,9 +255,15 @@ def generate_intents(
         return intents_
 
 async def download_file(
-        attachment: discord.Attachment,
+        attachment: Union[str, discord.Attachment],
         write: bool = False
     ):
+
+    if type(attachment) == discord.Attachment:
+        url = attachment.url
+
+    else:
+        url = attachment
 
     async with aiohttp.ClientSession(
         headers = {
@@ -264,7 +271,7 @@ async def download_file(
             }
         ) as session:
 
-        async with session.get(attachment.url) as resp:
+        async with session.get(url) as resp:
             if resp.status == 200:
                 if write:
                     filename = f"hc-dl-{time.time()}.txt"
@@ -278,3 +285,14 @@ async def download_file(
 
             else:
                 raise exceptions.APIError(f"Discord returned non-200 status code: {resp.status}")
+
+async def generate_file(
+        content: bytes,
+        filename: str = "file"
+    ):
+    with io.BytesIO() as f:
+        f.write(content)
+
+        return discord.File(f, filename)
+
+    
