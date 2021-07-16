@@ -1,6 +1,6 @@
 version: 0.2.0
 
-title: Update (awesome 💅)
+title: B I G
 description: |
   Biggest update since... humecord, I guess.
 
@@ -29,6 +29,9 @@ description: |
 
     botban:
       __category__: dev
+
+    useredit:
+      __category__: dev
   ```
 
 changes:
@@ -50,8 +53,8 @@ changes:
     value: My original reasoning behind merging all development commands into one single command no longer stands - it's not as intrusive to have a bunch of reserved commands when you can edit everything about them in config if there are conflicts. !dev error and !dev reload will remain in the current command, but !exec, !loops, !dm, !profile, and !botban are now individual commands.
   - name: Added & changed a bunch of utility functions
     value: |
-    These utility functions let you code things easier without having to rewrite the same set of functions over and over again.
-    New in this update:
+      These utility functions let you code things easier without having to rewrite the same set of functions over and over again.
+      New in this update:
       * `discordutils.download_file(attachment, write = False)` - Downloads a Discord attachment. If write is False, it'll return the content of the file. Otherwise, it'll return a path to the file that the content of the attachment has been written to.
       * `discordutils.generate_file(content)` - Creates a discord file out of some value, without writing to the disk.
   - name: Added user API
@@ -72,5 +75,5 @@ changes:
   - name: Rebrand :)
     value: |
       I removed the capital C from HumeCord. It's Humecord now. I dunno, it's cooler this way
-      
+
       Tell me if I forgot anything, ctrl + h may not have been powerful enough.
