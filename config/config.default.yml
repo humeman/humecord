@@ -331,13 +331,6 @@ ratelimit_groups:
 #   used instead.
 default_ratelimit: default
 
-# Default message category
-# Categories are defined in messages.yml.
-# This category is what will appear first when people
-#   run !messages. Should probably be whatever category
-#   your bot uses.
-messages_default_category: ""
-
 # Universal prefixes
 # These are prefixes that, no matter what,
 # the bot will respond to.
@@ -367,3 +360,38 @@ embeddable_media:
   - jpeg
   - webm
   - gif
+
+# -- Settings --
+
+# Settings categories - or, the name of each value in settings.
+# Decides how categories are displayed to the user.
+settings_categories:
+  general:
+    name: General
+    emoji: ⚙️
+    description: General settings which change how the bot functions.
+    aliases:
+      - main
+
+
+# All settings. Read the docs for more info on how to set this up.
+settings:
+  prefix:
+    in: gdb
+    path: prefix
+    validate: "str[len(1,5)]"
+    name: Prefix
+    description: The prefix used to run commands.
+    aliases: []
+    category: general
+    format:
+      str: "`%str%`"
+      null: "Not set (how???)"
+
+# Default message category
+# Categories are defined in messages.yml.
+# This category is what will appear first when people
+#   run !messages. Should probably be whatever category
+#   your bot uses.
+messages_default_category: ""
+

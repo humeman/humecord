@@ -106,6 +106,10 @@ default_ratelimit: "str"
 
 messages_default_category: "str"
 
+settings_categories: "dict[str:dict]"
+
+settings: "dict[str:dict]"
+
 default_commands: "dict[str:dict]"
 
 universal_prefixes: "list[str]"
