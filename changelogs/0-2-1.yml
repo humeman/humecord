@@ -1,0 +1,25 @@
+version: 0.2.1
+
+title: S M A L L
+description: |
+  Quick refresher update for Humecord 0.2, with a couple quality of life updates and improvements.
+
+changes:
+  - name: Updated utils
+    value: utils.miscutils, utils.discordutils, and utils.dateutils have all received some updates. Particularly, more ways to parse and format dates/times, as well as improved dict searching features. These are being added to make way for the upcoming music extension.
+  - name: Fixed bugs from 0.2
+    value: A number of bugs that were introduced in Humecord 0.2 have now been patched - mostly in the realm of the new commands (!help, !botban, etc).
+  - name: Added decorator events
+    value: |
+      This allows you to define functions to run on specific events, on the fly.
+
+      For example:
+      ```py
+      @humecord.event("on_ready", priority = 10)
+      async def ready(*args):
+          print("Bot is ready!")
+      ```
+
+      More ways to interact with Humecord like this will be introduced in a future update.
+
+    
