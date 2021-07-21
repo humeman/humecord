@@ -1,4 +1,4 @@
-version = "0.2.0"
+version = "0.2.1"
 
 import sys
 
@@ -15,4 +15,5 @@ from . import interfaces
 from . import loops
 from . import commands
 
+extra_events = []
 bot = Bot()

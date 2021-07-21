@@ -135,3 +135,29 @@ def parse_duration(
 
 def get_timestamp(seconds):
     return f"{datetime.datetime.fromtimestamp(seconds).strftime('%b %d, %Y at %H:%M %Z')}"
+
+int_times = [
+    1,
+    60,
+    3600,
+    86400,
+    604800,
+    2628000,
+    31540000
+]
+
+def timestamp_to_seconds(
+        seconds: int
+    ):
+        seconds = seconds.split(":")
+
+        i = len(seconds) - 1
+        total = 0
+        for duration in seconds:
+            duration = int(duration)
+
+            total += duration * int_times[i]
+
+            i -= 1
+
+        return total

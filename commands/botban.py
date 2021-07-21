@@ -288,10 +288,11 @@ class BotBanCommand:
             invalid = True
 
         else:
-            if udb["botban"]["endsat"] < int(time.time()):
-                udb["botban"] = None
-                send = True
-                invalid = True
+            if udb["botban"]["endsat"] is not None:
+                if udb["botban"]["endsat"] < int(time.time()):
+                    udb["botban"] = None
+                    send = True
+                    invalid = True
 
         # Update variables
         if not invalid:

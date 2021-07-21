@@ -1,8 +1,9 @@
 import math
-from re import search
 import time
 import datetime
 import random
+
+from typing import Union
 
 from . import exceptions
 
@@ -67,10 +68,19 @@ def follow_path(
     path = path.strip("/").split("/")
 
     for name in path:
+        cd_to = None
+        if ":" in name:
+            name, cd_to = name.split(":", 1)
+
+            cd_to = int(cd_to)
+
         if name not in current:
             raise exceptions.NotFound(f"Path {'/'.join(path)} doesn't exist ({name})")
 
         current = current[name]
+
+        if cd_to is not None:
+            current = current[cd_to]
 
     return current
 
@@ -114,3 +124,23 @@ def get_size(
                 comp.append(f"{count}{sizes[name] if short else f' {name}'}")
 
     return ", ".join(comp)
+
+def friendly_number(
+        number: Union[int, float],
+        trunc: bool = False
+    ):
+
+    if number is None:
+        return "0"
+
+    if trunc:
+        number = int(number)
+
+    
+    value = "{:,.2f}".format(number)
+
+    if value.strip("0").endswith("."):
+        value = value.split(".")[0]
+
+    return value
+

@@ -6,6 +6,9 @@ Lots of debugging and logging utils.
 
 import traceback
 
+import humecord
+from humecord.utils import discordutils
+
 from . import logger
 from .colors import TermColors
 
@@ -48,3 +51,21 @@ def print_object(obj):
             comp.append(f"{key} {bold}= {reset}{magenta}{getattr(obj, key)}")
 
     logger.log_long("\n".join(comp), "light_magenta")
+
+async def log_traceback(
+        context: str
+    ):
+
+    await humecord.bot.debug_channel.send(
+        embed = discordutils.create_embed(
+            title = f"{humecord.bot.config.lang['emoji']['error']}  An exception was caught during: {context}",
+            description = f"```py\n{traceback.format_exc()[:4080]}```",
+            field = [
+                {
+                    "name": "%-a% Context",
+                    "value": context
+                }
+            ],
+            color = "error"
+        )
+    )

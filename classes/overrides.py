@@ -2,8 +2,9 @@
 from typing import Iterable, Optional
 
 from humecord.utils import (
-        exceptions
-    )
+    exceptions,
+    debug
+)
 
 class OverrideHandler:
     def __init__(
@@ -27,12 +28,13 @@ class OverrideHandler:
                 "overrides",
                 {
                     "guild": guild_id,
-                    "bots": bots + [bot.config.self_api],
+                    "bots": ",".join(bots + [bot.config.self_api]),
                     "autocreate": True
                 }
             )
 
         except:
+            debug.print_traceback()
             raise exceptions.APIError(f"Overrides lookup failed for guild {guild_id}")
 
         if "bot" in overrides:

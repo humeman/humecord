@@ -5,6 +5,8 @@ from ..utils import exceptions
 
 from .. import events
 
+import humecord
+
 class Events:
     def __init__(
             self,
@@ -153,7 +155,7 @@ class Events:
         # Format event database into a less intensive dict.
         self.edb = {}
 
-        for event in self.events:
+        for event in self.events + humecord.extra_events:
             if event.event not in self.valid_events:
                 raise exceptions.InitError(
                     f"Event {event.name} tried to register event {event.event}, but it doesn't exist"
@@ -202,7 +204,7 @@ class Events:
         ):
 
         if event not in self.edb:
-            logger.log("warn", f"Event {event} called, but isn't registered in the event database")
+            #logger.log("warn", f"Event {event} called, but isn't registered in the event database")
             return
 
         for function in self.edb[event]:

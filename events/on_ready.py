@@ -30,9 +30,13 @@ class OnReadyEvent:
                 "function": self.tell_api,
                 "priority": 1
             },
+            "fire_hh": {
+                "function": self.fire_hh,
+                "priority": 2
+            },
             "ready": {
                 "function": self.ready,
-                "priority": 2
+                "priority": 3
             },
             "post_changelog": {
                 "function": self.post_changelog,
@@ -120,6 +124,13 @@ class OnReadyEvent:
                 color = "success"
             )
         )
+
+    async def fire_hh(
+            self,
+            __
+        ):
+
+        await humecord.bot.events.call("hh_on_ready", [])
 
     async def post_changelog(
             self,

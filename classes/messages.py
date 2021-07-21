@@ -42,6 +42,9 @@ class Messenger:
         ):
         comp = []
 
+        if type(message) != str:
+            return message
+
         # Add in default placeholders
         for line in message.split("\n"):
             if ":::" in line and line.startswith("if"):
@@ -208,7 +211,8 @@ class Messenger:
             placeholders: dict,
             conditions: dict = {},
             force_type: Optional[str] = None,
-            ext_placeholders: dict = {}
+            ext_placeholders: dict = {},
+            overrides: dict = {}
         ):
 
         # Follow path
@@ -253,8 +257,14 @@ class Messenger:
             kwargs["content"] = content
 
         elif m_type == "embed":
+            # Override
+            new = dict(msg["embed"])
+            new.update(
+                overrides
+            )
+
             embed = self.parse_embed(
-                msg["embed"],
+                new,
                 placeholders,
                 conditions,
                 override is None

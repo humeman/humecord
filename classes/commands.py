@@ -239,7 +239,7 @@ class Commands:
             if user["botban"]["duration"] is not None:
                 if user["botban"]["endsat"] > time.time():
                     humecord.utils.logger.log("cmd", f"User {message.author} ({message.author.id}) is botbanned, skipping command dispatch", color = "red")
-                    return
+                    return False
 
         # Get the guild database
         # -> API method

@@ -31,12 +31,20 @@ class APIInterface:
         if endpoint not in current:
             raise humecord.utils.exceptions.InvalidRoute(f"Endpoint {endpoint} doesn't exist in category {category}")
 
+        if "__override__" in current:
+            base = getattr(humecord.bot.config, current["__override__"]["base"])
+            auth = getattr(humecord.bot.config, current["__override__"]["auth"])
+
+        else:
+            base = humecord.bot.config.api_url
+            auth = humecord.bot.config.auth
+
         route = current[endpoint]
 
-        url = f"{humecord.bot.config.api_url}/{route['endpoint']}".replace("%method%", "get")
+        url = f"{base}/{route['endpoint']}".replace("%method%", "get")
 
         if route.get("auth"):
-            args = {**args, **humecord.bot.config.auth}
+            args = {**args, **auth}
 
         try:
             data = await self.direct.get(url, args)
@@ -74,12 +82,20 @@ class APIInterface:
         if endpoint not in current:
             raise humecord.utils.exceptions.InvalidRoute(f"Endpoint {endpoint} doesn't exist in category {category}")
 
+        if "__override__" in current:
+            base = getattr(humecord.bot.config, current["__override__"]["base"])
+            auth = getattr(humecord.bot.config, current["__override__"]["auth"])
+
+        else:
+            base = humecord.bot.config.api_url
+            auth = humecord.bot.config.auth
+
         route = current[endpoint]
 
-        url = f"{humecord.bot.config.api_url}/{route['endpoint']}".replace("%method%", "put")
+        url = f"{base}/{route['endpoint']}".replace("%method%", "put")
 
         if route.get("auth"):
-            json = {**json, **humecord.bot.config.auth}
+            json = {**json, **auth}
 
         try:
             data = await self.direct.put(url, json)

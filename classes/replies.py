@@ -72,6 +72,22 @@ class Replies:
 
             message_data = self.messages[replied_id]
 
+            # Get user
+            user = await humecord.bot.api.get(
+                "users",
+                "user",
+                {
+                    "id": message.author.id,
+                    "autocreate": True
+                }
+            )
+
+            # Check if banned
+            if user["botban"] is not None:
+                if user["botban"]["endsat"] > time.time():
+                    humecord.utils.logger.log_step(f"User {message.author} ({message.author.id}) is botbanned, skipping", "red")
+                    return
+
             # Check if user is right
             if message.author.id != message_data["author"]:
                 await message.reply(
@@ -117,7 +133,7 @@ class Replies:
             humecord.utils.logger.log_step("Creating callback task...", "blue")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
-                    message_data["callback"](message, resp, message.content.split(" "), gdb, None, pdb, message_data["data"]),
+                    message_data["callback"](message, resp, message.content.split(" "), user, gdb, None, pdb, message_data["data"]),
                     message
                 )
             )

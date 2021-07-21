@@ -297,7 +297,8 @@ class HelpCommand:
         for command in bot.commands.commands[name]:
             if await bot.permissions.check(
                 message.author,
-                command.permission
+                command.permission,
+                udb
             ):
                 comp.append(command)
 
