@@ -191,7 +191,6 @@ class BotBanCommand:
                 )
 
             except Exception as e:
-                debug.print_traceback()
                 dm_sent = False
                 ext = f": `{e}`"
 
@@ -348,10 +347,7 @@ class BotBanCommand:
                     )
                 )
 
-                print(note is not None)
-
             except Exception as e:
-                debug.print_traceback()
                 dm_sent = False
                 ext = f": `{e}`"
 
