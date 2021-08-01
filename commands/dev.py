@@ -44,6 +44,8 @@ class DevCommand:
         self.shortcuts = {
             "reload": "dev reload",
             "close": "dev close",
+            "shutdown": "dev close",
+            "shitdown": "dev close",
             "literallyjustfuckingdieihateyousomuch": "dev close"
         }
 
@@ -112,4 +114,5 @@ class DevCommand:
             )
         )
         
-        raise KeyboardInterrupt
+        #raise KeyboardInterrupt
+        await bot.shutdown(f"Discord shutdown")
