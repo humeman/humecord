@@ -1,5 +1,7 @@
 from ..utils import fs
 from ..utils import logger
+from ..utils import exceptions
+
 
 import humecord
 
@@ -7,6 +9,7 @@ import os
 import inspect
 import sys
 import traceback
+import asyncio
 
 class Config:
     def __init__(self):
@@ -74,7 +77,8 @@ class Config:
         #    check["endpoints"] = self.globals.endpoints
 
         for name, obj in check.items():
-            self.validate(obj, name)
+            if self.validate(obj, name) == False:
+                return
 
     def validate(
             self,
@@ -142,11 +146,13 @@ class Config:
                 if use:
                     # Validate everything inside
                     for name_, value_ in expected.items():
-                        self.validate_item_feedback(obj, cat, cat_name, name_, value_)
+                        if self.validate_item_feedback(obj, cat, cat_name, name_, value_) == False:
+                            return False
 
             else:
                 # Make sure variable is valid
-                self.validate_item_feedback(obj, cat, cat_name, name, expected)
+                if self.validate_item_feedback(obj, cat, cat_name, name, expected) == False:
+                    return False
 
     def validate_item_feedback(
             self,
@@ -161,7 +167,8 @@ class Config:
 
         if not result:
             self.log_error(cat, cat_name, f"Config value '{name}' is of invalid type (required: '{expected}')", var = name)
-            
+            return False
+
     def validate_item(
             self,
             obj,
@@ -232,8 +239,8 @@ class Config:
 
         # Find
         if var is not None:
-            print()
-            print("\033[96m-- \033[1mHere's a sample for this config option:\033[0m\033[96m --\033[0m")
+            humecord.terminal.log(" ")
+            humecord.terminal.log("\033[96m-- \033[1mHere's a sample for this config option:\033[0m\033[96m --\033[0m")
             #logger.log_step("Here's a sample for this config option:", "light_cyan", bold = True)
 
             for i, line in enumerate(self.samples[cat]):
@@ -272,9 +279,13 @@ class Config:
                             active = self.samples[cat][active_i]
 
                     for line in comp:
-                        print(f"\033[96m{line}\033[0m")
+                        humecord.terminal.log(f"\033[96m{line}\033[0m")
 
-        sys.exit(1)
+        humecord.terminal.reprint(log_logs = True)
+
+        #humecord.bot.loop.create_task(humecord.bot.shutdown("Config error", error_state = True))
+
+        raise exceptions.InitError(f"Config validation error", traceback = False, log = False)
 
 class Globals:
     def __init__(

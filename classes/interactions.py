@@ -219,7 +219,7 @@ class Interactions:
             while not task.done():
                 await asyncio.sleep(0.01) # While I wait for discord.py devs to allow me to disable auto-defer
 
-            print()
+            humecord.terminal.log(" ", True)
 
 
 

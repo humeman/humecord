@@ -16,7 +16,7 @@ class OnReadyEvent:
     def __init__(
             self
         ):
-        self.name = "hh_on_ready"
+        self.name = "hc_on_ready"
         self.description = "Internal Humecord hooks for Discord's on_ready event."
 
         self.event = "on_ready"
@@ -30,12 +30,16 @@ class OnReadyEvent:
                 "function": self.tell_api,
                 "priority": 1
             },
-            "fire_hh": {
-                "function": self.fire_hh,
+            "fire_hc": {
+                "function": self.fire_hc,
                 "priority": 2
             },
             "ready": {
                 "function": self.ready,
+                "priority": 3
+            },
+            "start_ws": {
+                "function": self.start_ws,
                 "priority": 3
             },
             "post_changelog": {
@@ -125,12 +129,20 @@ class OnReadyEvent:
             )
         )
 
-    async def fire_hh(
+    async def fire_hc(
             self,
             __
         ):
 
-        await humecord.bot.events.call("hh_on_ready", [])
+        await humecord.bot.events.call("hc_on_ready", [])
+
+    async def start_ws(
+            self,
+            __
+        ):
+
+        if hasattr(humecord.bot, "ws"):
+            humecord.bot.ws.run()
 
     async def post_changelog(
             self,

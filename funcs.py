@@ -29,7 +29,7 @@ def event(event_name, priority = 5):
 
 class GeneratedEvent:
     def __init__(self, event_name, priority, function):
-        self.name = f"__hh_generated_{event_name}"
+        self.name = f"__hc_generated_{event_name}"
         self.description = "Generated on the fly via a decorated function."
 
         self.event = event_name

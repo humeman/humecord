@@ -18,10 +18,12 @@ class Events:
         self.registered = []
 
         self.valid_events = [
-            "hh_on_stop",
-            "hh_on_ready",
-            "hh_on_reload",
-            "hh_on_command",
+            "hc_on_stop",
+            "hc_on_ready",
+            "hc_on_reload",
+            "hc_on_command",
+            "hc_on_ws_action",
+            "hc_on_ws_response",
             "on_connect",
             "on_shard_connect",
             "on_disconnect",
@@ -138,6 +140,11 @@ class Events:
                 "imp": "from humecord.events import on_ready",
                 "module": "on_ready",
                 "class": "OnReadyEvent"
+            },
+            {
+                "imp": "from humecord.events import ws",
+                "module": "ws",
+                "class": "HCOnWSAction"
             }
         ]
 
@@ -233,7 +240,7 @@ class Events:
             if event in self.registered:
                 continue # Don't register twice
 
-            if not event.startswith("hh_"):
+            if not event.startswith("hc_"):
                 exec("\n".join([x[16:] for x in f"""
                 @bot.client.event
                 async def {event}(*args):

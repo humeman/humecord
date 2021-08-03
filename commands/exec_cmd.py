@@ -22,7 +22,7 @@ class ExecCommand:
 
         self.description = "Executes Python code."
 
-        self.aliases = ["eval"]
+        self.aliases = []
 
         self.permission = "bot.dev"
         
@@ -30,6 +30,10 @@ class ExecCommand:
 
         self.info = {
             "Execute a function": "To execute a function, run %p%exec \\`\\`\\`function\\`\\`\\`."
+        }
+
+        self.shortcuts = {
+            "eval": "exec eval"
         }
 
         self.subcommands = {

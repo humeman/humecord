@@ -11,3 +11,7 @@ from . import components
 from . import hcutils
 from . import argrules
 from . import ratelimits
+#from . import terminal
+#from . import console
+from . import consolecommands
+from . import async_mcrcon

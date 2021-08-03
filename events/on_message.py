@@ -11,7 +11,7 @@ class OnMessageEvent:
     def __init__(
             self
         ):
-        self.name = "hh_on_message"
+        self.name = "hc_on_message"
         self.description = "Internal Humecord hooks for Discord's on_message event."
 
         self.event = "on_message"

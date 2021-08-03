@@ -58,6 +58,14 @@ __if[use_api:==True]__:
 
   allow_primary_override: "bool"
 
+# -- Websocket --
+use_ws: "bool"
+
+__if[use_ws:==True]__:
+  ws_url: "str"
+
+  ws_auth: "dict[str:str]"
+
 # -- Logging --
 logging: "dict[str:bool]"
 
@@ -72,6 +80,12 @@ bot_owner: "int"
 eval_perms: "list[int]"
 
 mod_perms: "list[str]"
+
+terminal_colors: "dict[str:str]"
+
+#log_colors: "dict[str:str]"
+
+line_numbers: "bool"
 
 # -- Defaults --
 default_status: "dict[str:str&status,visibility]"

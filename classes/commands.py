@@ -9,7 +9,8 @@ import humecord
 from humecord.utils import (
     ratelimits,
     discordutils,
-    dateutils
+    dateutils,
+    exceptions
 )
 
 import textwrap
@@ -28,6 +29,11 @@ class Commands:
 
         global bot
         from humecord import bot
+
+        self.stat_cache = {
+            "__total__": 0,
+            "__denied__": 0
+        }
 
     def get_imports(
             self
@@ -239,6 +245,7 @@ class Commands:
             if user["botban"]["duration"] is not None:
                 if user["botban"]["endsat"] > time.time():
                     humecord.utils.logger.log("cmd", f"User {message.author} ({message.author.id}) is botbanned, skipping command dispatch", color = "red")
+                    self.stat_cache["__denied__"] += 1
                     return False
 
         # Get the guild database
@@ -307,6 +314,7 @@ class Commands:
                     f"In order to run this command, you need the permission `{command.permission}`. Check with an admin if you believe this is in error." 
                 )
             )
+            self.stat_cache["__denied__"] += 1
             return
 
         args = message.content.split(" ")
@@ -407,6 +415,7 @@ class Commands:
                 if message.author.id in bot.mem_storage["error_ratelimit"]:
                     if bot.mem_storage["error_ratelimit"][message.author.id] > time.time() - 1:
                         # Don't say anything - they're spamming
+                        self.stat_cache["__denied__"] += 1
                         return
 
                 bot.mem_storage["error_ratelimit"][message.author.id] = float(time.time())
@@ -420,6 +429,7 @@ class Commands:
                         f"This command has a ratelimit of {dateutils.get_duration(limit)}, which means you have to wait {dateutils.get_duration(left)} before running again."
                     )
                 )
+                self.stat_cache["__denied__"] += 1
                 return
 
         linebreak = "\n"
@@ -434,6 +444,16 @@ class Commands:
             extra_line = False
         )
 
+        if category not in self.stat_cache:
+            self.stat_cache[category] = {}
+
+        if command.name not in self.stat_cache[category]:
+            self.stat_cache[category][command.name] = 0
+
+        self.stat_cache[category][command.name] += 1
+
+        self.stat_cache["__total__"] += 1
+
         humecord.utils.logger.log_step("Creating command task...", "blue")
         humecord.bot.client.loop.create_task(
             humecord.utils.errorhandler.discord_wrap(
@@ -442,7 +462,7 @@ class Commands:
                 command = [category, command, header]
             )
         )
-        print()
+        humecord.terminal.log(" ", True)
 
     async def syntax_error(
             self,
@@ -566,3 +586,63 @@ class Commands:
                 return command
 
         raise humecord.utils.exceptions.DevError(f"Command {name} doesn't exist in category {category}")
+
+class CommandArgParser:
+    def __init__(
+            self
+        ):
+        pass
+
+    async def compile_all(
+            self
+        ):
+        """
+        Compiles all commands' arg parser values into
+        easier to read dicts to save time later.
+        """
+
+        for category, commands in bot.commands.items():
+            for command in commands:
+                if hasattr(command, "args"):
+                    command.args = await self.compile_one(command.args)
+
+    async def compile_one(
+            self,
+            command
+        ):
+
+        comp = {
+            "args": {}
+        }
+
+        comp["required"] = command["required"] if "required" in command else False
+        comp["fill"] = command["fill"] if "fill" in command else False
+
+        # Begin parsing args
+        for name, arg in command["args"].items():
+            arg_comp = {}
+            # Parse the rule
+            arg_comp["rule"] = await bot.args.compile_recursive(
+                arg["rule"]
+            )
+
+            arg_comp["required"] = arg["required"] if "required" in arg else False
+
+            if "if" in arg_comp:
+                arg_comp["condition"] = await self.compile_condition(arg_comp["if"])
+
+            comp["args"][name] = arg_comp
+
+        return comp
+
+    async def compile_condition(
+            self,
+            condition
+        ):
+
+        if not ":" in condition:
+            raise exceptions.InvalidRule("Expected ':'")
+
+        rtype, args = condition.split(":", 1)
+
+        args = args.split("&")

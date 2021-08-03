@@ -1,0 +1,43 @@
+version: 0.3.0
+
+title: "Update:"
+description: |
+  Big ol update which brings a number of ease of use and quality of life improvements.
+
+changes:
+  - name: Added the Humecord Terminal
+    value: |
+      This terminal gives a cool visual representation of your bot's info, logs, and console. It also fixes a number of limitations pertaining to screens - so, now, you should have a seamless experience within a screen or outside of it.
+
+      It's operated on a curses-like interface, which allows me to enable a number of key shortcuts as well (ex: `end` to shut down bot, `esc` to clear input, and so on). This also means that new logs won't interfere with anything you're typing into the console.
+
+      Typical key shortcuts are all integrated nicely: enter to send, page up/page down, arrow keys, ctrl + arrow/back to skip words, delete, backspace, history (shift or ctrl + up/down arrow), and so on. More will come in a future update.
+  - name: Added the console
+    value: |
+      This is an addition to the new terminal which allows you to run actions on your bot without even touching discord - directly from the terminal itself. It's all contained in the little box at the bottom of your screen, starting with the `$` symbol. Type `help` into that box and hit enter to learn all that it can currently do.
+
+      More commands will be added over time, of course, as well as a way to code your own.
+  - name: Added the websocket interface
+    value: |
+      Just like the already existing file and API interfaces, this is a new extensible interface which allows you to connect to websockets. Currently, this websocket is utilized by the new StatusReporter system to allow for remote control of bots and some status monitoring - but you can make it do anything. Messages are forwarded through the events system under `hc_on_ws_action` and `hc_on_ws_response`.
+  - name: Rewrote StatusReporter
+    value: |
+      The new StatusReporter has all the features of the previous one, plus a number of cool control features.
+
+      Current feature set, which will be expanded over time:
+        - sr!tmux - The new version of sr!screen, now featuring full terminal to discord bridge (sr!tmux show) and commands (sr!tmux send).
+        - sr!control - Controls bots over the new websocket interface.
+        - Updated status monitoring - same feature which updates messages in a channel, but more customizable and more stable.
+        - Better statistics - now featuring uptime reporting, command statistics, and the return of API request statistics.
+        - Server resource usage statistics, refreshed.
+        - Graceful shutdown monitoring - StatusReporter will ping you when bots shut down improperly (ie: crash).
+
+      Source code at https://github.com/humeman/statusreporter.
+  - name: Implemented graceful shutdown.
+    value: |
+      Instead of just terminating everything, bots will now gracefully shut down - whether it's through the new control websocket & statusreporter, regular keyboard interrupts, or critical errors. You can call the shutdown event anywhere in your bot manually with `await bot.shutdown(reason: str, safe: bool = False)`.
+  - name: Known bugs/upcoming fixes
+    value: |
+      - Anything that asks for user input from the terminal will break stuff. Patch coming in 0.3.1.
+      - Print statements completely destroy the terminal.
+      - Customizable log colors were supposed to be added this update. Instead, they're coming in 0.3.1. I was an absolute moron when designing the logger, now requring me to sift through thousands of lines of code to implement this. (Custom terminal colors - as in border, info, console, etc - are available already.)

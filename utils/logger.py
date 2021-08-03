@@ -61,7 +61,7 @@ def log(
 
     bold_str = TermColors.get_color("bold") if bold else ""
 
-    print(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{bold_str}{message}{TermColors.get_color('reset')}")
+    humecord.terminal.log(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{bold_str}{message}{TermColors.get_color('reset')}", True)
 
 def ask(
         message: str,
@@ -112,7 +112,9 @@ def log_step(
     reset = TermColors.get_color("reset")
 
     for line in [content[i:i+150] for i in range(0, len(content), 150)]:
-        print(f"                                {color}{bold_col}→ {reset}{color}{bold_col if bold else ''}{line}{reset}")
+        humecord.terminal.log(f"                            {color}{bold_col}→ {reset}{color}{bold_col if bold else ''}{line}{reset}")
+
+    humecord.terminal.reprint(log_logs = True)
 
 
 def log_long(
@@ -135,7 +137,9 @@ def log_long(
         if line.strip() == "" and remove_blank_lines:
             continue
         
-        print(f"                                {color}{bold}→ {reset}{color}{line}{reset}")
+        humecord.terminal.log(f"                            {color}{bold}→ {reset}{color}{line}{reset}")
 
     if extra_line:
-        print()
+        humecord.terminal.log(" ")
+
+    humecord.terminal.reprint(log_logs = True)

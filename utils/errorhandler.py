@@ -8,6 +8,7 @@ from humecord.utils import (
 
 import sys
 import traceback
+import asyncio
 from typing import Union
 
 async def wrap(
@@ -21,9 +22,16 @@ async def wrap(
     try:
         value = await function
 
+    except exceptions.CloseLoop as e:
+        raise e
+
     except Exception as e:
         if type(e) in exclude:
             return
+
+        if type(e) == exceptions.APIOffline:
+            if str(e) == "Failed to connect to bot API.":
+                return # This was already logged.
 
         tb = traceback.format_exc().strip()
         tb_short = tb[:1900]
@@ -95,6 +103,9 @@ async def discord_wrap(
 
     try:
         value = await function
+
+    except exceptions.CloseLoop:
+        raise
 
     except Exception as e:
         tb = traceback.format_exc().strip()
@@ -216,7 +227,9 @@ def base_wrap(
         function(*args, **kwargs)
 
     except (exceptions.InitError, exceptions.CriticalError) as e:
-        print()
+        humecord.bot.loop.stop()
+
+        humecord.terminal.log(" ", True)
 
         if type(e) == exceptions.InitError:
             title = "An initialization error occurred!"
@@ -229,21 +242,64 @@ def base_wrap(
             debug.print_traceback(
                 title
             )
-            print()
+            humecord.terminal.log(" ", True)
             logger.log_step(e.message, 'red', bold = True)
 
-        else:
+        elif e.log:
             logger.log("error", title, bold = True)
             logger.log_step(e.message, "red")
 
-        sys.exit(1)
+        humecord.bot.shutdown(title, safe = True, error_state = True)
 
-    except (SystemExit, KeyboardInterrupt):
+    except (SystemExit, KeyboardInterrupt, exceptions.CloseLoop):
         raise
 
     except:
-        print()
+        humecord.terminal.log(" ", True)
         debug.print_traceback(
             f"An unexpected initialization error occurred!"
         )
-        sys.exit(1)
+
+        humecord.bot.shutdown("Unexpected initialization error", error_state = True)
+
+async def async_wrap(
+        coro
+    ):
+
+    try:
+        await coro
+
+    except (exceptions.InitError, exceptions.CriticalError) as e:
+        humecord.terminal.log(" ", True)
+
+        if type(e) == exceptions.InitError:
+            title = "An initialization error occurred!"
+
+        elif type(e) == exceptions.CriticalError:
+            title = "A critical error occurred!"
+
+        # Forward it off to the logger
+        if e.traceback:
+            debug.print_traceback(
+                title
+            )
+            humecord.terminal.log(" ", True)
+            logger.log_step(e.message, 'red', bold = True)
+
+        elif e.log:
+            logger.log("error", title, bold = True)
+            logger.log_step(e.message, "red")
+
+        await humecord.bot.shutdown(title, safe = True, error_state = True)
+
+    except (SystemExit, KeyboardInterrupt, exceptions.CloseLoop):
+        raise
+
+    except:
+        humecord.terminal.log(" ", True)
+        debug.print_traceback(
+            f"An unexpected initialization error occurred!"
+        )
+
+        await humecord.bot.shutdown("Unexpected initialization error", error_state = True)
+

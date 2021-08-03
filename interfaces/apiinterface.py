@@ -51,6 +51,7 @@ class APIInterface:
 
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
+            return
 
         if botapi_adapt:
             if not data.get("success"):
@@ -102,6 +103,7 @@ class APIInterface:
 
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
+            return
 
         if botapi_adapt:
             if not data.get("success"):
@@ -161,6 +163,9 @@ class APIInterface:
             
             # Reraise
             raise humecord.utils.exceptions.APIOffline("Failed to connect to bot API.")
+
+        else:
+            raise humecord.utils.exceptions.APIOffline("API is already offline. Something is still running! Report this to hume.")
 
 class DirectAPI:
     def __init__(

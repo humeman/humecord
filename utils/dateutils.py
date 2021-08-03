@@ -92,10 +92,13 @@ def get_duration(
                     comp[name] = seconds // bound
                     seconds = seconds % bound
 
+    if len(comp) == 0:
+        comp["second"] = 0
+
     # Compile into string
     comp_str = []
     for name, value in comp.items():
-        if value == 0:
+        if value == 0 and (name != "second" and len(comp_str) > 0):
             continue
 
         if short:

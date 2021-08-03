@@ -29,9 +29,12 @@ class Loader:
         # Shut down the bot
         humecord.bot.available = False
 
+        if not starting:
+            humecord.utils.logger.log("start", "Reloading...", bold = True)
+
         # Run on_close event
         if (not safe_stop) and (not starting):
-            await humecord.bot.events.call("hh_on_stop", [])
+            await humecord.bot.events.call("hc_on_stop", [])
 
         # Check if the imports class is defined - if so, del it
         if hasattr(self, "imports"):

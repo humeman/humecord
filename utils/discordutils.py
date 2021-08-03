@@ -296,3 +296,27 @@ async def generate_file(
         return discord.File(f, filename)
 
     
+async def fetch_message(
+        channel: discord.TextChannel,
+        message_id: int,
+        retries: int = 5
+    ):
+
+    message = None
+    tries = 0
+    while message is None and tries < retries:
+        try:
+            message = await channel.fetch_message(message_id)
+
+        except (discord.NotFound, discord.Forbidden):
+            raise
+
+        except (discord.HTTPException):
+            pass
+
+        tries += 1
+
+    if message is None:
+        raise exceptions.NotFound(f"Lookup failed after {tries} attempts")
+
+    return message

@@ -1,5 +1,7 @@
 from . import exceptions
 
+import humecord
+
 col = {
     "soft_pink": 0xf2d7d5,
     "hot_pink": 0xec407a,
@@ -49,7 +51,7 @@ termcolors = {
     "light_red": "\033[91m",
 
     "green": "\033[32m",
-    "light_green": "\033[39m",
+    "light_green": "\033[92m",
 
     "yellow": "\033[33m",
     "light_yellow": "\033[93m",

@@ -27,13 +27,23 @@ class Loops:
         ]
 
         if humecord.bot.config.use_api:
-            comp.append(
+            comp += [
                 {
                     "imp": "from humecord.loops import update_overrides",
                     "module": "update_overrides",
                     "class": "UpdateOverridesLoop"
+                },
+                {
+                    "imp": "from humecord.loops import post_status",
+                    "module": "post_status",
+                    "class": "PostStatusLoop"
+                },
+                {
+                    "imp": "from humecord.loops import post_stats",
+                    "module": "post_stats",
+                    "class": "PostStatsLoop"
                 }
-            )
+            ]
 
         return comp
 
@@ -141,6 +151,18 @@ class Loops:
                             on_fail = [pause_execution, [loop]]
                         )
                     )
+
+    def close(self):
+        for loop in self.loops:
+            if loop.task is not None:
+                try:
+                    loop.task.cancel()
+
+                except:
+                    pass
+
+        if self.task is not None:
+            self.task.cancel()
 
     def check_run(self, loop):
         if loop.type == "delay":

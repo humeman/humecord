@@ -60,12 +60,14 @@ class NotFound(Exception):
     pass
 
 class InitError(Exception):
-    def __init__(self, message, traceback = True):
+    def __init__(self, message, traceback = True, log = True):
         super().__init__(message)
 
         self.message = message
 
         self.traceback = traceback
+
+        self.log = log
 
 class CriticalError(Exception):
     def __init__(self, message, traceback = True):
@@ -75,6 +77,8 @@ class CriticalError(Exception):
 
         self.traceback = traceback
 
+class CloseLoop(Exception):
+    pass
 
 # -- argparse --
 class InvalidRule(Exception):

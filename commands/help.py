@@ -300,6 +300,10 @@ class HelpCommand:
                 command.permission,
                 udb
             ):
+                if hasattr(command, "hide"):
+                    if command.hide == True:
+                        continue
+
                 comp.append(command)
 
         if len(comp) == 0:
