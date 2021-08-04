@@ -55,23 +55,6 @@ class APIInterface:
         try:
             data = await self.direct.get(url, args)
 
-        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
-            await humecord.bot.debug_channel.send(
-                f"<@337758812465528833>",
-                embed = discordutils.create_embed(
-                    f"Remote protocol error occurred",
-                    description = f"```py\n{traceback.format_exc()[-3990:]}```",
-                    color = "error",
-                    footer = f"Timer is at: {time.time() - timer}s"
-                )
-            )
-            await humecord.bot.debug_channel.send(
-                embed = discordutils.create_embed(
-                    description = f"```json\n{json.dumps(args, indent = 2)[-3990:]}```"
-                )
-            )
-            return
-
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
             return
@@ -124,23 +107,6 @@ class APIInterface:
 
         try:
             data = await self.direct.put(url, json_)
-
-        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
-            await humecord.bot.debug_channel.send(
-                f"<@337758812465528833>",
-                embed = discordutils.create_embed(
-                    f"Remote protocol error occurred",
-                    description = f"```py\n{traceback.format_exc()[-3990:]}```",
-                    color = "error",
-                    footer = f"Timer is at: {time.time() - timer}s"
-                )
-            )
-            await humecord.bot.debug_channel.send(
-                embed = discordutils.create_embed(
-                    description = f"```json\n{json.dumps(json_, indent = 2)[-3990:]}```"
-                )
-            )
-            return
 
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
@@ -229,7 +195,8 @@ class DirectAPI:
                 url += f"?{'&'.join(args)}"
 
         try:
-            response = await self.client.get(url)
+            async with httpx.AsyncClient() as c:
+                response = await c.get(url) #self.client.get(url)
 
             response.raise_for_status()
 
@@ -258,7 +225,8 @@ class DirectAPI:
         ):
 
         try:
-            response = await self.client.put(url, json = json_)
+            async with httpx.AsyncClient() as c:
+                response = await c.put(url, json = json_) #self.client.put(url, json = json_)
 
             response.raise_for_status()
 
