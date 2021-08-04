@@ -67,7 +67,7 @@ class APIInterface:
             )
             await humecord.bot.debug_channel.send(
                 embed = discordutils.create_embed(
-                    description = f"```json\n{json.dumps(args, indent = 2)[:-3990]}```"
+                    description = f"```json\n{json.dumps(args, indent = 2)[-3990:]}```"
                 )
             )
             return
@@ -137,7 +137,7 @@ class APIInterface:
             )
             await humecord.bot.debug_channel.send(
                 embed = discordutils.create_embed(
-                    description = f"```json\n{json.dumps(args, indent = 2)[:-3990]}```"
+                    description = f"```json\n{json.dumps(json, indent = 2)[-3990:]}```"
                 )
             )
             return
