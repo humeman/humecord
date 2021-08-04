@@ -2,6 +2,10 @@ import humecord
 from typing import Union
 
 import httpx
+import time
+import httpcore
+from humecord.utils import discordutils
+import traceback
 
 class APIInterface:
     def __init__(
@@ -21,6 +25,7 @@ class APIInterface:
             args: dict,
             botapi_adapt: bool = True
         ):
+        timer = time.time()
 
         # Find the category
         if category not in self.endpoints:
@@ -49,6 +54,18 @@ class APIInterface:
         try:
             data = await self.direct.get(url, args)
 
+        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+            await humecord.bot.debug_channel.send(
+                f"<@337758812465528833>",
+                embed = discordutils.create_embed(
+                    f"Remote protocol error occurred",
+                    description = f"```py\n{traceback.format_exc()[-3990:]}```",
+                    color = "error",
+                    footer = f"Timer is at: {round(time.time() - timer, 1)}s"
+                )
+            )
+            return
+
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
             return
@@ -73,6 +90,7 @@ class APIInterface:
             json: dict,
             botapi_adapt: bool = True
         ):
+        timer = time.time()
 
         # Find the category
         if category not in self.endpoints:
@@ -100,6 +118,18 @@ class APIInterface:
 
         try:
             data = await self.direct.put(url, json)
+
+        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+            await humecord.bot.debug_channel.send(
+                f"<@337758812465528833>",
+                embed = discordutils.create_embed(
+                    f"Remote protocol error occurred",
+                    description = f"```py\n{traceback.format_exc()[-3990:]}```",
+                    color = "error",
+                    footer = f"Timer is at: {round(time.time() - timer, 1)}s"
+                )
+            )
+            return
 
         except humecord.utils.exceptions.APIOffline:
             await self.handle_api_error()
@@ -192,6 +222,9 @@ class DirectAPI:
 
             response.raise_for_status()
 
+        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+            raise
+
         except httpx.HTTPStatusError as e:
             raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
 
@@ -217,6 +250,9 @@ class DirectAPI:
             response = await self.client.put(url, json = json)
 
             response.raise_for_status()
+
+        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+            raise
 
         except httpx.HTTPStatusError as e:
             raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
