@@ -6,6 +6,7 @@ import time
 import httpcore
 from humecord.utils import discordutils
 import traceback
+import json
 
 class APIInterface:
     def __init__(
@@ -61,7 +62,12 @@ class APIInterface:
                     f"Remote protocol error occurred",
                     description = f"```py\n{traceback.format_exc()[-3990:]}```",
                     color = "error",
-                    footer = f"Timer is at: {round(time.time() - timer, 1)}s"
+                    footer = f"Timer is at: {time.time() - timer}s"
+                )
+            )
+            await humecord.bot.debug_channel.send(
+                embed = discordutils.create_embed(
+                    description = f"```json\n{json.dumps(args, indent = 2)[:-3990]}```"
                 )
             )
             return
@@ -126,7 +132,12 @@ class APIInterface:
                     f"Remote protocol error occurred",
                     description = f"```py\n{traceback.format_exc()[-3990:]}```",
                     color = "error",
-                    footer = f"Timer is at: {round(time.time() - timer, 1)}s"
+                    footer = f"Timer is at: {time.time() - timer}s"
+                )
+            )
+            await humecord.bot.debug_channel.send(
+                embed = discordutils.create_embed(
+                    description = f"```json\n{json.dumps(args, indent = 2)[:-3990]}```"
                 )
             )
             return
