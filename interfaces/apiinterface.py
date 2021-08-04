@@ -54,7 +54,7 @@ class APIInterface:
         try:
             data = await self.direct.get(url, args)
 
-        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
             await humecord.bot.debug_channel.send(
                 f"<@337758812465528833>",
                 embed = discordutils.create_embed(
@@ -119,7 +119,7 @@ class APIInterface:
         try:
             data = await self.direct.put(url, json)
 
-        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
             await humecord.bot.debug_channel.send(
                 f"<@337758812465528833>",
                 embed = discordutils.create_embed(
@@ -222,7 +222,7 @@ class DirectAPI:
 
             response.raise_for_status()
 
-        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
             raise
 
         except httpx.HTTPStatusError as e:
@@ -251,7 +251,7 @@ class DirectAPI:
 
             response.raise_for_status()
 
-        except (httpcore.WriteError, httpcore.RemoteProtocolError) as e:
+        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
             raise
 
         except httpx.HTTPStatusError as e:
