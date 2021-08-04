@@ -93,7 +93,7 @@ class APIInterface:
             self,
             category: str,
             endpoint: str,
-            json: dict,
+            json_: dict,
             botapi_adapt: bool = True
         ):
         timer = time.time()
@@ -120,10 +120,10 @@ class APIInterface:
         url = f"{base}/{route['endpoint']}".replace("%method%", "put")
 
         if route.get("auth"):
-            json = {**json, **auth}
+            json_ = {**json_, **auth}
 
         try:
-            data = await self.direct.put(url, json)
+            data = await self.direct.put(url, json_)
 
         except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
             await humecord.bot.debug_channel.send(
@@ -137,7 +137,7 @@ class APIInterface:
             )
             await humecord.bot.debug_channel.send(
                 embed = discordutils.create_embed(
-                    description = f"```json\n{json.dumps(json, indent = 2)[-3990:]}```"
+                    description = f"```json\n{json.dumps(json_, indent = 2)[-3990:]}```"
                 )
             )
             return
@@ -152,7 +152,7 @@ class APIInterface:
                 resend = await self.check_errors(data.get("error"), data.get("reason"))
 
                 if resend:
-                    return await self.put(category, endpoint, json, botapi_adapt)
+                    return await self.put(category, endpoint, json_, botapi_adapt)
 
             if "data" in data:
                 return data["data"]
@@ -254,11 +254,11 @@ class DirectAPI:
     async def put(
             self,
             url: str, 
-            json: Union[dict, None]
+            json_: Union[dict, None]
         ):
 
         try:
-            response = await self.client.put(url, json = json)
+            response = await self.client.put(url, json = json_)
 
             response.raise_for_status()
 
@@ -279,9 +279,3 @@ class DirectAPI:
 
         except:
             raise humecord.utils.exeptions.EmptyResponse("Response is missing JSON data.")
-
-        
-
-
-
-        
