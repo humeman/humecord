@@ -2,6 +2,7 @@ import humecord
 import os
 import sys
 import json
+import copy
 
 class FileInterface:
     def __init__(
@@ -41,7 +42,8 @@ class FileInterface:
                 "ratelimits": {}
             },
             "__humecord__.json": {
-                "version": None
+                "version": None,
+                "system_logs": {}
             },
             **bot.config.req_files
         }
@@ -62,6 +64,17 @@ class FileInterface:
             except:
                 humecord.utils.logger.log("error", f"Failed to read file {file_name}.")
                 sys.exit(-1)
+
+            write = False
+            for name, value in default.items():
+                if name not in self.files[file_name]:
+                    self.files[file_name] = copy.copy(value)
+                    humecord.utils.logger.log_step(f"Added missing key '{name}' to file '{file_name}'", "cyan")
+                    write = True
+
+            if write:
+                self.write(file_name)
+
 
     def write(
             self,
