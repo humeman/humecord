@@ -301,9 +301,16 @@ class Commands:
             pdb[key] = gdb[key]
 
         # Create response channel
-        resp = humecord.classes.discordclasses.MessageResponseChannel(
-            message
-        )
+        if type(message.channel) == discord.Thread:
+            resp = humecord.classes.discordclasses.ThreadResponseChannel(message)
+
+        elif type(message.channel) == discord.TextChannel:
+            resp = humecord.classes.discordclasses.MessageResponseChannel(
+                message
+            )
+
+        else:
+            return
 
         # Check perms
         if not await humecord.bot.permissions.check(message.author, command.permission, user):

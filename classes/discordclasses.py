@@ -63,3 +63,11 @@ class MessageResponseChannel(ResponseChannel):
 
     async def send(self, *args, **kwargs):
         return await self.message.channel.send(*args, **kwargs)
+
+class ThreadResponseChannel(ResponseChannel):
+    def __init__(self, message):
+        self.channel = message.channel
+        self.parent = self.channel.parent
+
+    async def send(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
