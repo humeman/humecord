@@ -85,7 +85,7 @@ class Replies:
             # Check if banned
             if user["botban"] is not None:
                 if user["botban"]["endsat"] > time.time():
-                    humecord.utils.logger.log_step(f"User {message.author} ({message.author.id}) is botbanned, skipping", "red")
+                    humecord.logger.log_step("reply", "info", f"User {message.author} ({message.author.id}) is botbanned, skipping")
                     return
 
             # Check if user is right
@@ -117,20 +117,23 @@ class Replies:
             # Call the function
             mid = int(message.id)
 
-            humecord.utils.logger.log("cmd", f"Dispatching reply ID {str(hex(mid)).replace('0x', '')}", bold = True)
+            humecord.logger.log("reply", "cmd", f"Dispatching reply ID {str(hex(mid)).replace('0x', '')}", bold = True)
 
-            humecord.utils.logger.log_long(
-                f"""Type:           message.reply
-                Message:        {mid}
-                Replied to:     {replied_id}
-                Guild:          {message.guild.id} ({message.guild.name})
-                Channel:        {message.channel.id} ({message.channel.name})
-                User:           {message.author.id} ({message.author.name}#{message.author.discriminator})""".replace("                ", ""),
-                "blue",
+            humecord.logger.log_long(
+                "reply", 
+                "cmd",
+                [
+                    f"Type:           message.reply",
+                    f"Message:        {mid}",
+                    f"Replied to:     {replied_id}",
+                    f"Guild:          {message.guild.id} ({message.guild.name})",
+                    f"Channel:        {message.channel.id} ({message.channel.name})",
+                    f"User:           {message.author.id} ({message.author.name}#{message.author.discriminator})"
+                ],
                 extra_line = False
             )
 
-            humecord.utils.logger.log_step("Creating callback task...", "blue")
+            humecord.logger.log_step("reply", "cmd", "Creating callback task...")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
                     message_data["callback"](message, resp, message.content.split(" "), user, gdb, None, pdb, message_data["data"]),

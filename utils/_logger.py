@@ -5,6 +5,8 @@ import time
 
 import humecord
 
+from typing import Optional
+
 adapters = {
     "warn": "yellow",
     "error": "red",
@@ -18,7 +20,75 @@ adapters = {
     "obj": "magenta"
 }
 
-def log(
+def log_(
+        category: str,
+        log_type: str,
+        message: str,
+        bold: bool = False,
+        reversed: bool = False,
+        color: Optional[str] = None
+    ):
+
+    humecord.logger.log(
+        category,
+        log_type,
+        message,
+        bold,
+        reversed,
+        color
+    )
+
+def log_step_(
+        category: str,
+        log_type: str,
+        message: str,
+        bold: bool = False,
+        reversed: bool = False,
+        color: Optional[str] = None
+    ):
+
+    humecord.logger.log_step(
+        category,
+        log_type,
+        message,
+        bold,
+        reversed,
+        color
+    )
+
+def log_long_(
+        category: str,
+        log_type: str,
+        message: str,
+        bold: bool = False,
+        reversed: bool = False,
+        color: Optional[str] = None
+    ):
+
+    humecord.logger.log_long(
+        category,
+        log_type,
+        message,
+        bold,
+        reversed,
+        color
+    )
+
+def log_raw_(
+        message: str,
+        bold: bool = False,
+        reversed: bool = False,
+        color: Optional[str] = None
+    ):
+
+    humecord.logger.log_raw(
+        message,
+        bold,
+        reversed,
+        color
+    )
+
+def log_old(
         log_type: str = "",
         message: str = "",
         bold: bool = False,
@@ -63,7 +133,7 @@ def log(
 
     humecord.terminal.log(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{bold_str}{message}{TermColors.get_color('reset')}", True)
 
-def ask(
+def ask_old(
         message: str,
         args: str,
         color: str
@@ -96,7 +166,7 @@ def ask(
 
     return input(f"{col}{TermColors.get_color('bold')}{timestr}{typestr}\t{TermColors.get_color('reset')}{col}{TermColors.get_color('bold')}{message}{TermColors.get_color('reset')} {col}[{args}]{TermColors.get_color('reset')} ")
 
-def log_step(
+def log_step_old(
         content: str,
         color: str = "default",
         bold: bool = False,
@@ -117,7 +187,7 @@ def log_step(
     humecord.terminal.reprint(log_logs = True)
 
 
-def log_long(
+def log_long_old(
         content: str,
         color: str,
         remove_blank_lines: bool = False,

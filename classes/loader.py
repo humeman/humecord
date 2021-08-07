@@ -30,7 +30,7 @@ class Loader:
         humecord.bot.available = False
 
         if not starting:
-            humecord.utils.logger.log("start", "Reloading...", bold = True)
+            humecord.logger.log("loader", "start", "Reloading...", bold = True)
 
         # Run on_close event
         if (not safe_stop) and (not starting):

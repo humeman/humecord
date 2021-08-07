@@ -43,7 +43,7 @@ req_files: {}
 # Eval code with eval:::
 start_calls:
   #- toilet -f ascii9 --filter border:metal "%bot%"
-  - eval:::humecord.utils.logger.log("start", "Running %bot%[%version%] on Humecord[%humecord%]", bold = True)
+  - eval:::humecord.utils.logger.log("start", "Running %bot%[%version%] on Humecord[%humecord%]", bold = true)
 
 # -- Bot --
 
@@ -155,7 +155,7 @@ allow_primary_override: false
 # -- Websocket --
 
 # Enable or disable websocket.
-use_ws: True
+use_ws: true
 
 # Websocket URL
 ws_url: ws://localhost:5001
@@ -166,19 +166,45 @@ ws_auth:
 
 # -- Logging --
 
-# Enable/disable various logs. (Not implemented yet)
+# Enable/disable various logs.
 logging:
-  log_requests: false
-  log_request_content: false
-  log_loops: true
-  log_start: true
-  log_stop: true
-  log_unhandled_errors: true
-  log_handled_errors: true
-  log_cache_info: true
-  log_commands: true
-  log_errored_requests: true
-  log_chatbots: true
+  request: false
+  requestcontent: false
+  loops: false
+  start: true
+  botinit: true
+  stop: true
+  shutdown: true
+  unhandlederror: true
+  cacheinfo: true
+  command: true
+  commandinfo: true
+  config: true
+  erroredrequest: true
+  interaction: true
+  events: true
+  loader: true
+  reply: true
+  ws: true
+  api: true
+  subprocess: true
+
+# Overrides the log color for logging types.
+# You can also add additional log types through this.
+# Log types:
+  # info warn error success start stop close cmd int
+log_colors:
+  start: green
+
+# Overrides the format used to print logs.
+# You can use the following placeholders:
+# (surround with %)
+  # color bold reset underline reversed reverseopt
+  # boldopt time timep timef timepf logtype logtypel
+  # message category
+# You can override the following types:
+  # log step long raw
+log_formats: {}
 
 # Humecord Terminal color set
 # Valid colors:
@@ -190,11 +216,6 @@ terminal_colors:
   secondary: dark_gray
   terminal: green
   response: cyan
-
-# Overrides the log color for logging types.
-# You can also add additional log types through this.
-log_colors:
-  start: green
 
 # Enable/disable line numbers at the start of terminal logs.
 line_numbers: true

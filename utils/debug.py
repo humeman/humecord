@@ -9,7 +9,6 @@ import traceback
 import humecord
 from humecord.utils import discordutils
 
-from . import logger
 from .colors import TermColors
 
 def print_traceback(
@@ -23,12 +22,12 @@ def print_traceback(
         tb = traceback.format_exc()
 
     except:
-        logger.log("warn", "Tried to print stack trace but there is no active exception.")
+        humecord.logger.log("unhandlederror", "warn", "Tried to print stack trace but there is no active exception.")
         return
 
-    logger.log("error", error_message, bold = True)
+    humecord.logger.log("unhandlederror", "error", error_message, bold = True)
 
-    logger.log_long(tb, "red", True)
+    humecord.logger.log_long("unhandlederror", "error", tb)
     
     print()
 
@@ -37,7 +36,7 @@ def print_object(obj):
     Prints out an expanded representation of an object.
     """
 
-    logger.log("obj", f"Object {type(obj)} at {hex(id(obj))}:", bold = True)
+    humecord.logger.log("debug", "obj", f"Object {type(obj)} at {hex(id(obj))}:", bold = True)
 
     comp = []
     keys = dir(obj)
@@ -50,7 +49,7 @@ def print_object(obj):
         if not key.startswith("__"):
             comp.append(f"{key} {bold}= {reset}{magenta}{getattr(obj, key)}")
 
-    logger.log_long("\n".join(comp), "light_magenta")
+    humecord.logger.log_long("debug", "obj", "\n".join(comp), "light_magenta")
 
 async def log_traceback(
         context: str

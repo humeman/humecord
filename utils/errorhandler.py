@@ -1,7 +1,6 @@
 import humecord
 
 from humecord.utils import (
-    logger,
     exceptions,
     debug
 )
@@ -41,9 +40,9 @@ async def wrap(
             tb_short += "..."
             send_long = True
 
-        humecord.utils.logger.log("error", "Error handler caught an exception:", bold = True)
+        humecord.logger.log("unhandlederror", "error", "Error handler caught an exception:", bold = True)
 
-        humecord.utils.logger.log_long(tb, "red")
+        humecord.logger.log_long("unhandlederror", "error", tb)
 
         match = ["'", "(", '"', "[", "{"]
 
@@ -68,7 +67,8 @@ async def wrap(
 
         eid = humecord.utils.miscutils.generate_hexid(12)
 
-        await humecord.bot.debug_channel.send(
+        await humecord.bot.syslogger.send(
+            "error",
             embed = humecord.utils.discordutils.create_embed(
                 title = f"{humecord.bot.config.lang['emoji']['error']}  An uncaught exception occurred.",
                 description = f"```py\n{tb_short}\n```",
@@ -116,9 +116,9 @@ async def discord_wrap(
             tb_short += "..."
             send_long = True
 
-        humecord.utils.logger.log("error", "Error handler caught an exception during discord call:", bold = True)
+        humecord.logger.log("unhandlederror", "error", "Error handler caught an exception during discord call:", bold = True)
 
-        humecord.utils.logger.log_long(tb, "red")
+        humecord.logger.log_long("unhandlederror", "error", tb)
 
         match = ["'", "(", '"', "[", "{"]
 
@@ -136,7 +136,8 @@ async def discord_wrap(
 
         eid = humecord.utils.miscutils.generate_hexid(12)
 
-        await humecord.bot.debug_channel.send(
+        await humecord.bot.syslogger.send(
+            "error",
             embed = humecord.utils.discordutils.create_embed(
                 title = f"{humecord.bot.config.lang['emoji']['error']}  An uncaught exception occurred during command execution.",
                 description = f"```py\n{tb_short}\n```",
@@ -243,11 +244,11 @@ def base_wrap(
                 title
             )
             humecord.terminal.log(" ", True)
-            logger.log_step(e.message, 'red', bold = True)
+            humecord.logger.log_step("unhandlederror", "error", e.message, bold = True)
 
         elif e.log:
-            logger.log("error", title, bold = True)
-            logger.log_step(e.message, "red")
+            humecord.logger.log("unhandlederror", "error", title, bold = True)
+            humecord.logger.log_step("unhandlederror", "error", e.message)
 
         humecord.bot.shutdown(title, safe = True, error_state = True)
 
@@ -284,11 +285,11 @@ async def async_wrap(
                 title
             )
             humecord.terminal.log(" ", True)
-            logger.log_step(e.message, 'red', bold = True)
+            humecord.logger.log_step("unhandlederror", "error", e.message, bold = True)
 
         elif e.log:
-            logger.log("error", title, bold = True)
-            logger.log_step(e.message, "red")
+            humecord.logger.log("unhandlederror", "error", title, bold = True)
+            humecord.logger.log_step("unhandlederror", "error", e.message)
 
         await humecord.bot.shutdown(title, safe = True, error_state = True)
 

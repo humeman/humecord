@@ -2,7 +2,6 @@ import humecord
 
 from humecord.utils import (
     discordutils,
-    logger,
     colors
 )
 
@@ -25,6 +24,9 @@ class HCOnWSAction:
 
         global bot
         from humecord import bot
+
+        global logger
+        from humecord import logger
 
     async def send_command(
             self,
@@ -74,4 +76,4 @@ class HCOnWSAction:
             await bot.console.call(cmd)
 
         else:
-            logger.log("warn", f"Received invalid command from websocket: '{command}'")
+            logger.log("ws", "warn", f"Received invalid command from websocket: '{command}'")

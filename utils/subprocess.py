@@ -1,9 +1,10 @@
 import asyncio
 import shlex
-from . import logger
 from . import exceptions
 
 import subprocess
+
+import humecord
 
 def sync_run(command):
     subprocess.call(command, shell = True)
@@ -38,7 +39,7 @@ class Command:
         await self.process.wait()
 
         if str(self.process.returncode) != "0":
-            logger.log("error", f"Subprocess call for '{self.command}' returned non-zero exit code: {self.process.returncode}")
+            humecord.logger.log("subprocess", "error", f"Subprocess call for '{self.command}' returned non-zero exit code: {self.process.returncode}")
             raise exceptions.SubprocessError()
 
     async def kill(self):
@@ -53,7 +54,7 @@ class Command:
                 data = msg.decode("ascii").rstrip()
 
                 # We will eventually log this
-                print(data)
+                humecord.terminal.log_raw("subprocess", "info", data, True)
 
             except asyncio.IncompleteReadError:
                 done = True
@@ -61,7 +62,7 @@ class Command:
 
             except asyncio.LimitOverrunError:
                 # Shouldn't happen yet.
-                logger.log("warn", "Subprocess limit overrun. Can't read data.")
+                humecord.logger.log("subprocess", "warn", "Subprocess limit overrun. Can't read data.")
 
             except:
-                logger.log("error", "Failed to read data from subprocess.")
+                humecord.logger.log("subprocess", "error", "Failed to read data from subprocess.")

@@ -34,6 +34,7 @@ from .replies import Replies
 from .argparser import ArgumentParser
 from .messages import Messenger
 from .console import Console
+from .syslogger import SystemLogger
 
 
 from ..interfaces.apiinterface import APIInterface
@@ -41,7 +42,6 @@ from ..interfaces.fileinterface import FileInterface
 from ..interfaces.wsinterface import WSInterface
 
 from humecord.utils import (
-    logger,
     fs,
     debug,
     discordutils,
@@ -87,6 +87,9 @@ class Bot:
             imports_class
         ):
 
+        global logger
+        from humecord import logger
+
         self.console = Console()
 
         # Create a loader
@@ -97,6 +100,8 @@ class Bot:
 
         # Tell the loader to only do config things :)
         await self.loader.load_config()
+
+        logger.prep()
 
         # Load up bot names
         self.names = [self.config.name, self.config.cool_name.lower()] + self.config.name_aliases
@@ -136,8 +141,8 @@ class Bot:
                     )
                 )
 
-        logger.log("start", "Initializing bot instance...", bold = True)
-        logger.log_step("Loaded config", "cyan")
+        logger.log("botinit", "start", "Initializing bot instance...", bold = True)
+        logger.log_step("botinit", "start", "Loaded config")
 
         # Read persistent storage
 
@@ -163,7 +168,9 @@ class Bot:
 
         self.timezone = pytz.timezone(self.config.timezone)
 
-        logger.log_step("Initialized storage", "cyan")
+        logger.log_step("botinit", "start", "Initialized storage")
+
+        self.syslogger = SystemLogger()
 
         # -- HANDLERS --
 
@@ -173,26 +180,24 @@ class Bot:
         
         if self.config.use_ws:
             self.ws = WSInterface()
-            
+        
         self.commands = Commands({})
         self.loops = Loops()
         self.events = Events(self)
         self.replies = Replies()
         self.interactions = Interactions()
         self.files = FileInterface(self)
-        # self.overrides = Overrides()
-        # self.console = Console()
         self.debug_console = DebugConsole()
         self.permissions = Permissions(self)
         self.args = ArgumentParser({})
         self.messages = Messenger(self)
 
-        logger.log_step("Initialized handlers", "cyan")
+        logger.log_step("botinit", "start", "Initialized handlers")
 
         humecord.init_finished = True
         humecord.terminal.finish_start()
 
-        logger.log_step("Initialized successfully!", "cyan", bold = True)
+        logger.log_step("botinit", "start", "Initialized successfully!", bold = True)
 
     def load_config(
             self
@@ -204,7 +209,7 @@ class Bot:
 
         except:
             debug.print_traceback()
-            logger.log("error", "Failed to read config file.")
+            logger.log("botinit", "error", "Failed to read config file.")
 
             humecord.terminal.log(" ", True)
 
@@ -219,11 +224,11 @@ class Bot:
                 with open("config.yml", "w+") as f:
                     f.write("\n".join(config_sample))
 
-                logger.log("info", f"Wrote default config file to 'config.yml'.", color = "cyan", bold = True)
-                logger.log_step("Edit the file as needed, then start Humecord again to get going!", color = "cyan")
+                logger.log("botinit", "info", f"Wrote default config file to 'config.yml'.", bold = True)
+                logger.log_step("botinit", "info", "Edit the file as needed, then start Humecord again to get going!")
 
             else:
-                logger.log("info", "Not creating config file.", color = "cyan")
+                logger.log("botinit", "info", "Not creating config file.")
 
             sys.exit(-1)
 
@@ -253,7 +258,7 @@ class Bot:
         """
 
 
-        humecord.terminal.log(" ", True)
+        #humecord.terminal.log(" ", True)
 
     def start(
             self
@@ -311,7 +316,7 @@ class Bot:
         await self._init(self.imports_imp, self.imports_class)
 
         if not self.disabled:
-            logger.log_step("Starting client...", "cyan")
+            logger.log_step("start", "start", "Starting client...")
 
             await self.client.start(self.config.token)
 
@@ -347,17 +352,6 @@ class Bot:
         else:
             raise exceptions.CloseLoop()
 
-            self.console.shutdown = True
-            humecord.terminal.close()
-
-            # Terminate the asyncio loop so we can exit
-            self.loop.stop()
-
-            for task in asyncio.Task.all_tasks():
-                task.cancel()
-
-            self.loop.close()
-
     async def perform_logout(
             self,
             reason: str,
@@ -368,10 +362,11 @@ class Bot:
         if not skip_shutdown:
             humecord.terminal.log(" ", True)
             if not error_state:
-                logger.log("close", "Shutting down...", bold = True)
+                logger.log("shutdown", "close", "Shutting down...", bold = True)
 
             if hasattr(self, "debug_channel"):
-                await self.debug_channel.send(
+                await self.syslogger.send(
+                    "stop",
                     embed = discordutils.create_embed(
                         title = f"{self.config.lang['emoji']['success']}  Shutting down client.",
                         description = f"```yml\nCaused by: {reason}\n\nRuntime: {miscutils.get_duration(time.time() - self.timer)}\nSession started: {dateutils.get_timestamp(self.timer)}\nSession closed: {dateutils.get_timestamp(time.time())}\n\nBye bye!```",
@@ -380,11 +375,11 @@ class Bot:
                 )
             
             if hasattr(self, "loops"):
-                logger.log_step("Shutting down loops", "cyan")
+                logger.log_step("shutdown", "close", "Shutting down loops")
                 self.loops.close()
 
             if hasattr(self, "api"):
-                logger.log_step("Logging out of API", "cyan")
+                logger.log_step("shutdown", "close", "Logging out of API")
                 try:
                     await humecord.loops.post_stats.PostStatsLoop.run(None)
 
@@ -408,25 +403,25 @@ class Bot:
                 await self.api.direct.client.aclose()
 
             if hasattr(self, "ws"):
-                logger.log_step("Closing websocket", 'cyan')
+                logger.log_step("shutdown", "close", "Closing websocket")
                 await self.ws.close()
             
             if hasattr(self, "client"):
                 if self.client.is_ready():
-                    logger.log_step("Changing presence to offline", "cyan")
+                    logger.log_step("shutdown", "close", "Changing presence to offline")
                     try:
                         await self.client.change_presence(status = discord.Status.offline)
 
                     except:
                         pass
                     
-                    logger.log_step("Logging out", "cyan")
+                    logger.log_step("shutdown", "close", "Logging out")
                     await self.client.close()
 
-                logger.log_step("Bye bye!", "cyan", bold = True)
+                logger.log_step("stop", "close", "Bye bye!")
 
         if error_state:
-            logger.log(f"error", "Humecord has entered into an error state. Check the logs above, then run Ctrl + C again to exit.", True)
+            logger.log("botinit", f"error", "Humecord has entered into an error state. Check the logs above, then run Ctrl + C again to exit.", bold = True)
             if hasattr(self, "console"):
                 self.console.error_state = True
 
@@ -443,11 +438,7 @@ async def on_error_ext(*args, **kwargs):
 
 def catch_asyncio(loop, context):
     if "exception" not in context:
-        logger.log(
-            "warn",
-            "An asyncio exception was thrown, but no exception was passed.",
-            bold = True
-        )
+        logger.log("unhandlederror", "warn", "An asyncio exception was thrown, but no exception was passed.")
         return
     
     if type(context["exception"]) in [SystemExit, KeyboardInterrupt]:
@@ -458,15 +449,8 @@ def catch_asyncio(loop, context):
         return
 
     # Just log it
-    logger.log(
-        "warn",
-        "An asyncio exception wasn't handled!",
-        bold = True
-    )
+    logger.log("unhandlederror", "warn", "An asyncio exception wasn't handled!")
 
-    logger.log_long(
-        "\n".join(traceback.format_tb(tb = context["exception"].__traceback__) + [f"{type(context['exception']).__name__}: {str(context['exception'])}"]).strip(),
-        "yellow"
-    )
+    logger.log_long("unhandlederror", "warn", "\n".join(traceback.format_tb(tb = context["exception"].__traceback__) + [f"{type(context['exception']).__name__}: {str(context['exception'])}"]).strip())
 
 asyncio.get_event_loop().set_exception_handler(catch_asyncio)

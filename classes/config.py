@@ -1,5 +1,4 @@
 from ..utils import fs
-from ..utils import logger
 from ..utils import exceptions
 
 
@@ -18,6 +17,9 @@ class Config:
 
         Should only be called from classes.bot.Bot.__init__().
         """
+
+        global logger
+        from humecord import logger
 
     def load_globals(
             self
@@ -227,15 +229,15 @@ class Config:
             var = None
         ):
 
-        logger.log("error", "A config validation error occurred:", bold = True)
-        logger.log_step(message, "red")
+        logger.log("config", "error", "A config validation error occurred:", bold = True)
+        logger.log_step("config", "error", message)
         print()
 
         if tb:
-            logger.log_long(traceback.format_exc(), "red")
+            logger.log_long("config", "error", traceback.format_exc())
             print()
 
-        logger.log_step("Please correct it and restart.", "red")
+        logger.log_step("config", "error", "Please correct it and restart.")
 
         # Find
         if var is not None:

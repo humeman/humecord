@@ -1,7 +1,6 @@
 import humecord
 
 from humecord.utils import (
-    logger,
     colors
 )
 

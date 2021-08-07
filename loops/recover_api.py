@@ -1,4 +1,9 @@
 import humecord
+import discord
+
+from humecord.utils import (
+    debug
+)
 
 class RecoverAPILoop:
     def __init__(
@@ -11,12 +16,24 @@ class RecoverAPILoop:
 
         self.delay = 0.5
 
+        self.status_set = False
+
     async def run(
             self
         ):
         if humecord.bot.api_online:
-            humecord.utils.logger.log("warn", "Recover API loop was called, but API is online.")
+            humecord.logger.log("api", "warn", "Recover API loop was called, but API is online.")
             return
+
+        if not self.status_set:
+            try:
+                await humecord.bot.client.change_presence(activity = discord.Game(name = humecord.bot.config.api_error_status["status"]), status = eval(humecord.bot.config.visibilities[humecord.bot.config.api_error_status['visibility']], globals()))
+
+            except:
+                debug.print_traceback()
+                humecord.logger.log("api", "warn", "Failed to update status.")
+
+            self.status_set = True
 
         try:
             await humecord.bot.api.get(
@@ -28,10 +45,12 @@ class RecoverAPILoop:
             humecord.bot.api_online = True
 
             try:
-                humecord.utils.logger.log("info", f"Bot API is back online. Unpausing requests.")
+                self.status_set = False
+                humecord.logger.log("api", "info", f"Bot API is back online. Unpausing requests.")
 
                 try:
-                    await humecord.bot.debug_channel.send(
+                    await humecord.bot.syslogger.send(
+                        "api",
                         embed = humecord.utils.discordutils.create_embed(
                             description = f"{humecord.bot.config.lang['emoji']['success']} **Regained connection to the bot API.**\n\nConnection regained for: `{humecord.bot.config.api_url}`\nUnpausing all events and loops.",
                             color = "success"
@@ -39,16 +58,23 @@ class RecoverAPILoop:
                     )
 
                 except:
-                    humecord.utils.logger.log_step("Failed to log to debug channel.", "red")
+                    humecord.logger.log_step("api", "error", "Failed to log to debug channel.")
+
+                humecord.bot.syslogger.override["start"] = False
 
                 try:
                     await humecord.bot.events.call("on_ready", [None])
+                    await humecord.loops.refresh_status.RefreshStatusLoop.run(None)
 
                 except:
-                    humecord.utils.logger.log_step("Failed to re-run on ready event.", "red")
+                    debug.print_traceback()
+                    humecord.logger.log_step("api", "error", "Failed to re-run on ready event.")
+
+                if "start" in humecord.bot.syslogger.override:
+                    del humecord.bot.syslogger.override["start"]
 
             except:
-                humecord.utils.logger.log("error", f"Failed during API unpause.")
+                humecord.utils.logger.log("api", "error", f"Failed during API unpause.")
                 humecord.utils.debug.print_traceback()
 
         except:

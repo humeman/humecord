@@ -43,7 +43,8 @@ class FileInterface:
             },
             "__humecord__.json": {
                 "version": None,
-                "system_logs": {}
+                "system_logs": {},
+                "temp_system_logs": {}
             },
             **bot.config.req_files
         }
@@ -55,21 +56,21 @@ class FileInterface:
                 with open(f"data/{file_name}", "w+") as f:
                     f.write(json.dumps(default, indent = 4))
 
-                humecord.utils.logger.log_step(f"Generated missing file {file_name}", "cyan")
+                humecord.utils.logger.log_step("botinit", "info", f"Generated missing file {file_name}", "cyan")
 
             try:
                 with open(f"data/{file_name}", "r") as f:
                     self.files[file_name] = json.loads(f.read())
 
             except:
-                humecord.utils.logger.log("error", f"Failed to read file {file_name}.")
-                sys.exit(-1)
+                humecord.utils.logger.log("botinit", "error", f"Failed to read file {file_name}.")
+                raise humecord.utils.exceptions.InitError(f"Failed to read file {file_name}.")
 
             write = False
             for name, value in default.items():
                 if name not in self.files[file_name]:
-                    self.files[file_name] = copy.copy(value)
-                    humecord.utils.logger.log_step(f"Added missing key '{name}' to file '{file_name}'", "cyan")
+                    self.files[file_name][name] = copy.copy(value)
+                    humecord.utils.logger.log_step("botinit", "info", f"Added missing key '{name}' to file '{file_name}'", "cyan")
                     write = True
 
             if write:

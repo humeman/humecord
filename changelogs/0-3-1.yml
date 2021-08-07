@@ -1,0 +1,32 @@
+version: 0.3.1
+
+description: |
+  Extension update to 0.3.0 to fix some bugs and complete some loose ends.
+
+changes:
+  - name: Added official support for threads
+    value: This entails a new ResponseChannel type (humecord.classes.discordclasses.ThreadResponseChannel) which enables everything to work properly in threads.
+  - name: Added toggleable system logs
+    value: |
+      This means you can enable and disable the logs sent to your debug channel in Discord - permanently and temporarily. Check out the new `!syslogs` command for more.
+
+      There's also a quick shortcut to silence everything but errors while you're debugging (in case you're reloading and/or restarting things frequently) - just run `!silence`, and your ears will be safe for one hour.
+
+      To add the command, throw this in config.yml/default_commands: ```yml
+      syslogger:
+        __category__: dev
+      ```
+  - name: Recoded the Humecord Logger
+    value: |
+      The logger has quickly developed the need for its own dedicated class since the dawn of Humecord - realistically, it should've been one from the start. But, finally, it officially is one now. You can access it with `humecord.logger`, just like the terminal, meaning it's loaded and ready to go before even the bot is.
+
+      Any logger calls will need the following adjustments to continue working properly:
+      - The first argument will now be a log type - find the list in config.yml/logging
+      - Move the old first argument to the second location - it's used to determine formatting and color
+      - log_part and log_step now follow the same format as log
+      - Instead of importing logger from humecord.utils, it has to be imported from humecord
+      
+      Along with this addition comes some exciting new features:
+      - You can now change the color of any log type
+      - You can now change the format of every log type
+      - You can now toggle on/off any log

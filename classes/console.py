@@ -10,7 +10,6 @@ import humecord
 
 from humecord.utils import (
     discordutils,
-    logger,
     colors,
     debug,
     consolecommands

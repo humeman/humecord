@@ -1,13 +1,16 @@
-version = "0.3.0"
+version = "0.3.1a"
 
 import sys
 
 # Base functions
 from .funcs import *
 from .classes.terminal import TerminalManager
+from .classes.logger import Logger
 
 init_finished = False
 terminal = TerminalManager()
+
+logger = Logger()
 
 from .classes.bot import Bot
 

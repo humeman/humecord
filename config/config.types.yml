@@ -69,6 +69,10 @@ __if[use_ws:==True]__:
 # -- Logging --
 logging: "dict[str:bool]"
 
+log_colors: "dict[str:str]"
+
+log_formats: "dict[str:str]"
+
 debug_channel: "int"
 
 send_changelogs: "bool"
@@ -82,8 +86,6 @@ eval_perms: "list[int]"
 mod_perms: "list[str]"
 
 terminal_colors: "dict[str:str]"
-
-#log_colors: "dict[str:str]"
 
 line_numbers: "bool"
 

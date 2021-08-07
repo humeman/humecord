@@ -1,4 +1,3 @@
-from ..utils import logger
 from ..utils import debug
 from ..utils import errorhandler
 from ..utils import exceptions
@@ -12,6 +11,9 @@ class Events:
             self,
             bot
         ):
+
+        global logger
+        from humecord import logger
 
         self.events = []
 
@@ -211,7 +213,7 @@ class Events:
         ):
 
         if event not in self.edb:
-            #logger.log("warn", f"Event {event} called, but isn't registered in the event database")
+            #logger.log("events", "warn", f"Event {event} called, but isn't registered in the event database")
             return
 
         for function in self.edb[event]:
@@ -249,7 +251,7 @@ class Events:
 
                 self.registered.append(event)
 
-        logger.log_step(f"Registered {len(self.edb)} events", "cyan")
+        logger.log_step("botinit", "start", f"Registered {len(self.edb)} events")
 
 
 

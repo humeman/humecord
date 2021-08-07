@@ -144,3 +144,13 @@ def friendly_number(
 
     return value
 
+def pad_to(
+        value: str,
+        length: int,
+        trunc: bool = True
+    ):
+
+    if trunc:
+        value = value[:length]
+
+    return value + (" " * (length - len(value)))

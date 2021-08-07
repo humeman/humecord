@@ -86,7 +86,7 @@ class Interactions:
                     mid, cid = interaction.data["custom_id"].split(".", 1)
 
             if cid is None:
-                humecord.utils.logger.log("int", "Incoming component interaction has an invalid ID. Skipping.")
+                humecord.logger.log("interaction", "int", "Incoming component interaction has an invalid ID. Skipping.")
                 await interaction.response.send_message(
                     embed = humecord.utils.discordutils.error(
                         None,
@@ -100,7 +100,7 @@ class Interactions:
 
             interaction_data = self.components[mid]["interactions"][cid]
 
-            humecord.utils.logger.log("int", f"Dispatching interaction ID {str(hex(mid)).replace('0x', '')}.{cid}", bold = True)
+            humecord.logger.log("interaction", "int", f"Dispatching interaction ID {str(hex(mid)).replace('0x', '')}.{cid}", bold = True)
 
             # Get user
             user = await humecord.bot.api.get(
@@ -115,7 +115,7 @@ class Interactions:
             # Check if banned
             if user["botban"] is not None:
                 if user["botban"]["endsat"] > time.time():
-                    humecord.utils.logger.log_step(f"User {interaction.user} ({interaction.user.id}) is botbanned, skipping", "red")
+                    humecord.logger.log_step("interaction", "int", f"User {interaction.user} ({interaction.user.id}) is botbanned, skipping")
                     return
 
             # Get message
@@ -126,7 +126,7 @@ class Interactions:
                     raise Exception
 
             except:
-                humecord.utils.logger.log_step("Original message not found - disregarding", "blue")
+                humecord.logger.log_step("interaction", "int", "Original message not found - disregarding")
                 await interaction.response.send_message(
                     embed = humecord.utils.discordutils.error(
                         None,
@@ -137,7 +137,7 @@ class Interactions:
                 return
 
             if mid not in self.components:
-                humecord.utils.logger.log_step("Component not found in component store - disregarding", "blue")
+                humecord.logger.log_step("interaction", "int", "Component not found in component store - disregarding")
                 await interaction.response.send_message(
                     embed = humecord.utils.discordutils.error(
                         message.author,
@@ -164,7 +164,7 @@ class Interactions:
                     return
 
             if cid is None:
-                humecord.utils.logger.log_step("Component ID not registered in component store - disregarding", "blue")
+                humecord.logger.log_step("interaction", "int", "Component ID not registered in component store - disregarding")
                 await interaction.response.send_message(
                     embed = humecord.utils.discordutils.error(
                         message.author,
@@ -197,18 +197,21 @@ class Interactions:
                 # Append selection
                 ext_args = [interaction.data["values"]]
 
-            humecord.utils.logger.log_long(
-                f"""Type:           components.button
-                Component:      {cid}
-                Guild:          {message.guild.id} ({message.guild.name})
-                Channel:        {message.channel.id} ({message.channel.name})
-                User:           {message.author.id} ({message.author.name}#{message.author.discriminator})""".replace("                ", ""),
-                "blue",
+            humecord.logger.log_long(
+                "interaction",
+                "int",
+                [
+                    f"Type:           components.button",
+                    f"Component:      {cid}",
+                    f"Guild:          {message.guild.id} ({message.guild.name})",
+                    f"Channel:        {message.channel.id} ({message.channel.name})",
+                    f"User:           {message.author.id} ({message.author.name}#{message.author.discriminator})"
+                ],
                 extra_line = False
             )
 
             # Call
-            humecord.utils.logger.log_step("Creating callback task...", "blue")
+            humecord.logger.log_step("interaction", "int", "Creating callback task...")
             task = humecord.bot.client.loop.create_task(
                 humecord.utils.errorhandler.discord_wrap(
                     self.components[mid]["interactions"][cid]["callback"](message, resp, [], user, gdb, None, pdb, *ext_args),

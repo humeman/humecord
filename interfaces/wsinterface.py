@@ -7,7 +7,6 @@ import humecord
 
 from humecord.utils import (
     debug,
-    logger,
     discordutils,
     exceptions
 )
@@ -25,6 +24,9 @@ class WSInterface:
         self.stop = False
 
         self.connected = False
+
+        global logger
+        from humecord import logger
 
     async def close(
             self
@@ -98,8 +100,9 @@ class WSInterface:
                 self.connected = True
 
                 if log:
-                    logger.log("info", "Websocket connection regained.")
-                    await humecord.bot.debug_channel.send(
+                    logger.log("ws", "info", "Websocket connection regained.")
+                    await humecord.bot.syslogger.send(
+                        "ws",
                         embed = discordutils.create_embed(
                             f"{humecord.bot.config.lang['emoji']['success']}  Websocket reconnected.",
                             color = "success"
@@ -113,9 +116,10 @@ class WSInterface:
                     
                 else:
                     if not log:
-                        logger.log("warn", "Websocket is disconnected. Will retry indefinitely.")
+                        logger.log("ws", "warn", "Websocket is disconnected. Will retry indefinitely.")
                         try:
-                            await humecord.bot.debug_channel.send(
+                            await humecord.bot.syslogger.send(
+                                "ws",
                                 embed = discordutils.create_embed(
                                     f"{humecord.bot.config.lang['emoji']['warning']}  Websocket disconnected.",
                                     color = "warning"
@@ -123,7 +127,7 @@ class WSInterface:
                             )
                         
                         except:
-                            logger.log_step("Failed to log to debug channel. Internet connection lost?", "yellow")
+                            logger.log_step("ws", "warn", "Failed to log to debug channel. Internet connection lost?", "yellow")
 
                         log = True
 
@@ -147,7 +151,8 @@ class WSInterface:
 
                     # Log
                     try:
-                        await humecord.bot.debug_channel.send(
+                        await humecord.bot.syslogger.send(
+                            "ws",
                             embed = discordutils.create_embed(
                                 f"{humecord.bot.config.lang['emoji']['error']}  Websocket encountered an error.",
                                 description = f"Error count is now at {self.errors}. If 3 are reached, the websocket will shut down.\n```py\n{traceback.format_exc()[:3900]}```",
@@ -156,14 +161,14 @@ class WSInterface:
                         )
 
                     except:
-                        logger.log("warn", "Failed to log websocket error alert to debug channel.")
+                        logger.log("ws", "warn", "Failed to log websocket error alert to debug channel.")
 
                 await asyncio.sleep(5)
 
             self.connected = False
 
         if self.errors >= 3:
-            logger.log("error", "Websocket is shutting down - error threshold has been reached.")
+            logger.log("ws", "error", "Websocket is shutting down - error threshold has been reached.")
             try:
                 await humecord.bot.debug_channel.send(
                     embed = discordutils.create_embed(
@@ -174,7 +179,7 @@ class WSInterface:
                 )
 
             except:
-                logger.log("warn", "Failed to log websocket error alert to debug channel.")
+                logger.log("ws", "warn", "Failed to log websocket error alert to debug channel.")
 
     async def start(
             self
@@ -216,13 +221,13 @@ class WSInterface:
                 msg = json.loads(message)
 
             except Exception as e:
-                logger.log("warn", f"Websocket returned unparseable message: '{str(e)}'")
+                logger.log("ws", "warn", f"Websocket returned unparseable message: '{str(e)}'")
                 continue
 
             # Parse out action
             if not msg["success"]:
                 # Just log it for now.
-                logger.log("warn", f"Websocket returned error: '{msg.get('error')}'")
+                logger.log("ws", "warn", f"Websocket returned error: '{msg.get('error')}'")
                 continue
 
             # Get data
@@ -247,7 +252,7 @@ class WSInterface:
                 )
 
             else:
-                logger.log("warn", f"Receieved message of unknown type '{dtype}' from websocket. Skipping.")
+                logger.log("ws", "warn", f"Receieved message of unknown type '{dtype}' from websocket. Skipping.")
 
     async def send(
             self,
@@ -273,7 +278,7 @@ class WSInterface:
             "auth",
             self.auth
         )
-        logger.log_step("Authenticated with the websocket.", "cyan")
+        logger.log_step("ws", "start", "Authenticated with the websocket.")
 
         # Just loop forever
         while True:

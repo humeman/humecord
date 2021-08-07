@@ -6,9 +6,8 @@ import os
 import inspect
 
 from humecord.utils import (
-    logger,
     fs,
-    discordutils
+    discordutils,
 )
 
 
@@ -45,8 +44,15 @@ class OnReadyEvent:
             "post_changelog": {
                 "function": self.post_changelog,
                 "priority": 3
+            },
+            "print_done": {
+                "function": self.print_done,
+                "priority": 90
             }
         }
+
+        global logger
+        from humecord import logger
 
     async def populate_debug_channel(
             self,
@@ -55,7 +61,7 @@ class OnReadyEvent:
         humecord.bot.debug_channel = humecord.bot.client.get_channel(humecord.bot.config.debug_channel)
 
         if not humecord.bot.debug_channel:
-            logger.log("error", "Debug channel does not exist.")
+            logger.log("botinit", "error", "Debug channel does not exist.")
             sys.exit(-1)
 
         # Populate debug console's channel
@@ -79,7 +85,7 @@ class OnReadyEvent:
             self,
             __
         ):
-        logger.log_step(f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})", "cyan")
+        logger.log_step("botinit", "start", f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})")
 
         description = []
 
@@ -121,7 +127,8 @@ class OnReadyEvent:
 
         linebreak = "\n"
 
-        await humecord.bot.debug_channel.send(
+        await humecord.bot.syslogger.send(
+            "start",
             embed = discordutils.create_embed(
                 f"{humecord.bot.config.lang['emoji']['success']}  Client ready!",
                 description = f"```yaml\n{linebreak.join(description)}```",
@@ -151,6 +158,9 @@ class OnReadyEvent:
 
         # Check if it's enabled
         if humecord.bot.config.send_changelogs:
+            if humecord.version.endswith("a"):
+                return
+
             # Check if our version differs
             if humecord.bot.files.files["__humecord__.json"]["version"] != humecord.version:
                 # Check for a changelog
@@ -174,7 +184,7 @@ class OnReadyEvent:
                             details = fs.read_yaml(file)
 
                         except:
-                            logger.log("warn", f"Tried to read changelog {name}, but the YAML parser threw an error.")
+                            logger.log("botinit", "warn", f"Tried to read changelog {name}, but the YAML parser threw an error.")
 
                         else:
                             # Paginate the changelog.
@@ -228,8 +238,8 @@ class OnReadyEvent:
                                 )
 
                             # Log it
-                            logger.log_step(f"Humecord was updated to version {humecord.version}!", "cyan", bold = True)
-                            logger.log_step(f"Read the changelog in your debug channel.", "cyan")
+                            logger.log_step("botinit", "start", f"Humecord was updated to version {humecord.version}!", bold = True)
+                            logger.log_step("botinit", "start", f"Read the changelog in your debug channel.")
 
                             # Store the new version
                             humecord.bot.files.files["__humecord__.json"]["version"] = humecord.version
@@ -244,4 +254,10 @@ class OnReadyEvent:
                     )
                 )
                             
-                logger.log_step(f"Humecord was updated to version {humecord.version}!", "cyan", bold = True)
+                logger.log_step("botinit", "start", f"Humecord was updated to version {humecord.version}!", bold = True)
+
+    async def print_done(
+            self,
+            *args
+        ):
+        humecord.terminal.log(" ", True)

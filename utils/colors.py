@@ -46,6 +46,8 @@ termcolors = {
     "default": "\033[37m",
     "bold": "\033[1m",
     "reset": "\033[0m",
+    "underline": "\033[4m",
+    "reversed": "\033[7m",
 
     "red": "\033[31m",
     "light_red": "\033[91m",

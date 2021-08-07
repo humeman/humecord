@@ -103,6 +103,11 @@ class Commands:
                 "imp": "from humecord.commands import useredit",
                 "module": "useredit",
                 "class": "UserEditCommand"
+            },
+            "syslogger": {
+                "imp": "from humecord.commands import syslogger",
+                "module": "syslogger",
+                "class": "SysLoggerCommand"
             }
         }
 
@@ -244,7 +249,7 @@ class Commands:
         if user["botban"] is not None:
             if user["botban"]["duration"] is not None:
                 if user["botban"]["endsat"] > time.time():
-                    humecord.utils.logger.log("cmd", f"User {message.author} ({message.author.id}) is botbanned, skipping command dispatch", color = "red")
+                    humecord.logger.log("command", "cmd", f"User {message.author} ({message.author.id}) is botbanned, skipping command dispatch")
                     self.stat_cache["__denied__"] += 1
                     return False
 
@@ -291,7 +296,7 @@ class Commands:
 
         command_id = str(hex(message.id)).replace("0x", "")
 
-        humecord.utils.logger.log("cmd", f"Dispatching command ID {command_id}", bold = True)
+        humecord.logger.log("command", "cmd", f"Dispatching command ID {command_id}", bold = True)
 
         category, command, header = full_match.values()
 
@@ -440,14 +445,17 @@ class Commands:
                 return
 
         linebreak = "\n"
-        humecord.utils.logger.log_long(
-            f"""Command:        {category}.{command.name}{subcommand_details}
-            Guild:          {message.guild.id} ({message.guild.name})
-            Channel:        {message.channel.id} ({message.channel.name})
-            User:           {message.author.id} ({message.author.name}#{message.author.discriminator})
-            Content:        {message.clean_content[:110].replace(linebreak, "")}
-            Match type:     {header['type']}""".replace("            ", ""),
-            "blue",
+        humecord.logger.log_long(
+            "commandinfo",
+            "cmd",
+            [
+                f"Command:        {category}.{command.name}{subcommand_details}",
+                f"Guild:          {message.guild.id} ({message.guild.name})",
+                f"Channel:        {message.channel.id} ({message.channel.name})",
+                f"User:           {message.author.id} ({message.author.name}#{message.author.discriminator})",
+                f"Content:        {message.clean_content[:110].replace(linebreak, '')}",
+                f"Match type:     {header['type']}"
+            ],
             extra_line = False
         )
 
@@ -461,7 +469,7 @@ class Commands:
 
         self.stat_cache["__total__"] += 1
 
-        humecord.utils.logger.log_step("Creating command task...", "blue")
+        humecord.logger.log_step("commandinfo", "cmd", "Creating command task...")
         humecord.bot.client.loop.create_task(
             humecord.utils.errorhandler.discord_wrap(
                 function,

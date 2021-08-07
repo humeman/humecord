@@ -23,6 +23,11 @@ class Loops:
                 "imp": "from humecord.loops import refresh_status",
                 "module": "refresh_status",
                 "class": "RefreshStatusLoop"
+            },
+            {
+                "imp": "from humecord.loops import purge_syslogs",
+                "module": "purge_syslogs",
+                "class": "PurgeSyslogsLoop"
             }
         ]
 
@@ -129,11 +134,11 @@ class Loops:
 
                         else:
                             loop.pause_until = None
-                            humecord.utils.logger.log("warn", f"Unpaused loop {loop.name}, which was paused 60 seconds ago because of an error.")
+                            humecord.logger.log("loop", "warn", f"Unpaused loop {loop.name}, which was paused 60 seconds ago because of an error.")
 
                     if loop.task:
                         if not loop.task.done():
-                            humecord.utils.logger.log("warn", f"Tried to start {loop.name}, but previous execution is still running. Consider increasing delay.")
+                            humecord.logger.log("loop", "warn", f"Tried to start {loop.name}, but previous execution is still running. Consider increasing delay.")
                             continue
 
                     # Needs to be run
@@ -190,7 +195,7 @@ async def pause_execution(loop):
     loop.errors += 1
 
     if loop.errors >= 3:
-        humecord.utils.logger.log("error", f"Loop {loop.name} has been indefinitely paused because 3 errors accumulated.")
+        humecord.logger.log("loop", "error", f"Loop {loop.name} has been indefinitely paused because 3 errors accumulated.")
 
         try:
             await humecord.bot.debug_channel.send(
@@ -202,5 +207,5 @@ async def pause_execution(loop):
             )
 
         except:
-            humecord.utils.logger.log("warn", f"Failed to log loop pause to debug channel.")
+            humecord.logger.log("loop", "warn", f"Failed to log loop pause to debug channel.")
                     

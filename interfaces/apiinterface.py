@@ -135,7 +135,8 @@ class APIInterface:
             # Check if "bot not ready" error
             if etype == "AuthError" and reason == f"Bot {humecord.bot.config.self_api} isn't ready":
                 # Send ready info again
-                await humecord.bot.debug_channel.send(
+                await humecord.bot.syslogger.send(
+                    "api",
                     embed = humecord.utils.discordutils.create_embed(
                         description = f"{humecord.bot.config.lang['emoji']['warning']}  **API has restarted - sending ready data again.**",
                         color = "warning"
@@ -155,7 +156,7 @@ class APIInterface:
         if humecord.bot.api_online:
             humecord.bot.api_online = False
 
-            humecord.utils.logger.log("error", f"Bot API has gone offline. Pausing all requests.")
+            humecord.utils.logger.log("api", "error", f"Bot API has gone offline. Pausing all requests.")
 
             try:
                 await humecord.bot.debug_channel.send(
@@ -166,7 +167,7 @@ class APIInterface:
                 )
 
             except:
-                humecord.utils.logger.log_step("Failed to log to debug channel.", "red")
+                humecord.utils.logger.log_step("api", "error", "Failed to log to debug channel.")
             
             # Reraise
             raise humecord.utils.exceptions.APIOffline("Failed to connect to bot API.")
