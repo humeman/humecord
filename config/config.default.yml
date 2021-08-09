@@ -202,11 +202,11 @@ log_colors:
 # Overrides the format used to print logs.
 # You can use the following placeholders:
 # (surround with %)
-  # color bold reset underline reversed reverseopt
-  # boldopt time timep timef timepf logtype logtypel
-  # message category
+#   color bold reset underline reversed reverseopt
+#   boldopt time timep timef timepf logtype logtypel
+#   message category
 # You can override the following types:
-  # log step long raw
+#   log step long raw
 log_formats: {}
 
 # Humecord Terminal color set
