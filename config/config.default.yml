@@ -193,8 +193,11 @@ logging:
 # You can also add additional log types through this.
 # Log types:
   # info warn error success start stop close cmd int
+# You can use the same color set used for terminal_colors,
+# or 256 color values with "&[id]". IDs are the first numerical
+# value, listed at https://jonasjacek.github.io/colors/
 log_colors:
-  start: green
+  start: "&57"
 
 # Overrides the format used to print logs.
 # You can use the following placeholders:
@@ -210,6 +213,8 @@ log_formats: {}
 # Valid colors:
 #   red, green, yellow, blue, magenta, cyan, and gray
 #   plus light_[color] variants for each of these
+#   or 256 color values with "&[id]". IDs are the first numerical
+#   value, listed at https://jonasjacek.github.io/colors/
 terminal_colors:
   border: blue
   info: cyan

@@ -25,7 +25,8 @@ class Logger:
             "cmd": "blue",
             "int": "blue",
             "info": "default",
-            "obj": "magenta"
+            "obj": "magenta",
+            "ask": "magenta"
         }
 
         self.colors = colors.termcolors
@@ -55,14 +56,16 @@ class Logger:
             "ws": True,
             "api": True,
             "subprocess": True,
-            "user": True
+            "user": True,
+            "ask": True
         }
 
         self.format = {
             "log": "%color%%reverseopt%%bold%%timep% %typep% %reset%%color%%reverseopt%%boldopt%%message%%reset%",
             "step": "                            %color%%reverseopt%%bold%→ %reset%%color%%reverseopt%%boldopt%%message%%reset%",
             "long": "                            %color%%reverseopt%%bold%→ %reset%%color%%reverseopt%%boldopt%%message%%reset%",
-            "raw": "%color%%reverseopt%%boldopt%%message%%reset%"
+            "raw": "%color%%reverseopt%%boldopt%%message%%reset%",
+            "ask": "%color%%reverseopt%%bold%%timep% %typep% %reset%%color%%reverseopt%%boldopt%%message% %reset%%color%[%hint%]%reset%",
         }
 
         self.format_type = {}
@@ -78,8 +81,9 @@ class Logger:
             if name not in self.log_types:
                 raise exceptions.InitError(f"Log type {name} doesn't exist")
 
-            if value not in self.colors:
-                raise exceptions.InitError(f"Terminal color {value} doesn't exist")
+            if not value.startswith("&"):
+                if value not in self.colors:
+                    raise exceptions.InitError(f"Terminal color {value} doesn't exist")
 
             self.log_types[name] = value
 
@@ -205,6 +209,23 @@ class Logger:
             *args,
             **kwargs
         )
+    
+    def log_ask(
+            self,
+            message: str,
+            hint: str
+        ):
+
+        self.log_type(
+            "ask",
+            "ask",
+            "ask",
+            message,
+            bold = True,
+            placeholder_ext = {
+                "hint": hint
+            }
+        )
 
     def log_type(
             self,
@@ -214,7 +235,8 @@ class Logger:
             message: str,
             bold: bool = False,
             reversed: bool = False,
-            color: Optional[str] = None
+            color: Optional[str] = None,
+            placeholder_ext: dict = {}
         ):
 
         # Make sure we should log this
@@ -238,16 +260,23 @@ class Logger:
         if color is None:
             color = self.log_types[log_type]
 
-        color = self.colors[color]
+            if color.startswith("&"):
+                color = f"\033[38;5;{color[1:]}m"
 
-        placeholders = self.get_placeholders(
-            category,
-            log_type,
-            message,
-            bold,
-            color,
-            reversed
-        )
+        if not color.startswith("\033"):
+            color = self.colors[color]
+
+        placeholders = {
+            **self.get_placeholders(
+                category,
+                log_type,
+                message,
+                bold,
+                color,
+                reversed
+            ),
+            **placeholder_ext
+        }
 
         msg = str(self.format[name])
 

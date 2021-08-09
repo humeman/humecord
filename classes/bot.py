@@ -199,7 +199,7 @@ class Bot:
 
         logger.log_step("botinit", "start", "Initialized successfully!", bold = True)
 
-    def load_config(
+    async def load_config(
             self
         ):
         self.config = Config()
@@ -213,11 +213,11 @@ class Bot:
 
             humecord.terminal.log(" ", True)
 
-            choice = logger.ask("Would you like to automatically generate a new config file?", "Y/n", "cyan")
+            choice = await humecord.terminal.ask("Would you like to automatically generate a new config file?", "Y/n", "[Enter Y/n]")
 
             if choice.lower().strip() in ["yes", "y", ""]:
                 # Read config default
-                with open(f"{os.path.dirname(inspect.getfile(humecord))}/config.default.yml", "r") as f:
+                with open(f"{os.path.dirname(inspect.getfile(humecord))}/config/config.default.yml", "r") as f:
                     config_sample = f.read().split("\n")
 
                 # Write to base dir
@@ -230,7 +230,7 @@ class Bot:
             else:
                 logger.log("botinit", "info", "Not creating config file.")
 
-            sys.exit(-1)
+            raise exceptions.InitError("Config error", traceback = False, log = False)
 
         for key, value in self.config.config_raw.items():
             setattr(self.config, key, value)

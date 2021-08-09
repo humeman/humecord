@@ -110,7 +110,7 @@ class WSInterface:
                     )
                     log = False
 
-            except (websockets.exceptions.ConnectionClosedError, OSError) as e:
+            except (websockets.ConnectionClosedError, OSError) as e:
                 if type(e) == OSError and "[Errno 111]" not in str(e):
                     err = e
                     

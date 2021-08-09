@@ -5,6 +5,7 @@ import signal
 from unidecode import unidecode
 import os
 import re
+import asyncio
 
 
 from humecord.utils import (
@@ -38,18 +39,24 @@ class TerminalManager:
 
         self.lines = []
 
+        self.ask_mode = {
+            "active": False,
+            "current": None,
+            "placeholder": None,
+            "complete": False
+        }
+
         self.color = {
             "border": "default",
             "info": "cyan",
             "secondary": "dark_gray",
             "terminal": "green",
             "response": "cyan",
-            "remote": "magenta"
+            "remote": "magenta",
+            "ask": "magenta"
         }
 
-        self.color = {
-            x: colors.termcolors[y] for x, y in self.color.items()
-        }
+        self.expand_colors()
 
         signal.signal(signal.SIGWINCH, self.on_resize)
 
@@ -66,16 +73,34 @@ class TerminalManager:
         ):
 
         self.color.update(
-            {
-                x: colors.termcolors[y] for x, y in humecord.bot.config.terminal_colors.items()
-            }
+            humecord.bot.config.terminal_colors
         )
+
+        self.expand_colors()
 
         self.line_numbers = humecord.bot.config.line_numbers
 
         self.reprint(True)
 
         consolecommands.prep()
+
+    def expand_colors(
+            self
+        ):
+
+        new = {}
+
+        for name, color in self.color.items():
+            if color.startswith("&"):
+                new[name] = f"\033[38;5;{color[1:]}m"
+
+            elif not color.startswith("\033"):
+                new[name] = colors.termcolors[color]
+
+            else:
+                new[name] = color
+
+        self.color = new
 
     def close(
             self
@@ -179,7 +204,11 @@ class TerminalManager:
         try:
             if hasattr(humecord.bot, "console"):
                 with self.terminal.location(0, self.terminal.height - 2):
-                    print(self.gen_box_mid(f"{self.color['terminal']}{colors.termcolors['bold']}${colors.termcolors['reset']} {self.color['terminal']}{humecord.bot.console.current}", True), end = "")
+                    if not self.ask_mode["active"]:
+                        print(self.gen_box_mid(f"{self.color['terminal']}{colors.termcolors['bold']}${colors.termcolors['reset']} {self.color['terminal']}{humecord.bot.console.current}", True), end = "")
+
+                    else:
+                        print(self.gen_box_mid(f"{self.color['ask']}{colors.termcolors['bold']}>{colors.termcolors['reset']} {self.color['ask']}{self.ask_mode['current'] if len(self.ask_mode['current']) > 0 else self.ask_mode['placeholder']}", True), end = "")
 
         except AttributeError:
             pass # Not initialized yet
@@ -199,7 +228,7 @@ class TerminalManager:
             i_ = i + self.location
             if i_ < cl:
                 try:
-                    with(self.terminal.location(0, i + 4)):
+                    with self.terminal.location(0, i + 4):
                         line = self.lines[i_].replace("\t", "    ")
 
                         line_numbers = False
@@ -372,7 +401,32 @@ class TerminalManager:
 
         self.log(f"{humecord.terminal.color['terminal']}{colors.termcolors['bold']}>{colors.termcolors['reset']} {humecord.terminal.color['terminal']}{action}", True)
         
+    async def ask(
+            self,
+            question: str,
+            hint: str,
+            placeholder: str
+        ):
+        humecord.logger.log_ask(question, hint)
+        self.ask_mode.update(
+            {
+                "active": True,
+                "complete": False,
+                "current": "",
+                "placeholder": placeholder
+            }
+        )
 
+        self.reprint(log_console = True)
+
+        while not self.ask_mode["complete"]:
+            await asyncio.sleep(0.1)
+
+        self.log(f"{self.color['ask']}{colors.termcolors['bold']}> {colors.termcolors['reset']}{self.color['ask']}{self.ask_mode['current']}")
+
+        self.reprint(log_logs = True)
+
+        return self.ask_mode["current"]
 
 box_chars = {
     0: ["┌", "─", "┐"],

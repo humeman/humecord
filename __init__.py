@@ -1,4 +1,4 @@
-version = "0.3.1a"
+version = "0.3.1"
 
 import sys
 

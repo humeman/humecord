@@ -1,12 +1,16 @@
 import humecord
 from typing import Union
 
-import httpx
 import time
-import httpcore
-from humecord.utils import discordutils
-import traceback
 import json
+import asyncio
+import httpx
+import httpcore
+
+from humecord.utils import (
+    exceptions,
+    debug
+)
 
 class APIInterface:
     def __init__(
@@ -156,10 +160,11 @@ class APIInterface:
         if humecord.bot.api_online:
             humecord.bot.api_online = False
 
-            humecord.utils.logger.log("api", "error", f"Bot API has gone offline. Pausing all requests.")
+            humecord.logger.log("api", "error", f"Bot API has gone offline. Pausing all requests.")
 
             try:
-                await humecord.bot.debug_channel.send(
+                await humecord.bot.syslogger.send(
+                    "api",
                     embed = humecord.utils.discordutils.create_embed(
                         description = f"{humecord.bot.config.lang['emoji']['error']} **Lost connection to the bot API.**\n\nConnection failed for: `{humecord.bot.config.api_url}`\nPausing all events and loops until it returns.",
                         color = "error"
@@ -167,7 +172,7 @@ class APIInterface:
                 )
 
             except:
-                humecord.utils.logger.log_step("api", "error", "Failed to log to debug channel.")
+                humecord.logger.log_step("api", "error", "Failed to log to debug channel.")
             
             # Reraise
             raise humecord.utils.exceptions.APIOffline("Failed to connect to bot API.")
@@ -182,42 +187,25 @@ class DirectAPI:
         ):
         self.parent = parent
 
-        self.client = httpx.AsyncClient()
+        limits = httpx.Limits(max_connections = 10)
+
+        self.transport = httpx.AsyncHTTPTransport(limits = limits, retries = 2)
+        self.client = httpx.AsyncClient(http2 = True)
+        self.lock = False
+        self.clients = []
 
     async def get(
             self,
             url: str, 
             args: Union[dict, None]
         ):
-        if args:
-            args = [f"{key}={value}" for key, value in args.items()]
-
+        if args is not None:
             if len(args) > 0:
-                url += f"?{'&'.join(args)}"
+                url += f"?{'&'.join([f'{key}={value}' for key, value in args.items()])}"
 
-        try:
-            async with httpx.AsyncClient() as c:
-                response = await c.get(url) #self.client.get(url)
+        response = await self._do(self.client.get(url))
 
-            response.raise_for_status()
-
-        except (httpcore.WriteError, httpcore.RemoteProtocolError, httpx.RemoteProtocolError) as e:
-            raise
-
-        except httpx.HTTPStatusError as e:
-            raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
-
-        except httpx.ConnectError as e:
-            raise humecord.utils.exceptions.APIOffline()
-
-        except httpx.RequestError as e:
-            raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
-
-        try:
-            return response.json()
-
-        except:
-            raise humecord.utils.exeptions.EmptyResponse("Response is missing JSON data.")
+        return response
 
     async def put(
             self,
@@ -225,9 +213,24 @@ class DirectAPI:
             json_: Union[dict, None]
         ):
 
+        if json_ is None:
+            kw = {}
+
+        else:
+            kw = {
+                "data": json.dumps(json_)
+            }
+
+        response = await self._do(self.client.put(url, headers = {"content-type": "application/json"}, **kw))
+
+        return response
+
+    async def _do(
+            self,
+            coro
+        ):
         try:
-            async with httpx.AsyncClient() as c:
-                response = await c.put(url, json = json_) #self.client.put(url, json = json_)
+            response = await coro
 
             response.raise_for_status()
 
@@ -235,16 +238,16 @@ class DirectAPI:
             raise
 
         except httpx.HTTPStatusError as e:
-            raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}.")
+            raise humecord.utils.exceptions.APIError(f"API returned non-200 status code: {e.response.status_code}")
 
         except httpx.ConnectError as e:
             raise humecord.utils.exceptions.APIOffline()
 
         except httpx.RequestError as e:
-            raise humecord.utils.exceptions.RequestError(f"Failed to send request to API.")
+            raise humecord.utils.exceptions.RequestError(f"Failed to send request to API")
 
         try:
             return response.json()
 
         except:
-            raise humecord.utils.exeptions.EmptyResponse("Response is missing JSON data.")
+            raise exceptions.EmptyResponse(f"Response is missing JSON data")

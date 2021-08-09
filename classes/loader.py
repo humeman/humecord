@@ -72,8 +72,8 @@ class Loader:
             self
         ):
 
-        # Reload all the config.
-        humecord.bot.load_config()
+        # Reload the config
+        await humecord.bot.load_config()
 
         # Load globals
         humecord.bot.config.load_globals()

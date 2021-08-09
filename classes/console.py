@@ -161,7 +161,11 @@ class Console:
 
                     else:
                         # Not an escape char - treat it like clear, then append escape mem and run
-                        self.current = self.escape_mem
+                        if humecord.terminal.ask_mode["active"]:
+                            humecord.terminal.ask_mode["current"] = self.escape_mem
+
+                        else:
+                            self.current = self.escape_mem
                         self.location = 5
                         run = False
 
@@ -170,7 +174,12 @@ class Console:
 
             # Append to current if not an action
             if not run:
-                self.current = f"{self.current[:self.location]}{char.__str__()}{self.current[self.location:]}"
+                if humecord.terminal.ask_mode["active"]:
+                    humecord.terminal.ask_mode["current"] = f"{humecord.terminal.ask_mode['current'][:self.location]}{char.__str__()}{humecord.terminal.ask_mode['current'][self.location:]}"
+
+                else:
+                    self.current = f"{self.current[:self.location]}{char.__str__()}{self.current[self.location:]}"
+
                 self.location += 1
 
         humecord.terminal.reprint(log_logs = True, log_console = True)
@@ -184,49 +193,78 @@ class Console:
 
 class Actions:
     def execute(self, char):
-        if self.error_state:
-            return
+        if humecord.terminal.ask_mode["active"]:
+            humecord.terminal.ask_mode["active"] = False
+            humecord.terminal.ask_mode["complete"] = True
 
-        humecord.terminal.log(f"{humecord.terminal.color['terminal']}{colors.termcolors['bold']}$ {colors.termcolors['reset']}{humecord.terminal.color['terminal']}{self.current}", True)
-        
-        self.loop.create_task(self.commands.run(self.current))
+            self.location = len(self.current)
 
-        self.current = ""
-        
-        #self.current = ""
-        self.location = 0
+            humecord.terminal.reprint(log_console = True, log_logs = True)
+
+        else:
+            if self.error_state:
+                return
+
+            humecord.terminal.log(f"{humecord.terminal.color['terminal']}{colors.termcolors['bold']}$ {colors.termcolors['reset']}{humecord.terminal.color['terminal']}{self.current}", True)
+            
+            self.loop.create_task(self.commands.run(self.current))
+
+            self.current = ""
+            
+            #self.current = ""
+            self.location = 0
 
     def backspace(self, char):
         c = char.__str__()
+
+        if humecord.terminal.ask_mode["active"]:
+            inp = humecord.terminal.ask_mode["current"]
+            var_name = "humecord.terminal.ask_mode['current']"
+
+        else:
+            inp = self.current
+            var_name = "self.current"
 
         if c == "\x7f":
             # Backspace
             index = self.location - 1
 
             if index >= 0:
-                self.current = f"{self.current[:index]}{self.current[index + 1:]}"
+                new = f"{inp[:index]}{inp[index + 1:]}"
+                exec(f"{var_name} = new")
 
                 self.location = index
 
         elif c in ["\x08", "\x17"]:
             # Ctrl backspace
             # Start at index, remove until space
-            search = self.current.rfind(" ", 0, self.location)
+            search = inp.rfind(" ", 0, self.location)
 
             if search == -1:
-                self.current = self.current[self.location:]
+                new = inp[self.location:]
                 self.location = 0
 
             else:
                 # Remove everything in between
-                self.current = f"{self.current[:search]}{self.current[self.location:]}"
+                new = f"{inp[:search]}{inp[self.location:]}"
                 self.location = search
+
+            exec(f"{var_name} = new")
 
     def delete(self, char):
         index = self.location
 
-        if index < len(self.current):
-            self.current = f"{self.current[:index]}{self.current[index + 1:]}"
+        if humecord.terminal.ask_mode["active"]:
+            inp = humecord.terminal.ask_mode["current"]
+            var_name = "humecord.terminal.ask_mode['current']"
+
+        else:
+            inp = self.current
+            var_name = "self.current"
+
+        if index < len(inp):
+            new = f"{inp[:index]}{inp[index + 1:]}"
+            exec(f"{var_name} = new")
 
     def scroll(self, char, diff):
         humecord.terminal.scroll(diff)
@@ -236,13 +274,19 @@ class Actions:
         self.escape_mem = ""
 
     def scroll_far(self, char, direction):
+        if humecord.terminal.ask_mode["active"]:
+            inp = humecord.terminal.ask_mode["current"]
+
+        else:
+            inp = self.current
+
         if direction > 0:
             # Scrolling forward - find first space after current
-            location = self.current.find(" ", self.location + 1)
+            location = inp.find(" ", self.location + 1)
 
             if location == -1:
                 # Jump to end
-                self.location = len(self.current)
+                self.location = len(inp)
 
             else:
                 # Jump to letter after space
@@ -250,7 +294,7 @@ class Actions:
 
         else:
             # Scrolling backwards - find last space before current
-            location = self.current.rfind(" ", 0, self.location)
+            location = inp.rfind(" ", 0, self.location)
 
             if location == -1:
                 # Go to start of message
@@ -275,6 +319,9 @@ class Actions:
         humecord.bot.loop.create_task(humecord.bot.shutdown("Terminal shutdown"))
 
     def history(self, char, new):
+        if humecord.terminal.ask_mode["active"]:
+            return
+
         if self.hist_current is None:
             self.hist_current = len(self.history)
 

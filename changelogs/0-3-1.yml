@@ -1,7 +1,7 @@
 version: 0.3.1
 
 description: |
-  Extension update to 0.3.0 to fix some bugs and complete some loose ends.
+  Extension update to 0.3.0 to finish up some features I didn't quite have time for.
 
 changes:
   - name: Added official support for threads
@@ -30,3 +30,14 @@ changes:
       - You can now change the color of any log type
       - You can now change the format of every log type
       - You can now toggle on/off any log
+      - Full 256 color support
+  - name: Fixed the API handler (maybe?)
+    value: |
+      Previous solution to this was generating a new client for each request - really inefficient, and for obvious reasons, not a solution I want to stick with. The API now uses 8 workers, all syncing to a MongoDB database, instead of the old JSON backend. The actual API interface has some new additions to hopefully stop any RemoteProtocolErrors from happening - HTTP/2 is now in use, it'll retry 3 times if something goes wrong, and it'll keep more connections alive at once now. (Code has been kinda cleaned up too)
+
+      Additionally, some miscellaneous bugs have been fixed:
+      - Bots will no longer send the "client ready" message after API connection is regained
+      - API offline status has (finally) been implemented
+  - name: Added terminal input support
+    value: |
+      You can now ask for input via the console - this was a feature that was left unimplemented from the release of 0.3.0. Function to use is `await humecord.terminal.ask(question, hint, placeholder)`.
