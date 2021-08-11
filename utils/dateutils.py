@@ -31,7 +31,8 @@ aliases = {
 
 def get_datetime(
         specificity: str, 
-        timedelta: Optional[dict] = None
+        timedelta: Optional[dict] = None,
+        format_override: str = None
     ):
     time_format = None
 
@@ -43,6 +44,9 @@ def get_datetime(
             if specificity in names:
                 time_format = specs[change_to]
 
+    if (not time_format) and format_override:
+        time_format = format_override
+
     if not time_format:
         raise humecord.utils.exceptions.InvalidFormat(f"Specificity {specificity} does not exist")
 
@@ -52,7 +56,12 @@ def get_datetime(
     else:
         current = datetime.datetime.utcnow() + datetime.timedelta(**timedelta)
 
-    return pytz.utc.localize(current).astimezone(humecord.bot.timezone).strftime(time_format)
+
+    if hasattr(humecord, "bot"):
+        return pytz.utc.localize(current).astimezone(humecord.bot.timezone).strftime(time_format)
+
+    else:
+        return datetime.datetime.now().strftime(time_format)
 
 times = {
     "year": 31556952,
