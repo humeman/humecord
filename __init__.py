@@ -1,6 +1,9 @@
-version = "0.3.1"
+version = "0.4.0a"
 
 import sys
+import asyncio
+
+loop = asyncio.new_event_loop()
 
 # Base functions
 from .funcs import *
