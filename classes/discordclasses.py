@@ -2,6 +2,7 @@ from typing import Union, Optional, Callable
 import discord
 
 import humecord
+from humecord.utils import discordutils
 
 class Button(discord.ui.Button):
     def __init__(self, *args, **kwargs):
@@ -44,6 +45,22 @@ class ResponseChannel:
 
     async def edit(self, *args):
         raise humecord.utils.exceptions.NotDefined(f"This function isn't defined for message type {self.type}.")
+
+    async def embed(self, *args, **kwargs):
+        await self.send(
+            embed = discordutils.create_embed(
+                *args,
+                **kwargs
+            )
+        )
+
+    async def error(self, *args, **kwargs):
+        await self.send(
+            embed = discordutils.error(
+                *args,
+                **kwargs
+            )
+        )
 
 class ComponentResponseChannel(ResponseChannel):
     def __init__(self, interaction):
