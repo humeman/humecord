@@ -6,11 +6,13 @@ from unidecode import unidecode
 import os
 import re
 import asyncio
-
+import aiofiles
 
 from humecord.utils import (
     colors,
-    consolecommands
+    consolecommands,
+    dateutils,
+    subprocess
 )
 
 ansi_escape = re.compile(r'''
@@ -36,6 +38,8 @@ class TerminalManager:
         tty.setcbreak(self.terminal._keyboard_fd, termios.TCSANOW)
         print(self.terminal.enter_fullscreen)
         print(self.terminal.home + self.terminal.clear)
+
+        self.generate_logfile()
 
         self.lines = []
 
@@ -67,6 +71,54 @@ class TerminalManager:
         self.on_resize()
 
         self.colors = colors.termcolors.values()
+
+    def generate_logfile(
+            self
+        ):
+
+        # Get today's date
+        name = f"logs/{dateutils.get_datetime('', format_override = '%Y-%m-%d-%H-%M-%S')}"
+
+        # Check for log folder
+        if not os.path.exists("logs"):
+            # Generate it
+            subprocess.sync_run("mkdir logs")
+
+        count = 0
+
+        # Check if file exists
+        while os.path.exists(f"{name}-{count}.log"):
+            count += 1
+
+        self.logpath = f"{name}-{count}.log"
+
+        with open(self.logpath, "w+") as f:
+            f.write(f"# Log generated at {dateutils.get_datetime('second')}")
+
+        # Create a file object
+        asyncio.get_event_loop().create_task(self.create_log_obj())
+
+    async def create_log_obj(
+            self
+        ):
+        return
+
+        #self.logfile = await aiofiles.open(self.logpath, "a")
+
+    async def log_to_file(
+            self,
+            message
+        ):
+
+        #if not hasattr(self, "logfile"):
+        #    await self.create_log_obj()
+
+        current = dateutils.get_datetime("second")
+
+        current += " " * (19 - len(current))
+
+        async with aiofiles.open(self.logpath, "a") as c:
+            await c.write(f"\n[ {current} ] {message}")
 
     def finish_start(
             self
@@ -133,6 +185,9 @@ class TerminalManager:
         ):
 
         self.lines.append(message)
+
+        # Write to file
+        humecord.loop.create_task(self.log_to_file(re.sub(ansi_escape, "", message)))
 
         if not self.manual_scroll:
             self.location = len(self.lines) - self.log_count

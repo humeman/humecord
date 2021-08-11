@@ -66,20 +66,10 @@ class Bot:
         self.imports_imp = imports_imp
         self.imports_class = imports_class
 
-        self.loop = asyncio.get_event_loop()
+        self.loop = humecord.loop
 
         self.error_state = False
         self.disabled = False
-
-        return
-
-        raise DeprecationWarning("This function is deprecated. Pass all init parameters to Bot() instead.")
-
-        self.loop.run_until_complete(
-            errorhandler.async_wrap(
-                self._init(*args, **kwargs)
-            )
-        )
 
     async def _init(
             self,
@@ -453,4 +443,4 @@ def catch_asyncio(loop, context):
 
     logger.log_long("unhandlederror", "warn", "\n".join(traceback.format_tb(tb = context["exception"].__traceback__) + [f"{type(context['exception']).__name__}: {str(context['exception'])}"]).strip())
 
-asyncio.get_event_loop().set_exception_handler(catch_asyncio)
+humecord.loop.set_exception_handler(catch_asyncio)
