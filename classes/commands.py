@@ -108,6 +108,11 @@ class Commands:
                 "imp": "from humecord.commands import syslogger",
                 "module": "syslogger",
                 "class": "SysLoggerCommand"
+            },
+            "logs": {
+                "imp": "from humecord.commands import logs",
+                "module": "logs",
+                "class": "LogsCommand"
             }
         }
 
@@ -335,7 +340,15 @@ class Commands:
 
         # Expand the args
         if header["type"] == "alias":
-            args = command.name.split(" ") + args[len(header["match"]):]
+            alias_args = header["match"]
+
+            default_args = command.name.split(" ")
+            count = len(alias_args)
+            while len(alias_args) < len(default_args):
+                alias_args.append(default_args[count])
+                count += 1
+
+            args = alias_args + args[len(header["match"]):]
 
         elif header["type"] == "shortcut":
             final = []
