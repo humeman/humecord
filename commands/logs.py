@@ -2,6 +2,7 @@ from humecord.utils import (
     discordutils,
     components
 )
+import humecord
 
 import glob
 import math
@@ -203,14 +204,14 @@ class LogsCommand:
         # Compile into pages
         pages = []
         current = ""
-        for line in data:
-            if len(current) + len(line) + 2 > 4000:
+        for i, line in enumerate(data):
+            if len(current) + len(line) + len(str(i)) + 7 > 4000:
                 pages.append(current)
-                current = line
+                current = f"**{i + 1}** | {line.strip()}"
 
             else:
-                current += f"\n" if len(current) == 0 else ""
-                current += line
+                current += f"" if len(current) == 0 else "\n"
+                current += f"**{i + 1}** | {line.strip()}"
 
         if current != "":
             pages.append(current)
@@ -283,25 +284,321 @@ class LogsCommand:
                     callback = lambda *args: self.show_log(*args, values, False, origin, scroll_factors[current], page),
                     only_sender = False,
                     row = 1
+                ),
+                components.create_button(
+                    message,
+                    emoji = bot.config.lang['emoji']['info'],
+                    label = "Search",
+                    id = "search",
+                    style = "secondary",
+                    callback = lambda *args: self.show_search(*args, values, None, origin, page),
+                    only_sender = False,
+                    row = 1
                 )
             ]
         )
 
         if gen_new:
-            await resp.send(
+            msg = await resp.send(
                 embed = embed,
                 view = view
             )
 
         else:
-            await resp.interaction.message.edit(
+            msg = await resp.interaction.message.edit(
                 embed = embed,
                 view = view
             )
+
+        bot.replies.add_callback(
+            resp.interaction.message.id,
+            message.author.id,
+            lambda *args: self.search(resp, *args, values, False, origin, page),
+            delete_after = False
+        )
+
+    async def show_search(
+            self,
+            message,
+            resp,
+            args,
+            udb,
+            gdb,
+            alternate_gdb,
+            preferred_gdb,
+            values,
+            search: str,
+            origin: int,
+            origin_log: int,
+            page: int = 0,
+            scroll_factor: int = 1
+        ):
+
+        matches = {}
+
+        if search is None:
+            pages = [""]
+
+        else:
+            logfile = f"logs/{values[0]}.log"
+
+            # Read logfile
+            async with aiofiles.open(logfile, "r") as f:
+                data = await f.readlines()
+
+            # Find the message in content
+            matches = []
+
+            for i, line in enumerate(data):
+                line_ = line.lower()
+
+                if search in line_:
+                    matches.append(i)
+
+            found = []
+
+            for i in matches:
+                match = data[i].strip()
+
+                location = match.lower().find(search)
+
+                if location != -1:
+                    match = f"{match[:location]}**{match[location:location + len(search)]}**{match[location + len(search):]}"
+
+                found.append(f"**{i + 1}** | {match}")
+
+                # Find every log_step after
+                for i_, line in enumerate(data[i + 1:]):
+                    if i + i_ + 1 in matches:
+                        break
+
+                    if " ] " in line:
+                        if line.split(" ] ", 1)[1].startswith(" "):
+                            found.append(f"{i + i_ + 2} | {line.strip()}")
+
+                        else:
+                            break
+
+                    else:
+                        break
+
+                found.append("")
+
+            pages = []
+            current = ""
+
+            for line in found:
+                if len(current) + len(line) + 2 > 4000:
+                    pages.append(current)
+                    current = line
+
+                else:
+                    current += f"" if len(current) == 0 else "\n"
+                    current += line
+
+            if current != "":
+                pages.append(current)
+
+        page_count = len(pages)
+
+        if page < 1:
+            page = 0
+
+        if page >= page_count:
+            page = page_count - 1
+
+        if page <= 0:
+            back_button = ["secondary", lambda *args: self.pass_()]
+
+        else:
+            back_button = ["primary", lambda *args: self.show_search(*args, values, search, origin, origin_log, page - scroll_factor, scroll_factor)]
+
+        if page >= page_count - 1:
+            forward_button = ["secondary", lambda *args: self.pass_()]
+
+        else:
+            forward_button = ["primary", lambda *args: self.show_search(*args, values, search, origin, origin_log, page + scroll_factor, scroll_factor)]
+
+        current = scroll_factors.index(scroll_factor) + 1
+
+        if current >= len(scroll_factors):
+            current = 0
+
+        view = components.create_view(
+            [
+                components.create_button(
+                    message,
+                    label = "🏠",
+                    id = "home",
+                    style = "secondary",
+                    callback = lambda *args: self.show_log(*args, values, False, origin, 1, origin_log),
+                    only_sender = False,
+                    row = 1
+                ),
+                components.create_button(
+                    message,
+                    label = "←",
+                    id = "backward",
+                    style = back_button[0],
+                    callback = back_button[1],
+                    only_sender = False,
+                    row = 1
+                ),
+                components.create_button(
+                    message,
+                    label = "→",
+                    id = "forward",
+                    style = forward_button[0],
+                    callback = forward_button[1],
+                    only_sender = False,
+                    row = 1
+                ),
+                components.create_button(
+                    message,
+                    emoji = bot.config.lang['emoji']['forward'],
+                    label = str(scroll_factor),
+                    id = "sf",
+                    style = "secondary",
+                    callback = lambda *args: self.show_search(*args, values, search, origin, origin_log, page, scroll_factors[current]),
+                    only_sender = False,
+                    row = 1
+                )
+            ]
+        )
+
+        if len(pages) == 0:
+            content = f"No search results!"
+
+        elif search is None:
+            content = "Reply to this message with a search term."
+
+        else:
+            content = pages[page]
+
+        embed = discordutils.create_embed(
+            f"{'Ready to search!' if search is None else f'Search results (page {page + 1}/{page_count})'}",
+            description = content,
+            fields = [
+                {
+                    "name": "%-a% Details",
+                    "value": f"**Search term:** `{search}`\n**Log:** `{values[0]}`"
+                }
+            ]
+        )
+
+        await resp.interaction.message.edit(
+            embed = embed,
+            view = view
+        )
+
+        bot.replies.add_callback(
+            resp.interaction.message.id,
+            message.author.id,
+            lambda *args: self.search(resp, *args, values, False, origin, origin_log),
+            delete_after = False
+        )
+
+    async def search(
+            self,
+            resp,
+            message,
+            new_resp,
+            args,
+            udb,
+            gdb,
+            alternate_gdb,
+            preferred_gdb,
+            data,
+            values: list,
+            gen_new: bool,
+            origin: int,
+            origin_log: int
+        ):
+
+        if message.content is None or len(message.content) == 0:
+            await new_resp.error(
+                message.author,
+                "Invalid message!",
+                "Reply for a search term, or -[line number] to skip to a line number."
+            )
+            return
+
+        if len(values) == 0:
+            return
+
+        search = message.content.lower()
+
+        # Parse search term
+        if search.startswith("-"):
+            try:
+                num = int(search[1:])
+
+            except:
+                await new_resp.error(
+                    message.author,
+                    "Invalid syntax!",
+                    f"Reply with -[line number] to skip to a line number."
+                )
+                return
+
+            async with aiofiles.open(f"logs/{values[0]}.log", "r") as f:
+                data = await f.readlines()
+
+            # Send the original page at line #
+            page = 0
+            count = 0
+            for i, line in enumerate(data):
+                count += 8 + len(str(i)) + len(line.strip())
+                if count > 4000:
+                    page += 1
+                    count = 0
+
+                if i + 1 == num:
+                    await self.show_log(
+                        message,
+                        resp,
+                        args,
+                        udb,
+                        gdb,
+                        alternate_gdb,
+                        preferred_gdb,
+                        values,
+                        False,
+                        origin,
+                        1,
+                        page
+                    )
+                    return
+
+            await new_resp.error(
+                message.author,
+                "Line out of bounds!",
+                f"Line {num} doesn't exist."
+            )
+            return
+
+        await self.show_search(
+            message,
+            resp,
+            args,
+            udb,
+            gdb,
+            alternate_gdb,
+            preferred_gdb,
+            values,
+            search,
+            origin,
+            origin_log,
+            0
+        )
+        
+
 
 
 scroll_factors = [
     1,
     5,
-    10
+    10,
+    50,
+    100
 ]
