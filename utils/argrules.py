@@ -125,6 +125,28 @@ class ParseInt:
 
         return str(inp)
 
+class ParseBool:
+    async def main(
+            inp
+        ):
+
+        inp = inp.lower()
+
+        if inp in ["yes", "y", "true", "t", "enable", "on"]:
+            return True
+
+        elif inp in ["no", "n", "false", "f", "disable", "off"]:
+            return False
+
+        else:
+            raise IE("Unable to convert into bool")
+
+    async def format(
+            inp
+        ):
+
+        return "Yes" if inp else "No"
+
 class ParseEmbed:
     async def main(
             inp,
@@ -555,44 +577,64 @@ rules = {
         "functions": {
             "len": {
                 "function": ParseStr.len,
-                "args": [[int], [int]]
+                "args": [[int], [int]],
+                "str": "between %0 and %1 characters"
             },
             "includes": {
                 "function": ParseStr.includes,
-                "arg_types": [str]
+                "arg_types": [str],
+                "str": "includes one of %all"
             },
             "alnum": {
-                "function": ParseStr.alnum
+                "function": ParseStr.alnum,
+                "str": "alphanumeric"
             },
             "in": {
                 "function": ParseStr.in_,
-                "arg_types": [str]
+                "arg_types": [str],
+                "str": "one of %all"
             },
             "regex": {
                 "function": ParseStr.regex,
-                "arg_types": [str]
+                "arg_types": [str],
+                "str": "matches regex %all"
             }
         },
+        "str": "a string",
         "data": {},
         "format": {
             "data": {},
             "function": ParseStr.format
         }
     },
+    "bool": {
+        "main": ParseBool.main,
+        "functions": {},
+        "data": {},
+        "str": "a boolean",
+        "format": {
+            "data": {},
+            "function": ParseBool.format
+        }
+    },
     "int": {
         "main": ParseInt.main,
+        "str": "an integer",
         "functions": {
             "between": {
                 "function": ParseInt.between,
-                "args": [[int], [int]]
+                "args": [[int], [int]],
+                "str": "between %0 and %1"
             },
             "less": {
                 "function": ParseInt.less,
-                "args": [[int]]
+                "args": [[int]],
+                "str": "below %0"
             },
             "greater": {
                 "function": ParseInt.greater,
-                "args": [[int]]
+                "args": [[int]],
+                "str": "above %0"
             }
         },
         "data": {},
@@ -605,6 +647,7 @@ rules = {
         "main": ParseEmbed.main,
         "functions": {},
         "data": {},
+        "str": "a discord embed",
         "format": {
             "data": {
                 "shorten": [bool]
@@ -614,6 +657,7 @@ rules = {
     },
     "url": {
         "main": ParseURL.main,
+        "str": "a url",
         "functions": {},
         "data": {},
         "format": {

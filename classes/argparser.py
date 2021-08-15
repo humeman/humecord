@@ -6,6 +6,8 @@ from ..utils import (
 
 from typing import Union
 
+import humecord
+
 class ArgumentParser:
     def __init__(
             self,
@@ -18,6 +20,12 @@ class ArgumentParser:
         self.rules = {
             **argrules.rules,
             **extra_rules
+        }
+
+
+        self.sep_strings = {
+            "&&": "and",
+            "||": "or"
         }
 
     async def compile_recursive(
@@ -594,3 +602,139 @@ class ArgumentParser:
             value,
             **data
         )
+
+    async def format_rule(
+            self,
+            rule: Union[dict, str]
+        ):
+
+        if type(rule) == str:
+            rules = await self.compile_recursive(
+                rule
+            )
+
+        else:
+            rules = rule
+
+        comp = {}
+
+        for i, check in enumerate(rules["checks"]):
+            if type(check) == dict:
+                # Recursive :vomit:
+                comp[i] = (await self.format_rule(
+                    check
+                )).replace("\n", " ")
+
+            else:
+                # Do actual formatting
+                rtype, args = await self.dissect(
+                    check
+                )
+
+                # Get the rtype
+                if rtype not in argrules.rules:
+                    raise exceptions.InvalidRule(f"Rule type {rtype} doesn't exist")
+
+                r = argrules.rules[rtype]
+
+                if "str" in r:
+                    detail = r["str"]
+                    
+                else:
+                    detail = f"A{'n' if rtype[0] in 'aeiou' else ''} {rtype}"
+
+                ext = []
+
+                # Parse args
+                for func in args:
+                    # Try to get the func
+                    if "(" in func:
+                        fname, fargs = func.split("(", 1)
+
+                        if fargs[-1] != ")":
+                            raise exceptions.InvalidRule(f"Unmatched ')'")
+
+                        fargs = fargs[:-1].split(",")
+
+                    else:
+                        fname = func
+
+                    fname = fname.lower()
+
+                    if fname not in r["functions"]:
+                        raise exceptions.InvalidRule(f"Function {fname} doesn't exist for rule {rtype}")
+
+                    f = r["functions"][fname]
+
+                    if "str" not in f:
+                        raise exceptions.InvalidRule(f"Function {fname} has no format string")
+                    
+                    form = f["str"]
+
+                    for i_, arg in enumerate(fargs):
+                        form = form.replace(f"%{i_}", arg)
+
+                    form = form.replace("%all", ", ".join(fargs))
+
+                    ext.append(form)
+
+                if len(ext) > 0:
+                    extra = " " + (", ".join(ext))
+
+                else:
+                    extra = ""
+
+                comp[i] = detail + extra
+
+        added = []
+        str_comp = []
+
+        # Gather by group
+        for group in rules["groups"]:
+            if group["type"] == "solo":
+                str_comp.append(comp[group["index"]])
+
+                added.append(group["index"])
+
+            else:
+                ext = []
+
+                for index in group["groups"]:
+                    if index in added:
+                        continue
+
+                    if index == 0:
+                        str_comp.append(comp[index])
+
+                    else:
+                        str_comp.append(f"{self.sep_strings[group['check']]} {comp[index]}")
+
+                    added.append(index)
+
+        return "\n".join(str_comp)
+
+    async def dissect(
+            self,
+            rule: str
+        ):
+
+        # Parse out the type
+        if "[" in rule:
+            rtype, args = rule.split("[", 1)
+            # Strip the final "]" on args.
+
+            if args[-1] != "]":
+                raise exceptions.InvalidRule("Unmatched '['")
+
+            args = args[:-1]
+
+            # Split the args
+            args = args.split("&")
+
+        else:
+            rtype = rule
+            args = []
+
+        return rtype, args
+
+        

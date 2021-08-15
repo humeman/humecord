@@ -239,6 +239,8 @@ class Loader:
                 )
 
                 humecord.bot.commands.commands[category].append(_command)
+        
+        await humecord.bot.commands.args.compile_all()
 
     async def load_events(
             self
