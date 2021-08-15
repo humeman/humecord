@@ -36,19 +36,20 @@ class WSInterface:
         self.stop = True
 
         # Kill the main task
-        for task in [self.recv_task, self.send_task]:
+        if hasattr(self, "send_task"):
+            for task in [self.recv_task, self.send_task]:
+                try:
+                    task.cancel()
+
+                except:
+                    pass
+
+            # Close the websocket
             try:
-                task.cancel()
+                await self.socket.close(code = 1000)
 
             except:
                 pass
-
-        # Close the websocket
-        try:
-            await self.socket.close(code = 1000)
-
-        except:
-            pass
 
         # Kill the reboot loop
         if hasattr(self, "main_loop_task"):

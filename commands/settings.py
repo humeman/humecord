@@ -143,7 +143,7 @@ class SettingsCommand:
                 ),
                 components.create_button(
                     message,
-                    label = "🡸",
+                    label = "←",
                     id = "back",
                     style = backward_button[0],
                     callback = backward_button[1],
@@ -152,7 +152,7 @@ class SettingsCommand:
                 ),
                 components.create_button(
                     message,
-                    label = "🡺",
+                    label = "→",
                     id = "forward",
                     style = forward_button[0],
                     callback = forward_button[1],
@@ -250,6 +250,12 @@ class SettingsCommand:
                                 {}
                             )
                         )
+
+                    else:
+                        return str(value)
+
+        return value
+
 
     async def pass_(
             self,
