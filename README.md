@@ -22,6 +22,16 @@ An advanced discord.py wrapper, designed to allow for easy creation of bots with
     * !dev - manages your bot, entirely from discord
     * !help - automatically compiled from your registered commands
     * !about - gives details about your bot, and fully customizable
+    * !botban - ban users from using the bot (global, syncs to API if used)
+    * !dm - dms a user, works with embeds and attachments
+    * !exec - executes a function asynchronously from discord
+    * !logs - interactive discord log viewer
+    * !messages - allows users to edit bot messages
+    * !overrides - allows users to make one bot override another for some event when multiple are in use
+    * !profile - changes the bot's discord profile
+    * !settings - allows users to change guild settings (settings in config.yml)
+    * !syslogger - enables/disables error reporting for system logs
+    * !useredit - changes the internal bot rank for a discord user
 
 * Advanced development tools
     * Error reporting and logging, in both your console & a Discord channel
