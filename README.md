@@ -50,7 +50,7 @@ You can, alternatively, create your own interface to support whatever storage sy
 ## Requirements
 Humecord runs on:
 * Python 3.6 or higher
-* discord.py 2.0.0a
+* [pycord](https://docs.pycord.dev/en/master/) master branch
 
 ## Getting started
 Read the documentation for Humecord by [clicking here](docs).
