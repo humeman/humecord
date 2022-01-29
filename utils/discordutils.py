@@ -100,7 +100,7 @@ def error(
     ):
 
     embed = create_embed(
-        description = f"{humecord.bot.config.lang['emoji']['error']}  **{title}**\n{description}",
+        description = f"{humecord.bot.config.lang['emoji']['error']}  **{title}**\n{description if description is not None else ''}",
         color = "error"
     )
 

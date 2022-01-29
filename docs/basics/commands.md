@@ -34,6 +34,7 @@ are passed to it with each call.
 
 * `resp` - a humecord.classes.discordclasses.ResponseChannel instance
     * Learn more about ResponseChannels [here](../classes/responsechannels.md)
+    * Learn more about embeds [here](../utils/discordutils.md)
 
 * `args` - a list of all arguments
 
