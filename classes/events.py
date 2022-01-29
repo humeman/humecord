@@ -26,6 +26,7 @@ class Events:
             "hc_on_command",
             "hc_on_ws_action",
             "hc_on_ws_response",
+            "hc_on_perma_interaction",
             "on_connect",
             "on_shard_connect",
             "on_disconnect",

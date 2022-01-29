@@ -117,6 +117,11 @@ class Commands:
                 "imp": "from humecord.commands import logs",
                 "module": "logs",
                 "class": "LogsCommand"
+            },
+            "locate": {
+                "imp": "from humecord.commands import locate",
+                "module": "locate",
+                "class": "LocateCommand"
             }
         }
 
@@ -571,6 +576,24 @@ class Commands:
             )
         )
         humecord.terminal.log(" ", True)
+
+    async def register_slash_command(
+            self
+        ):
+
+        @bot.slash_command()
+        async def __slash_command(
+                ctx: discord.ApplicationContext,
+                **possible_args
+            ):
+            pass
+
+            
+
+    async def handle_slash_command(
+            self
+    ):
+        pass
 
     async def syntax_error(
             self,

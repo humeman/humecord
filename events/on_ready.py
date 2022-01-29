@@ -21,6 +21,10 @@ class OnReadyEvent:
         self.event = "on_ready"
 
         self.functions = {
+            "run_nuke": {
+                "function": self.run_nuke,
+                "priority": 0
+            },
             "populate_debug_channel": {
                 "function": self.populate_debug_channel,
                 "priority": 1
@@ -53,6 +57,13 @@ class OnReadyEvent:
 
         global logger
         from humecord import logger
+
+    async def run_nuke(
+            self,
+            __ = None
+        ):
+
+        await humecord.bot.run_kill()
 
     async def populate_debug_channel(
             self,

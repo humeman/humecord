@@ -423,6 +423,24 @@ class Bot:
 
             raise exceptions.CloseLoop()
 
+    async def run_kill(
+            self
+        ):
+
+        # Check if killed
+        if self.files.files["__humecord__.json"].get("kill") == True:
+            # Nuke everything
+            self.loops.loops = []
+            self.commands.commands = {}
+            self.events.events = []
+            self.events.edb = {}
+
+            # Set status
+            await self.client.change_presence(
+                activity = discord.Game(name = "Goodbye."),
+                status = discord.Status.dnd
+            )
+
 async def on_error_ext(*args, **kwargs):
     raise
 

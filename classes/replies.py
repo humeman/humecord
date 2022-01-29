@@ -7,6 +7,8 @@ from humecord.utils import (
     exceptions
 )
 
+from typing import Optional
+
 class Replies:
     def __init__(
             self
@@ -23,7 +25,7 @@ class Replies:
     def add_callback(
             self,
             message_id: int,
-            author_id: int,
+            author_id: Optional[int],
             callback,
             data: dict = {},
             delete_after: bool = True
@@ -33,7 +35,7 @@ class Replies:
 
         Parameters:
             message_id: int
-            author_id: int
+            author_id: int, None
             callback: Callable (usual command args + data)
             data: dict - Data returned on callback
         """
@@ -89,16 +91,17 @@ class Replies:
                     return
 
             # Check if user is right
-            if message.author.id != message_data["author"]:
-                await message.reply(
-                    embed = discordutils.error(
-                        message.author,
-                        "Can't run reply command!",
-                        f"I can only accept responses from the original sender, <@{message_data['author']}>."
+            if message_data["author"] is not None:
+                if message.author.id != message_data["author"]:
+                    await message.reply(
+                        embed = discordutils.error(
+                            message.author,
+                            "Can't run reply command!",
+                            f"I can only accept responses from the original sender, <@{message_data['author']}>."
+                        )
                     )
-                )
 
-                return
+                    return
 
             # Create ResponseChannel
             resp = humecord.classes.discordclasses.MessageResponseChannel(

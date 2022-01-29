@@ -58,17 +58,25 @@ def create_embed(
             
     return embed
 
+def get_member_descriptor(
+        member: Union[discord.User, discord.Member]
+    ):
+
+    name = f"{member.name}#{member.discriminator}"
+
+    if type(member) == discord.Member:
+        if member.nick:
+            name = f"{member.nick} ({member.name}#{member.discriminator})"
+
+    return name
+
 def get_profile(
         member: Union[discord.Member, discord.User, list],
         embed: discord.Embed
     ):
 
     if type(member) in [discord.Member, discord.User, discord.ClientUser]:
-        name = f"{member.name}#{member.discriminator}"
-
-        if type(member) == discord.Member:
-            if member.nick:
-                name = f"{member.nick} ({member.name}#{member.discriminator})"
+        name = get_member_descriptor(member)
                 
         embed.set_author(name = name, icon_url = member.avatar.url)
 

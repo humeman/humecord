@@ -5,6 +5,7 @@ from humecord.utils import (
 )
 
 from humecord.utils.exceptions import InvalidData as IE
+import humecord
 
 import re
 import discord
@@ -569,6 +570,50 @@ class ParseURL:
 
         return str(inp)
 
+class ParseUser:
+    async def main(
+            inp: str
+        ):
+
+        inp = inp.strip()
+        
+        # Remove <, @, !, >
+        for char in "<@!>":
+            inp = inp.replace(char, "")
+
+        # Try to turn into int
+        try:
+            inp = int(inp)
+
+        except:
+            raise IE(f"Invalid ID")
+
+        # Try to get user
+        user = humecord.bot.client.get_user(inp)
+
+        if user is None:
+            raise IE("User not found")
+
+        # Good
+        return user
+
+    async def format(
+            inp
+        ):
+
+        return str(inp)
+
+    async def guild(
+            inp,
+            args
+        ):
+
+        member = args[0].get_member(inp.id)
+
+        if member is None:
+            raise IE("User is not in guild")
+
+
 # Argument rules
 # Imported by the argument parser on init.
 rules = {
@@ -663,6 +708,22 @@ rules = {
         "format": {
             "data": {},
             "function": ParseURL.format
+        }
+    },
+    "user": {
+        "main": ParseUser.main,
+        "str": "a discord user",
+        "functions": {
+            "guild": {
+                "function": ParseUser.guild,
+                "args": [[discord.Guild]],
+                "str": "in guild %0"
+            }
+        },
+        "data": {},
+        "format": {
+            "data": {},
+            "function": ParseUser.format
         }
     }
 }

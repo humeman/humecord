@@ -29,10 +29,11 @@ class CoolView(discord.ui.View):
         self.children = children
 
 def create_view(
-        components: list = []
+        components: list = [],
+        timeout = 3600
     ):
 
-    view = discord.ui.View(timeout = 3600)
+    view = discord.ui.View(timeout = timeout)
 
     for component in components:
         view.add_item(component)
@@ -55,7 +56,9 @@ def create_button(
         disabled: bool = False,
         emoji: Optional[str] = None,
         only_sender: bool = True,
-        row: int = 0
+        row: int = 0,
+        permanent: bool = False,
+        permanent_id: Optional[str] = None
     ):
 
     # Parse type
@@ -72,9 +75,14 @@ def create_button(
     if len(id) > 64:
         raise exceptions.InvalidComponent("ID must be 64 characters or shorter")
 
-    _mid = message.id
+    if not permanent:
+        _mid = message.id
 
-    _id = f"{_mid}.{id}"
+        _id = f"{_mid}.{id}"
+
+    else:
+        _id = f"hcperma_{permanent_id}"
+
 
     # Parse label
     if len(label) > 80:
@@ -88,12 +96,13 @@ def create_button(
         else:
             arg = [None]
 
-        humecord.bot.interactions.register_component(
-            "button",
-            _id,
-            callback,
-            *arg
-        )
+        if not permanent:
+            humecord.bot.interactions.register_component(
+                "button",
+                _id,
+                callback,
+                *arg
+            )
 
     # Update component type
     d_style = styles[_style]
@@ -138,7 +147,9 @@ def create_dropdown(
         callback = None,
         options: dict = {},
         row: int = 0,
-        only_sender: bool = True
+        only_sender: bool = True,
+        permanent: bool = False,
+        permanent_id: Optional[str] = None
     ):
 
     # Define items
@@ -155,7 +166,11 @@ def create_dropdown(
             )
         )
 
-    _id = f"{message.id}.{id}"
+    if permanent:
+        _id = f"hcperma_{permanent_id}"
+
+    else:
+        _id = f"{message.id}.{id}"
 
     
     if only_sender:
@@ -164,12 +179,13 @@ def create_dropdown(
     else:
         arg = [None]
 
-    humecord.bot.interactions.register_component(
-        "select",
-        _id,
-        callback,
-        *arg
-    )
+    if not permanent:
+        humecord.bot.interactions.register_component(
+            "select",
+            _id,
+            callback,
+            *arg
+        )
 
     return Select(
         custom_id = _id,

@@ -146,7 +146,13 @@ def parse_duration(
     return total
 
 def get_timestamp(seconds):
-    return f"{datetime.datetime.fromtimestamp(seconds).strftime('%b %d, %Y at %H:%M %Z')}"
+    if type(seconds) in [int, float]:
+        dateobj = datetime.datetime.fromtimestamp(seconds)
+
+    else:
+        dateobj = seconds
+
+    return f"{dateobj.strftime('%b %d, %Y at %H:%M %Z')}"
 
 int_times = [
     1,

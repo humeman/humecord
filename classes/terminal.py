@@ -113,12 +113,16 @@ class TerminalManager:
         #if not hasattr(self, "logfile"):
         #    await self.create_log_obj()
 
-        current = dateutils.get_datetime("second")
+        try:
+            current = dateutils.get_datetime("second")
 
-        current += " " * (19 - len(current))
+            current += " " * (19 - len(current))
 
-        async with aiofiles.open(self.logpath, "a") as c:
-            await c.write(f"\n[ {current} ] {message}")
+            async with aiofiles.open(self.logpath, "a") as c:
+                await c.write(f"\n[ {current} ] {message}")
+
+        except:
+            pass
 
     def finish_start(
             self
