@@ -6,6 +6,8 @@ from humecord.utils import (
     debug
 )
 
+import humecord
+
 class OverrideHandler:
     def __init__(
             self,
@@ -18,9 +20,12 @@ class OverrideHandler:
     async def check(
             self,
             guild_id: int,
-            bots: Iterable[str],
+            bots: Optional[Iterable[str]],
             return_name: bool = False
         ):
+
+        if bots is None:
+            bots = humecord.bot.config.globals.override_bots
 
         try:
             overrides = await bot.api.get(

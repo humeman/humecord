@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Optional, Iterable
 import discord
 import aiofiles
 import aiohttp
@@ -208,27 +208,39 @@ def get_user(
 
     return user_
 
-perm_defs = {
-    "general": [
-
-    ]
-}
 
 def has_perms(
         channel: discord.TextChannel,
         member: discord.Member,
-        perms: str
+        perms: Iterable[str]
     ):
-
-    perms = perm_defs[perms]
 
     channel_perms = channel.permissions_for(member)
 
+    comp = []
     for perm in perms:
-        if getattr(channel_perms, perm) == False:
+        if not perm.replace("_", "").isalnum():
+            raise humecord.utils.exceptions.SecurityError("Permissions must be alphanumeric.")
+        
+        try:
+            permc = getattr(channel_perms, perm)
+
+        except:
+            raise humecord.utils.exceptions.NotFound(f"Perm {perm} doesn't exist.")
+
+        comp.append(permc)
+
+    for perm in perms:
+        if perm == False:
             return False
 
     return True
+
+def has_rights(
+        *args,
+        **kwargs
+    ):
+    return has_perms(*args, **kwargs)
 
 def generate_intents(
         intents: Union[list, str]

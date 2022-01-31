@@ -608,10 +608,134 @@ class ParseUser:
             args
         ):
 
-        member = args[0].get_member(inp.id)
+        member = humecord.bot.client.get_guild(args[0]).get_member(inp.id)
 
         if member is None:
             raise IE("User is not in guild")
+
+channel_permission_presets = {
+    "text": [
+        "read_messages",
+        "send_messages",
+        "embed_links",
+        "external_emojis",
+        "attach_files",
+        "add_reactions",
+        "read_message_history"
+    ],
+    "text_mod": [
+        "read_messages",
+        "send_messages",
+        "embed_links",
+        "external_emojis",
+        "attach_files",
+        "add_reactions",
+        "read_message_history",
+        "manage_messages",
+    ],
+    "voice": [
+        "view_channel",
+        "connect",
+        "speak",
+        "use_voice_activation"
+    ],
+    "voice_mod": [
+        "view_channel",
+        "connect",
+        "speak",
+        "use_voice_activation",
+        "move_members",
+        "deafen_members",
+        "mute_members"
+    ]
+}
+
+class ParseChannel:
+    async def main(
+            inp: str
+        ):
+
+        inp = inp.strip()
+        
+        # Remove <, @, !, >
+        for char in "<#!>":
+            inp = inp.replace(char, "")
+
+        # Try to turn into int
+        try:
+            inp = int(inp)
+
+        except:
+            raise IE(f"Invalid ID")
+
+        # Try to get channel
+        channel = humecord.bot.client.get_channel(inp)
+
+        if channel is None:
+            raise IE("Channel not found")
+
+        # Good
+        return channel
+
+    async def format(
+            inp
+        ):
+
+        return str(inp)
+
+    async def rights(
+            inp,
+            args
+        ):
+
+        member = inp.guild.me
+
+        if member is None:
+            raise IE("Bot is not in guild")
+
+        preset = args[0].lower()
+
+        if preset not in channel_permission_presets:
+            raise IE(f"Preset {preset} doesn't exist")
+
+        perms = channel_permission_presets[preset]
+
+        valid = discordutils.has_rights(
+            inp,
+            member,
+            perms
+        )
+
+        if not valid:
+            raise IE("Missing permissions")
+
+    async def channel_type(
+            inp,
+            args
+        ):
+
+        req_type = args[0].lower()
+
+        types = {
+            "text": discord.TextChannel,
+            "voice": discord.VoiceChannel,
+            "stage": discord.StageChannel,
+            "welcome": discord.WelcomeScreenChannel,
+            "widget": discord.WidgetChannel,
+            "group": discord.GroupChannel,
+            "dm": discord.DMChannel,
+            "store": discord.StoreChannel
+        }
+
+        ctype = types.get(req_type)
+
+        if ctype is None:
+            raise IE(f"Type {req_type} doesn't exist")
+
+        if type(inp) != ctype:
+            raise IE("Channel is of wrong type")
+
+
 
 
 # Argument rules
@@ -716,7 +840,7 @@ rules = {
         "functions": {
             "guild": {
                 "function": ParseUser.guild,
-                "args": [[discord.Guild]],
+                "args": [[int]],
                 "str": "in guild %0"
             }
         },
@@ -724,6 +848,27 @@ rules = {
         "format": {
             "data": {},
             "function": ParseUser.format
+        }
+    },
+    "channel": {
+        "main": ParseChannel.main,
+        "str": "a discord channel",
+        "functions": {
+            "type": {
+                "function": ParseChannel.channel_type,
+                "args": [[str]],
+                "str": "of type %0"
+            },
+            "rights": {
+                "function": ParseChannel.rights,
+                "args": [[str]],
+                "str": "with %0 permissions"
+            }
+        },
+        "data": {},
+        "format": {
+            "data": {},
+            "function": ParseChannel.format
         }
     }
 }

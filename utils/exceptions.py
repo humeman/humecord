@@ -90,3 +90,6 @@ class InvalidData(Exception):
 # -- messenger --
 class InvalidKey(Exception):
     pass
+
+class SecurityError(Exception):
+    pass
