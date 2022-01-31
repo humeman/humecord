@@ -398,6 +398,9 @@ class SettingsCommand:
             )
             return
 
+        if "attr" in setting:
+            new = getattr(new, setting["attr"])
+
         # Generate new value
         path = [f"['{x}']" for x in setting["path"].strip("/").split("/")]
         exec(
