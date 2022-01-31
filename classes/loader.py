@@ -186,6 +186,7 @@ class Loader:
             humecord.bot.loops.loops.append(_loop)
 
         # Prep loops
+        humecord.bot.loops.stop = False
         await humecord.bot.loops.prep()
 
 
