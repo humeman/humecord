@@ -65,11 +65,11 @@ class SettingsCommand:
             categories[setting["category"]]["settings"].append(name)
 
         if location == "home":
+            if item is None and not gen_new:
+                item = resp.interaction.data["custom_id"].split(".", 1)[1]
+                
             selected = "home"
             selected_category = ""
-
-            if item is None and not gen_new:
-                item = resp.interaction.custom_id.split(".", 1)[1]
 
             # Compile into fields & buttons
             fields = []
@@ -91,6 +91,9 @@ class SettingsCommand:
             ext_buttons = []
 
         else:
+            if item is None and not gen_new:
+                item = resp.interaction.data["custom_id"].split(".", 1)[1]
+
             selected = ""
             selected_category = item
 
