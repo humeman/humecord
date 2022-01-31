@@ -68,6 +68,9 @@ class SettingsCommand:
             selected = "home"
             selected_category = ""
 
+            if item is None:
+                item = resp.interaction.custom_id.split(".", 1)[1]
+
             # Compile into fields & buttons
             fields = []
             for category, details in categories.items():
@@ -188,7 +191,7 @@ class SettingsCommand:
                     emoji = cat['emoji'],
                     id = category,
                     style = "success" if selected_category == category else "secondary",
-                    callback = lambda *args: self.list_(*args, "category", str(category), False),
+                    callback = lambda *args: self.list_(*args, "category", None, False),
                     only_sender = True,
                     row = 1
                 )
