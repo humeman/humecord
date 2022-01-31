@@ -68,7 +68,7 @@ class SettingsCommand:
             selected = "home"
             selected_category = ""
 
-            if item is None:
+            if item is None and not gen_new:
                 item = resp.interaction.custom_id.split(".", 1)[1]
 
             # Compile into fields & buttons
