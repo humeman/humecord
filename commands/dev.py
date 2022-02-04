@@ -115,7 +115,12 @@ class DevCommand:
         )
 
         if "literallyjustfuckingdieihateyousomuch" in message.content.lower():
-            reason = "https://media.discordapp.net/attachments/748566123917869106/881766338245308476/meme.gif"
+            reason = "T\n\nHANOS"
+            await bot.debug_channel.send(
+                embed = discordutils.create_embed(
+                    image = "https://media.discordapp.net/attachments/748566123917869106/881766338245308476/meme.gif"
+                )
+            )
 
         else:
             reason = f"Discord shutdown by {message.author}"
