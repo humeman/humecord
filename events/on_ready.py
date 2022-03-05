@@ -67,7 +67,7 @@ class OnReadyEvent:
 
     async def populate_debug_channel(
             self,
-            __
+            __ = None
         ):
         humecord.bot.debug_channel = humecord.bot.client.get_channel(humecord.bot.config.debug_channel)
 
@@ -80,7 +80,7 @@ class OnReadyEvent:
 
     async def tell_api(
             self,
-            __
+            __ = None
         ):
         if humecord.bot.config.use_api:
             await humecord.bot.api.put(
@@ -94,7 +94,7 @@ class OnReadyEvent:
 
     async def ready(
             self,
-            __
+            __ = None
         ):
         logger.log_step("botinit", "start", f"Logged in as {humecord.bot.client.user} ({humecord.bot.client.user.id})")
 
@@ -149,14 +149,14 @@ class OnReadyEvent:
 
     async def fire_hc(
             self,
-            __
+            __ = None
         ):
 
         await humecord.bot.events.call("hc_on_ready", [])
 
     async def start_ws(
             self,
-            __
+            __ = None
         ):
 
         if hasattr(humecord.bot, "ws"):
@@ -164,7 +164,7 @@ class OnReadyEvent:
 
     async def post_changelog(
             self,
-            __
+            __ = None
         ):
 
         # Check if it's enabled
