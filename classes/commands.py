@@ -4,7 +4,6 @@ Humecord/classes/commands
 The Humecord command handler.
 """
 
-from discord.errors import InvalidArgument
 import humecord
 
 from humecord.utils import (

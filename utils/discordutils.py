@@ -10,8 +10,8 @@ import humecord
 import io
 
 def create_embed(
-        title = discord.Embed.Empty,
-        description = discord.Embed.Empty,
+        title = None,
+        description = None,
         fields: list = [],
         color: str = "invisible",
         footer: Union[str, None] = None,
