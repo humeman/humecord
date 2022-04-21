@@ -26,4 +26,5 @@ from . import loops
 from . import commands
 
 extra_events = []
+reg_permas = []
 bot = Bot()
