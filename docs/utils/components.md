@@ -139,7 +139,7 @@ __**components.create_view**__
 
 Creating buttons is done entirely through the method `components.create_button`.
 
-__**discordutils.create_embed()**__
+__**components.create_button()**__
 **Returns:** discord.UI.Button
 **Raises:** exceptions.InvalidComponent
 **Arguments:**
@@ -159,7 +159,7 @@ __**discordutils.create_embed()**__
 
 ### dropdowns
 
-__**discordutils.create_dropdown()**__
+__**components.create_dropdown()**__
 **Returns:** discord.UI.Select
 **Raises:** exceptions.InvalidComponent
 **Arguments:**
@@ -213,7 +213,7 @@ self.my_perma_id = "test"
 
 if my_perma_id not in humecord.reg_permas:
     @humecord.event("hc_on_perma_interaction")
-    async def handle_verification_call(int_perma_id, message, resp, user, udb, gdb):
+    async def handle_button(int_perma_id, message, resp, user, udb, gdb):
         if int_perma_id != my_perma_id:
             return
 
