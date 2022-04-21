@@ -129,8 +129,11 @@ await resp.send(
 ```
 
 __**components.create_view**__
+
 **Returns:** discord.UI.View
+
 **Raises:** Nothing
+
 **Arguments:**
   * **components** (list): list of components to insert into view
   * **timeout** (int) = 3600: time after which view expires in memory
@@ -140,8 +143,11 @@ __**components.create_view**__
 Creating buttons is done entirely through the method `components.create_button`.
 
 __**components.create_button()**__
+
 **Returns:** discord.UI.Button
+
 **Raises:** exceptions.InvalidComponent
+
 **Arguments:**
   * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
   * **style** (str) = "primary": button style to use (one of `primary`, `secondary`, `success`, `danger`, or `url`)
@@ -160,8 +166,11 @@ __**components.create_button()**__
 ### dropdowns
 
 __**components.create_dropdown()**__
+
 **Returns:** discord.UI.Select
+
 **Raises:** exceptions.InvalidComponent
+
 **Arguments:**
   * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
   * **placeholder** (str): placeholder displayed to the user before they select something
