@@ -132,8 +132,8 @@ __**components.create_view**__
 **Returns:** discord.UI.View
 **Raises:** Nothing
 **Arguments:**
-    * **components** (list): list of components to insert into view
-    * **timeout** (int) = 3600: time after which view expires in memory
+  * **components** (list): list of components to insert into view
+  * **timeout** (int) = 3600: time after which view expires in memory
 
 ### buttons
 
@@ -143,19 +143,19 @@ __**discordutils.create_embed()**__
 **Returns:** discord.UI.Button
 **Raises:** exceptions.InvalidComponent
 **Arguments:**
-    * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
-    * **style** (str) = "primary": button style to use (one of `primary`, `secondary`, `success`, `danger`, or `url`)
-    * **label** (str): button text presented to the user (only optional if `emoji` is set)
-    * **id** (str): 12-char or less internal label for the button (must be unique to the view)
-    * **callback** (function): async function that will be called on interaction (not a coroutine)
-        * arguments: `message, resp, args, udb, gdb, alternate_gdb, preferred_gdb`
-    * **url** (str): url for `url` type buttons -- style must be set to `url` for this to matter
-    * **disabled** (bool) = False: disables button presses
-    * **emoji** (str): discord emoji snowflake or unicode emoji to display beside the label
-    * **only_sender** (bool) = True: refuses interactions from anyone but the sender
-    * **row** (int) = 0: row number, 0-4
-    * **permanent** (bool) = False: if permanent, keeps the component in memory forever. callback will *not* do anything -- you must catch an `hc_on_perma_interaction` event instead (see example below under **permanent components**)
-    * **permanent_id** (str): string to refer to this interaction ID if permanent (see example below under **permanent components**) (only required if permanent is `True`)
+  * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
+  * **style** (str) = "primary": button style to use (one of `primary`, `secondary`, `success`, `danger`, or `url`)
+  * **label** (str): button text presented to the user (only optional if `emoji` is set)
+  * **id** (str): 12-char or less internal label for the button (must be unique to the view)
+  * **callback** (function): async function that will be called on interaction (not a coroutine)
+    * arguments: `message, resp, args, udb, gdb, alternate_gdb, preferred_gdb`
+  * **url** (str): url for `url` type buttons -- style must be set to `url` for this to matter
+  * **disabled** (bool) = False: disables button presses
+  * **emoji** (str): discord emoji snowflake or unicode emoji to display beside the label
+  * **only_sender** (bool) = True: refuses interactions from anyone but the sender
+  * **row** (int) = 0: row number, 0-4
+  * **permanent** (bool) = False: if permanent, keeps the component in memory forever. callback will *not* do anything -- you must catch an `hc_on_perma_interaction` event instead (see example below under **permanent components**)
+  * **permanent_id** (str): string to refer to this interaction ID if permanent (see example below under **permanent components**) (only required if permanent is `True`)
 
 ### dropdowns
 
@@ -163,30 +163,31 @@ __**discordutils.create_dropdown()**__
 **Returns:** discord.UI.Select
 **Raises:** exceptions.InvalidComponent
 **Arguments:**
-    * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
-    * **placeholder** (str): placeholder displayed to the user before they select something
-    * **min_values** (int) = 1: minimum values selected
-    * **max_values** (int) = 1: maximum values selected (defaults to 1 to allow only one choice)
-    * **id** (str): 12-char or less internal label for the component (must be unique to the view)
-    * **callback** (function): async function that will be called on interaction (not a coroutine)
-        * arguments: `message, resp, args, udb, gdb, alternate_gdb, preferred_gdb, values`
-        * `values` is a list of IDs of chosen options
-    * **options** (dict[str, dict[str, str]]): a dictionary of dropdown options (up to 25)
-        * dict is formatted as:
-        ```py
-        options = {
-            "option1_id": {
-                "name": "option 1", # 100 chars
-                "emoji": "👍", # optional
-                "description": "option 1.", # optional, 100 chars
-                "default": True # optional, if True will be pre-selected
-            },
-            "option2_id": {...}
-        }```
-    * **row** (int) = 0: row number, 0-4, to place the dropdown on (a dropdown takes up an entire row -- ensure nothing else is on the row selected)
-    * **only_sender** (bool) = True: refuses interactions from anyone but the sender
-    * **permanent** (bool) = False: if permanent, keeps the component in memory forever. callback will *not* do anything -- you must catch an `hc_on_perma_interaction` event instead (see example below under **permanent components**)
-    * **permanent_id** (str): string to refer to this interaction ID if permanent (see example below under **permanent components**) (only required if permanent is `True`)
+  * **message**: discord.Message object reference to get data from (required only if `only_sender` is True, but recommended regardless)
+  * **placeholder** (str): placeholder displayed to the user before they select something
+  * **min_values** (int) = 1: minimum values selected
+  * **max_values** (int) = 1: maximum values selected (defaults to 1 to allow only one choice)
+  * **id** (str): 12-char or less internal label for the component (must be unique to the view)
+  * **callback** (function): async function that will be called on interaction (not a coroutine)
+    * arguments: `message, resp, args, udb, gdb, alternate_gdb, preferred_gdb, values`
+    * `values` is a list of IDs of chosen options
+  * **options** (dict[str, dict[str, str]]): a dictionary of dropdown options (up to 25)
+      * dict is formatted as:
+      ```py
+      options = {
+          "option1_id": {
+              "name": "option 1", # 100 chars
+              "emoji": "👍", # optional
+              "description": "option 1.", # optional, 100 chars
+              "default": True # optional, if True will be pre-selected
+          },
+          "option2_id": {...}
+      }
+      ```
+  * **row** (int) = 0: row number, 0-4, to place the dropdown on (a dropdown takes up an entire row -- ensure nothing else is on the row selected)
+  * **only_sender** (bool) = True: refuses interactions from anyone but the sender
+  * **permanent** (bool) = False: if permanent, keeps the component in memory forever. callback will *not* do anything -- you must catch an `hc_on_perma_interaction` event instead (see example below under **permanent components**)
+  * **permanent_id** (str): string to refer to this interaction ID if permanent (see example below under **permanent components**) (only required if permanent is `True`)
 
 ### text inputs
 
