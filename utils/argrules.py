@@ -720,11 +720,9 @@ class ParseChannel:
             "text": discord.TextChannel,
             "voice": discord.VoiceChannel,
             "stage": discord.StageChannel,
-            "welcome": discord.WelcomeScreenChannel,
             "widget": discord.WidgetChannel,
             "group": discord.GroupChannel,
             "dm": discord.DMChannel,
-            "store": discord.StoreChannel
         }
 
         ctype = types.get(req_type)
