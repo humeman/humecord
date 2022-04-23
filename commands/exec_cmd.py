@@ -90,6 +90,9 @@ class ExecCommand:
         # Remove backticks & whitespace
         function = function.strip("```").strip()
 
+        if function.startswith("py\n"):
+            function = function[2:].strip()
+
         func_spaced = "\n".join([f"    {x}" for x in function.split("\n")])
 
         # Store in globals
