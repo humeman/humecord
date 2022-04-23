@@ -1,6 +1,6 @@
 import humecord
 import discord
-from utils import (
+from humecord.utils import (
     exceptions
 )
 
