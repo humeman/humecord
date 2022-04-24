@@ -2,6 +2,7 @@ import time
 import discord
 import asyncio
 import traceback
+import json
 
 from typing import Optional
 
@@ -98,7 +99,10 @@ class Interactions:
             perma_override = False
         ):
 
-        if interaction.type == discord.enums.InteractionType.component:
+        humecord.terminal.log("interaction", True)
+
+        if interaction.type in [discord.enums.InteractionType.component, discord.enums.InteractionType.modal_submit]:
+            humecord.terminal.log(repr(interaction.type), True)
             # Forward it to the callback
 
             # First - find message
@@ -172,7 +176,8 @@ class Interactions:
                             None,
                             "Couldn't respond to interaction!",
                             "Original message could not be found. Was it deleted?"
-                        )
+                        ),
+                        ephemeral = True
                     )
                     return
 
@@ -183,19 +188,21 @@ class Interactions:
                             message.author,
                             "Couldn't respond to interaction!",
                             "Button presses expire after 60 minutes to save resources. If this error occured but you responded within this time period, please tell me and try again."
-                        )
+                        ),
+                        ephemeral = True
                     )
                     return
 
                 if interaction_data["author"] is not None:
                     if interaction_data["author"] != interaction.user.id:
                         try:
-                            await interaction.message.channel.send(
+                            await interaction.response.send_message(
                                 embed = humecord.utils.discordutils.error(
                                     interaction.user,
                                     "Can't respond to interaction!",
                                     f"I can only accept responses from the original sender, <@{interaction_data['author']}>."
-                                )
+                                ),
+                                ephemeral = True
                             )
 
                         except:
@@ -210,7 +217,8 @@ class Interactions:
                             message.author,
                             "Couldn't respond to interaction!",
                             "The component you pressed isn't registered in the interaction handler. Did it expire?"
-                        )
+                        ),
+                        ephemeral = True
                     )
                     return
             
@@ -238,11 +246,20 @@ class Interactions:
                     # Append selection
                     ext_args = [interaction.data["values"]]
 
+                elif comp_type == "modal":
+                    comp_args = {}
+
+                    for mcomponent in interaction.data["components"]:
+                        mcomponent = mcomponent["components"][0]
+                        comp_args[mcomponent["custom_id"].split(".", 1)[1]] = mcomponent["value"]
+                    
+                    ext_args = [comp_args]
+
             humecord.logger.log_long(
                 "interaction",
                 "int",
                 [
-                    f"Type:           components.button",
+                    f"Type:           components.{comp_type}",
                     f"Component:      {cid}",
                     f"Guild:          {message.guild.id} ({message.guild.name})",
                     f"Channel:        {message.channel.id} ({message.channel.name})",
