@@ -28,6 +28,32 @@ class Select(discord.ui.Select):
             interaction.message
         )
 
+class TextInput(discord.ui.TextInput):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def callback(self, interaction):
+        await humecord.utils.errorhandler.discord_wrap(
+            humecord.bot.interactions.recv_interaction(
+                interaction
+            ),
+            interaction.message
+        )
+
+class Modal(discord.ui.Modal):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def on_submit(
+            self,
+            interaction
+        ):
+        await humecord.utils.errorhandler.discord_wrap(
+            humecord.bot.interactions.recv_interaction(
+                interaction
+            ),
+            interaction.message
+        )
 
 class ResponseChannel:
     def __init__(
@@ -44,6 +70,9 @@ class ResponseChannel:
         raise humecord.utils.exceptions.NotDefined(f"This function isn't defined for message type {self.type}.")
 
     async def edit(self, *args):
+        raise humecord.utils.exceptions.NotDefined(f"This function isn't defined for message type {self.type}.")
+
+    async def send_modal(self, *args):
         raise humecord.utils.exceptions.NotDefined(f"This function isn't defined for message type {self.type}.")
 
     async def embed(self, *args, **kwargs):
@@ -72,6 +101,9 @@ class ComponentResponseChannel(ResponseChannel):
 
     async def edit(self, *args, **kwargs):
         return await self.interaction.response.edit_message(*args, **kwargs)
+
+    async def send_modal(self, *args, **kwargs):
+        return await self.interaction.response.send_modal(*args, **kwargs)
 
 class MessageResponseChannel(ResponseChannel):
     def __init__(self, message):
