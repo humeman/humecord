@@ -4,7 +4,9 @@ import discord
 from humecord.utils import exceptions
 from humecord.classes.discordclasses import (
     Button,
-    Select
+    Select,
+    TextInput,
+    Modal
 )
 import humecord
 
@@ -96,7 +98,7 @@ def create_button(
         else:
             arg = [None]
 
-        if not permanent:
+        if (not permanent) and (callback is not None):
             humecord.bot.interactions.register_component(
                 "button",
                 _id,
@@ -179,7 +181,7 @@ def create_dropdown(
     else:
         arg = [None]
 
-    if not permanent:
+    if (not permanent) and (callback is not None):
         humecord.bot.interactions.register_component(
             "select",
             _id,
@@ -194,4 +196,75 @@ def create_dropdown(
         max_values = max_values,
         options = items,
         row = row
+    )
+
+def create_modal(
+        message,
+        title: str = None,
+        id: Optional[str] = None,
+        callback = None,
+        components = [],
+        timeout: int = 3600
+    ):
+
+    _id = f"{message.id}.{id}"
+
+    modal = Modal(
+        title = title,
+        timeout = timeout,
+        custom_id = _id
+    )
+    
+    for component in components:
+        modal.add_item(component)
+
+    if callback is not None:
+        humecord.bot.interactions.register_component(
+            "modal",
+            _id,
+            callback,
+            message.author.id
+        )
+
+    return modal
+
+def create_textinput(
+        message,
+        label: str = "",
+        placeholder: str = "",
+        default: str = None,
+        id: Optional[str] = None,
+        min_length: int = 1,
+        max_length: int = 1024,
+        required: bool = True,
+        text_style: Optional[discord.TextStyle] = None,
+        permanent: bool = False,
+        permanent_id: Optional[str] = None
+    ):
+
+    if permanent:
+        _id = f"hcperma_{permanent_id}"
+
+    else:
+        _id = f"{message.id}.{id}"
+
+
+    if text_style is not None:
+        style = text_style
+
+    elif max_length > 128:
+        style = discord.TextStyle.long
+
+    else:
+        style = discord.TextStyle.short
+
+    return TextInput(
+        custom_id = _id,
+        label = label,
+        placeholder = placeholder,
+        default = default,
+        min_length = min_length,
+        max_length = max_length,
+        style = style,
+        required = required
     )

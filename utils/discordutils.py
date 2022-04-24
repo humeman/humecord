@@ -119,7 +119,7 @@ def check_perms(
 def generate_activity(
         type: str,
         details: str,
-        streaming: Optional[dict],
+        streaming: Optional[dict] = None
     ):
 
     if type == "streaming":
