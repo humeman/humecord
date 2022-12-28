@@ -1,8 +1,9 @@
 pytz
-httpx
+httpx[http2]
 asyncio
 discord
 websockets
 blessed
 unidecode
 aiofiles
+youtube-dlc

@@ -1,6 +1,49 @@
 version: 0.4.0
 
+title: "Humecord Chapter 4: The Interactions Overhaul"
 description: |
-  Keeping with the usual theme I've established for Humecord updates, 0.4.0 is completely unstructured and brings a number of changes that I thought would be kinda awesome.
+  Humecord 0.4 brings about an exciting change in the way commands and user interaction is handled: Discord Interactions. 
+  The message-based command handler is now officially **deprecated** in favor of slash commands (fuck you Discord). 
+
+  This does come with a number of breaking changes, which means you'll have to rework some things a bit to get your bots on Humecord 0.4. 
+  See [this doc page](/docs/misc/migrating-hc04.md) for a full list of things that need to be changed.
 
 changes:
+  - name: Added the new CommandHandler
+    value: |
+    This class automatically generates a slash command tree and handles/reroutes incoming interactions to make slash commands the most seamless process possible. 
+
+    Of course, since the CommandHandler name was taken by the previous message-based command handler, it will now be called the MessageCommandHandler. It can be accessed at bot.msgcommands.
+
+    No more old janky slash commands that reroute into the old command handler -- everything is brand new now, and geared towards slash commands from the start!
+
+    (Of course, regular commands *do* still work -- but will not receieve as much work as slash commands in the future.)
+
+  - name: Added humecord.classes.Context
+    value: |
+    Previously, important information such as the guild's gdb, member's udb, and resp channels were passed each as individual args to a command. This was historically quite an inflexible system, leaving no room to add args without having to manually update each command/interaction/etc.
+
+    Instead, each of these args have been moved to a new `Context` class, which will be passed to each command/event as `ctx`.
+
+    The new command argument layout is:
+    `message, resp, ctx`
+
+    And, `ctx` now contains references to all the old args (gdb, udb, etc), as well as some new helper functions.
+
+    See [the doc page](/docs/classes/context.md) for a full introduction to all the new features!
+    
+  - name: Made the terminal optional
+    value: |
+    Chances are I'm rewriting it since it's a buggy mess -- so, to go back to regular old printing to the console (like God intended), start your bot and run the command 'disable', then restart.
+
+  - name: Added inheritable command/event/loop classes
+    value: |
+    All commands, events, and loops are now required to inherit the `humecord.classes.user.Command, Event, or Loop` class.
+
+    This addition allows for much more flexible functionality in terms of the operation of these user-created classes. Previously, command register information, methods, and so on were held outside of the command/event/loop classes -- which wasn't too intuitive, or efficient.
+
+  - name: Added modals and new components
+    value: |
+    Humecord is now fully up to date with Discord's recent component additions with the introduction of modals and text inputs.
+
+    Learn more about modals/forms [here](/docs/basics/modal.md)!

@@ -14,4 +14,4 @@ Each slash command has the following attributes:
 * `async .send(*args)` - Same syntax as `channel.send` in discord.py. Sends the message in the designated channel.
 
 * `async .edit(*args)` - Same as the above, but edits the message (if applicable).
-    * Not defined for MessageResponseChannels or SlashCommandResponseChannels.
+    * Not defined for MessageResponseChannels.

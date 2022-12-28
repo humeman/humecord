@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "humecord"
+version = "0.4.0"
+authors = [
+    { name = "humeman", email = "camden@humeman.com"}
+]
+description = "The world's most scuffed discord.py bot library."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/humeman/humecord"
+"Project Page" = "https://humeman.com/projects/humecord"
