@@ -238,6 +238,7 @@ debug_channel: 0
 send_changelogs: true
 
 # -- Permissions --
+
 # Owner of the bot.
 # Overrides all permission checks and ratelimits.
 bot_owner: 337758812465528833
@@ -255,6 +256,10 @@ mod_perms:
   - manage_guild
   - manage_messages
   - manage_roles
+
+# Restricts any commands with 'self.dev = True' to these guild IDs for slash command registration.
+dev_guilds: 
+  - 782851458671968276
 
 # -- Defaults --
 

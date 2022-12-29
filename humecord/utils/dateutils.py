@@ -152,7 +152,7 @@ def get_timestamp(seconds):
     else:
         dateobj = seconds
 
-    return f"{dateobj.strftime('%b %d, %Y at %H:%M %Z')}"
+    return f"{dateobj.strftime('%b %d, %Y at %H:%M %Z')}".strip()
 
 int_times = [
     1,

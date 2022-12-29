@@ -42,7 +42,7 @@ class RefreshStatusLoop:
             kw["activity"] = humecord.utils.discordutils.generate_activity(details = status, **activity)
 
         # Find visibility
-        visibility = eval(humecord.bot.config.visibilities[humecord.bot.files.files["__bot__.json"]["visibility"]], globals())
+        visibility = humecord.VISIBILITIES[humecord.bot.files.files["__bot__.json"]["visibility"]]
 
         # Update it
         await humecord.bot.client.change_presence(status = visibility, **kw)

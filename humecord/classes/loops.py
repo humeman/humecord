@@ -94,6 +94,18 @@ class Loops:
             for key, value in change.items():
                 setattr(loop, key, value)
 
+    async def run_once(
+            self,
+            name: str
+        ) -> None:
+
+        for loop in self.loops:
+            if loop.name == "refresh_status":
+                await loop.run()
+                return
+
+        raise humecord.utils.exceptions.NotFound(f"No loop by name '{name}'.")
+
     async def start(
             self
         ):

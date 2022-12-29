@@ -45,3 +45,20 @@ class ButtonStyles(Enum):
 class ActivatorTypes(Enum):
     REPLACE = 1
     SHORTCUT = 2
+
+# general
+VISIBILITIES = {
+    "online": discord.Status.online,
+    "offline": discord.Status.offline,
+    "idle": discord.Status.idle,
+    "dnd": discord.Status.dnd,
+    "invisible": discord.Status.invisible
+}
+
+ACTIVITIES = {
+    "playing": discord.ActivityType.playing,
+    "streaming": discord.ActivityType.streaming,
+    "listening": discord.ActivityType.listening,
+    "watching": discord.ActivityType.watching,
+    "competing": discord.ActivityType.competing
+}

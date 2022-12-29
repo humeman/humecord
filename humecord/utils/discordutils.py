@@ -1,8 +1,10 @@
-from typing import Union, Optional, Iterable
+from typing import List, Union, Optional, Iterable
 import discord
 import aiofiles
 import aiohttp
 import time
+
+from humecord.classes import discordclasses
 
 from .colors import Colors
 from . import exceptions
@@ -134,7 +136,7 @@ def generate_activity(
     else:
         activity = discord.Activity(name = details)
 
-        activity.type = eval(humecord.bot.config.activities[type], globals())
+        activity.type = humecord.ACTIVITIES[type]
 
         return activity
 

@@ -24,12 +24,14 @@ class AboutCommand(humecord.Command):
         self.name = "about"
         self.description = "Gives some info about me."
         self.command_tree = {
-            "/": self.run
+            "": self.run
         }
         self.args = {}
         self.messages = {
             "aliases": ["aboutme"]
         }
+        self.perms = "bot.mod"
+        self.default_perms = "guild.mod"
 
         global bot
         from humecord import bot

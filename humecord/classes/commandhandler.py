@@ -7,7 +7,7 @@ Replacement for the previous MessageCommandHandler (deprecated).
 import json # FIXME: temp
 
 import discord
-from typing import Optional, Union
+from typing import Any, Optional, Union
 import time
 
 import humecord
@@ -81,6 +81,41 @@ class CommandHandler:
                 "imp": "from humecord.commands import about",
                 "module": "about",
                 "class": "AboutCommand"
+            },
+            "botban": {
+                "imp": "from humecord.commands import botban",
+                "module": "botban",
+                "class": "BotBanCommand"
+            },
+            "dev": {
+                "imp": "from humecord.commands import dev",
+                "module": "dev",
+                "class": "DevCommand"
+            },
+            "devinfo": {
+                "imp": "from humecord.commands import devinfo",
+                "module": "devinfo",
+                "class": "DevInfoCommand"
+            },
+            "dm": {
+                "imp": "from humecord.commands import dm",
+                "module": "dm",
+                "class": "DMCommand"
+            },
+            "exec": {
+                "imp": "from humecord.commands import execcmd",
+                "module": "execcmd",
+                "class": "ExecCommand"
+            },
+            "profile": {
+                "imp": "from humecord.commands import profile",
+                "module": "profile",
+                "class": "ProfileCommand"
+            },
+            "sync": {
+                "imp": "from humecord.commands import sync",
+                "module": "sync",
+                "class": "SyncCommand"
             }
         }
         
@@ -187,8 +222,64 @@ class CommandHandler:
         # Once commands are all added, sync it (temporary: will be a command later)
         #self.slashtree.copy_global_to(guild = humecord.bot.client.get_guild(782851458671968276))
         #ret = await self.slashtree.sync(guild = humecord.bot.client.get_guild(782851458671968276))
+        #print(ret)
         humecord.logger.log_step("botinit", "start", f"Registered {counter} commands")
         self._prep_finished = True
+
+    async def sync_to(
+            self,
+            guild: discord.Guild,
+            copy: bool = False
+        ) -> int:
+        """
+        Syncs the local command tree to a single guild.
+        
+        Params:
+            guild (discord.Guild): Target guild to sync to
+            
+        Returns:
+            count (int): Commands synced
+        """
+        if not self._prep_finished:
+            raise exceptions.DevError("Command tree is not prepared yet.")
+
+        if copy:
+            self.slashtree.copy_global_to(guild = guild)
+            
+        return len(await self.slashtree.sync(guild = guild))
+
+    async def clear_tree(
+            self,
+            guild: discord.Guild
+        ) -> None:
+        """
+        Clears a guild's local command tree.
+        
+        Params:
+            guild (discord.Guild): Target guild to clear
+        """
+        if not self._prep_finished:
+            raise exceptions.DevError("Command tree is not prepared yet.")
+
+        self.slashtree.clear_commands(guild = guild)
+        cmds = await self.slashtree.sync(guild = guild)
+
+        if len(cmds) != 0:
+            raise exceptions.DevError(f"Tree was not cleared successfully.")
+
+    async def sync_global(
+            self
+        ) -> int:
+        """
+        Syncs the local command tree globally. Changes take a while to propogate.
+            
+        Returns:
+            count (int): Commands synced
+        """
+        if not self._prep_finished:
+            raise exceptions.DevError("Command tree is not prepared yet.")
+        
+        return len(await self.slashtree.sync())
 
     async def call_command(
             self,
@@ -224,7 +315,8 @@ class CommandHandler:
             "channel": interaction.channel,
             "hcommand": hcommand,
             "command": command,
-            "args": args
+            "args": args,
+            "user": interaction.user
         }
         
         # Check for a GDB
@@ -236,6 +328,9 @@ class CommandHandler:
             )
 
             kw["gdb"] = gdb
+
+        # Set preferred GDB values
+        kw["preferred_gdb"] = {x: gdb.get(x) for x in bot.config.preferred_gdb}
 
         # Get UDB
         try:
@@ -274,14 +369,14 @@ class CommandHandler:
                     return
                 
         # Check permissions
-        if "permission" in dir(hcommand) and (interaction.guild is not None):
-            if not await bot.permissions.check(interaction.user, hcommand.permission, udb):
+        if "perms" in dir(hcommand):
+            if not await bot.permissions.check(interaction.user, hcommand.perms, udb):
                 self.stat_cache["__denied__"] += 1
                 await resp.send(
                     embed = discordutils.error(
                         interaction.user,
                         "You don't have permission to run this command!",
-                        f"In order to run this command, you need the permission `{hcommand.permission}`. Check with an admin if you believe this is in error." 
+                        f"In order to run this command, you need the permission `{hcommand.perms}`. Check with an admin if you believe this is in error." 
                     )
                 )
                 return
@@ -395,6 +490,34 @@ class HumecordCommand(object):
             if argname not in obj_dir:
                 setattr(self, argname, default)
 
+    def _set_general_attrs(
+            self,
+            cmd: Union[discord.app_commands.Command, discord.app_commands.Group],
+            subcommand: str
+        ) -> dict[str, Any]:
+        """
+        Sets some default attrs to a Command or Group.
+        
+        Deals with some permissions and guilds in particular.
+        """
+        # Set guild IDs if this is a dev command
+        do_restrict = False
+        if getattr(self, "dev", False):
+            do_restrict = True
+
+        elif hasattr(self, "perms"):
+            if self.perms.lower() == "bot.dev":
+                do_restrict = True
+
+        if do_restrict:
+            # Restrict to only permitted guilds
+            cmd._guild_ids = bot.config.dev_guilds
+
+        if getattr(self, "guild_only", False):
+            cmd.guild_only = True
+
+        self.default_permissions = self._get_permissions(subcommand)
+
     def _init_cmd(
             self,
             category: str
@@ -417,7 +540,7 @@ class HumecordCommand(object):
         # This does a few things to format the command tree into something a little easier to use:
         # 1. Iterate over each item in the tree. Check if it's a subcommand item.
         for path, func in self.command_tree.items():
-            ctree = [x.strip() for x in path.split("/") if len(x.strip()) > 0]
+            ctree = [x.strip() for x in path.split(" ") if len(x.strip()) > 0]
             if len(ctree) == 0:
                 # Forces at least one iteration for commands with no args or subcommands.
                 ctree = [None]
@@ -502,7 +625,6 @@ class HumecordCommand(object):
                     "hcommand": self,
                     "type": humecord.CmdTypes.GROUP
                 }
-                # TODO: Default group permissions go here
             )
 
         else:
@@ -520,6 +642,8 @@ class HumecordCommand(object):
             root_cmd._callback = self._command_callback.__func__
             root_cmd.binding = self
 
+        self._set_general_attrs(root_cmd, "__root__")
+
         # Now we have all the command parameters we need -- let's figure out what we need to tell dpy about them
         
         for subcommand_name, details in subcommands.items():
@@ -529,7 +653,7 @@ class HumecordCommand(object):
             # 2. Use some hacky stuff to manually call decorators on a Group without actually writing a function
             # 3. Try to override Discord's parameter generation
 
-            # Attempting 2 first, since I want to avoid exec() at all costs
+            # Attempting 2 first, since I want to avoid exec() if at all possible
 
             # Let's first make a command
 
@@ -554,7 +678,7 @@ class HumecordCommand(object):
                 ext_kw = {}
 
                 # The type can be automatically set to 'string' (for our own validation later) if argtype is 'option'
-                if arg_details["type"] == "option":
+                if "options" in arg_details:
                     dtype = discord.AppCommandOptionType.string
 
                     # Define our extra kwargs for that
@@ -593,8 +717,9 @@ class HumecordCommand(object):
                         "type": humecord.CmdTypes.SUBCOMMAND,
                         "subcommand": subcommand_name # So the callback knows where to look for func
                     }
-                    # TODO: Permissions
                 )
+                self._set_general_attrs(cmd, subcommand_name)
+
                 # Overwrite callback with real one
                 cmd._callback = self._command_callback.__func__
                 cmd.binding = self
@@ -613,6 +738,87 @@ class HumecordCommand(object):
         self._root_dcmd = root_cmd
         self._root_dcmd_type = root_cmd_type
         return root_cmd
+
+    def _get_permissions(
+            self,
+            subcommand: str
+        ) -> Optional[list]:
+        default_perms = None
+        if subcommand == "__root__":
+            # Check for root 'self.default_perms' opt
+            default_perms = getattr(self, "default_perms", None)
+
+        else:
+            # Check in self.subcommand_details
+            details = getattr(self, "subcommand_details", None)
+
+            if details is not None:
+                # Check for subcommand
+                if subcommand in self.subcommand_details:
+                    default_perms = self.subcommand_details[subcommand].get("default_perms")
+
+        if default_perms is None:
+            return None
+
+        # Otherwise, format them
+        str_perms = []
+        if type(default_perms) == str:
+            # Humecord-style permission string
+            rules = default_perms.split("+")
+
+            for rule in rules:
+                rule = rule.lower().strip()
+                if not rule.startswith("guild."):
+                    raise exceptions.DevError(f"Only guild.mod, guild.admin, or guild.any permitted for command permissions.")
+
+                sub = rule.split(".", 1)[1].strip()
+
+                if sub == "admin":
+                    str_perms += ["administrator"]
+
+                elif sub == "mod":
+                    str_perms += bot.permissions.mod_perms
+
+                elif sub == "any":
+                    str_perms += ["read_messages"]
+
+                else:
+                    raise exceptions.DevError(f"Only guild.mod, guild.admin, or guild.any permitted for command permissions.")
+
+        elif type(default_perms) == list:
+            str_perms = default_perms
+
+        else:
+            raise exceptions.DevError(f"Command.default_perms must be a string (humecord permission node) or list (discord permission nodes).")
+
+        # Turn the strings into discord.Permission enums
+        discord_perms = []
+        for perm in str_perms:
+            disc_perm = getattr(discord.Permissions, perm, None)
+
+            if disc_perm is None:
+                raise exceptions.DevError(f"Permission {perm} does not exist. See discord.Permissions API docs for a list of all permissions.")
+
+            discord_perms.append(disc_perm)
+
+        return discord_perms
+
+    async def _verify_permission(
+            self,
+            interaction: discord.Interaction,
+            udb: dict[str, Any]
+        ) -> None:
+        # Find the Humecord permission node
+        perm_node = getattr(self, "perms", None)
+
+        if perm_node is None:
+            return
+
+        return await bot.permissions.check(
+            interaction.user,
+            perm_node,
+            udb
+        )
 
     async def _fake_callback(
             self,

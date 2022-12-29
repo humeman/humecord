@@ -81,15 +81,18 @@ send_changelogs: "bool"
 
 start_calls: "list[str]"
 
+terminal_colors: "dict[str:str]"
+
+line_numbers: "bool"
+
+# -- Permissions --
 bot_owner: "int"
 
 eval_perms: "list[int]"
 
 mod_perms: "list[str]"
 
-terminal_colors: "dict[str:str]"
-
-line_numbers: "bool"
+dev_guilds: "list[int]"
 
 # -- Defaults --
 default_status: "!dict[str:str&status,visibility]"

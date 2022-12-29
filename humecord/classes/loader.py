@@ -62,6 +62,19 @@ class Loader:
         # Load in the imports
         await self.stop_all(safe_stop)
 
+        # Prepare command handler
+        if not starting:
+            humecord.bot.commands.slashtree.clear_commands(guild = None)
+
+            for gid in humecord.bot.config.dev_guilds:
+                guild = humecord.bot.client.get_guild(gid)
+
+                if guild is None:
+                    continue
+
+                humecord.bot.commands.slashtree.clear_commands(guild = guild)
+
+
         await self.load_loops()
         await self.load_commands()
         await self.load_msgadapter()
@@ -240,10 +253,6 @@ class Loader:
                             setattr(_command, attr, value)
 
                 # Validate it
-                
-                if not humecord._temp.get("logged_validator_off"):
-                    humecord.logger.log("user", "warn", "Command validator is turned off! If you're seeing this message in a production version of Humecord, please contact hume.")
-                    humecord._temp["logged_validator_off"] = True
                 
                 #await self.validate(
                 #    "command",

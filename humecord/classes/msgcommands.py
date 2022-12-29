@@ -169,6 +169,9 @@ class MessageCommandAdapter:
                 { "id": message.guild.id, "autocreate": True }
             )
 
+            # Set preferred GDB values
+            kw["preferred_gdb"] = {x: gdb.get(x) for x in bot.config.preferred_gdb}
+
             kw["gdb"] = gdb
             prefix = gdb.get("prefix") or "!"
 
@@ -225,13 +228,13 @@ class MessageCommandAdapter:
             return
                 
         # 2a: (forgot about this one) Check permissions, if they exist
-        if "permission" in dir(hcommand):
-            if not await bot.permissions.check(message.author, hcommand.permission, udb):
+        if "perms" in dir(hcommand):
+            if not await bot.permissions.check(message.author, hcommand.perms, udb):
                 await resp.send(
                     embed = humecord.utils.discordutils.error(
                         message.author,
                         "You don't have permission to run this command!",
-                        f"In order to run this command, you need the permission `{hcommand.permission}`. Check with an admin if you believe this is in error." 
+                        f"In order to run this command, you need the permission `{hcommand.perms}`. Check with an admin if you believe this is in error." 
                     )
                 )
                 self.parent.stat_cache["__denied__"] += 1
@@ -239,16 +242,24 @@ class MessageCommandAdapter:
 
         # 3: Split the command into args
         text_args = message.content.split(" ")
-        arg_len = len(text_args)
+        
+        if len(hcommand._subcommand_tree) == 1:
+            arg_len = 1
+
+        else:
+            arg_len = 2
 
         # 4: If activation method is a shorcut, expand args to that shortcut
         if matched_activator["type"] == humecord.ActivatorTypes.SHORTCUT:
             new_args = matched_activator["to"].split(" ")
             text_args = new_args + text_args[1:]
+            arg_len = len(new_args)
 
         # 5: Match these args to a subcommand or regular command
+        text_arg_len = len(text_args)
         subcommand_match = None
-        if arg_len == 1: # Root subcommand or error
+        err = True
+        if text_arg_len == 1: # Root subcommand or error
             if len(hcommand._subcommand_tree) > 1:
                 # Syntax error: Missing a subcommand
                 await message.reply(
@@ -259,9 +270,9 @@ class MessageCommandAdapter:
 
             # Run the root command
             subcommand_match = hcommand._subcommand_tree["__root__"]
-
-        else:
-            # We've already matched a command -- now check the subcommand (arg 2)
+        
+        # We've already matched a command -- now check the subcommand (arg 2)
+        elif text_arg_len >= 2:
             subcommand = text_args[1].lower()
 
             for name, details in hcommand._subcommand_tree.items():
@@ -275,54 +286,67 @@ class MessageCommandAdapter:
                     subcommand_match = hcommand._subcommand_tree[name]
                     break
 
+        else:
+            err = False
+
         # If there's not a match, send an error
         if subcommand_match is None:
             await message.reply(
-                embed = self.get_err_embed(hcommand, error = True)
+                embed = self.get_err_embed(hcommand, error = err)
             )
             self.parent.stat_cache["__denied__"] += 1
             return
         
         # 6: Parse any args
-        args = subcommand_match["args"]
-        text_args = message.content.split(" ")
-        next_i = arg_len
-        total_arg_len = len(text_args)
-        parsed_args = {}
-        for i, arg_name in enumerate(args):
+        arg_names = []
+
+        for arg_name in subcommand_match["args"]:
             arg_details = hcommand.args.get(arg_name)
 
             if arg_details is None:
                 self.parent.stat_cache["__denied__"] += 1
                 raise exceptions.DevError(f"Argument {arg_name} has no entry in self.args.")
 
-            hc_arg_type = discord_to_humecord_args.get(arg_details["type"])
+            if arg_details.get("slashonly"):
+                continue
+
+            arg_names.append(arg_name)
+
+        next_i = arg_len
+        total_arg_len = len(text_args)
+        parsed_args = {}
+        for i, arg_name in enumerate(arg_names):
+            arg_details = hcommand.args[arg_name]
+
+            hc_arg_type = discord_to_humecord_args[arg_details.get("type")]
 
             if hc_arg_type is None:
                 # We don't have a way to transform this arg yet.
-                # Send an error, asking the user to use slash commands.
-                await message.reply(
-                    embed = discordutils.create_embed(
-                        f"{bot.config.lang['emoji']['error']}  Can't execute command!",
-                        f"Humecord does not have a method to parse arguments of type `{args['type']}` yet. In the meantime, you'll have to use slash commands.\nFeel free to bug my dev (or Hume) about this!",
-                        color = "error"
+                # Send an error, asking the user to use slash commands -- if the arg is required.
+
+                if arg_details.get("required"):
+                    await message.reply(
+                        embed = discordutils.create_embed(
+                            f"{bot.config.lang['emoji']['error']}  Can't execute command!",
+                            f"Humecord does not have a method to parse arguments of type `{arg_details['type']}` yet. In the meantime, you'll have to use slash commands.\nFeel free to bug my dev (or Hume) about this!",
+                            color = "error"
+                        )
                     )
-                )
-                self.parent.stat_cache["__denied__"] += 1
-                return
+                    self.parent.stat_cache["__denied__"] += 1
+                    return
         
             # Parse the arg, if it exists
-            if next_i < total_arg_len:
+            elif next_i < total_arg_len:
                 # Append any validators, if they exist
                 if "validate" in arg_details:
                     hc_arg_type = f"{hc_arg_type}[{arg_details['validate']}]"
 
                 # Parse either the arg (if there are more args coming) or the rest of the content (if it's the last one)
-                if i == total_arg_len - 1:
-                    to_parse = text_args[next_i]
+                if i == len(arg_names) - 1:
+                    to_parse = " ".join(text_args[next_i:])
 
                 else:
-                    to_parse = " ".join(text_args[next_i:])
+                    to_parse = text_args[next_i]
 
                 # Arg exists -- parse it
                 success, res = await bot.args.parse(
@@ -348,20 +372,19 @@ class MessageCommandAdapter:
                     return
 
 
-            else:
-                # Arg doesn't exist. If it's not required, that's okay.
-                if arg_details.get("required"):
-                    await message.reply(
-                        embed = discordutils.create_embed(
-                            f"{bot.config.lang['emoji']['error']}  Missing arguments!",
-                            f"```{self.get_syntax_err_string(text_args, next_i)}\nexpected argument {arg_name} of type {arg_details['type']}```",
-                            color = "error"
-                        )
+            # Arg doesn't exist. If it's not required, that's okay.
+            elif arg_details.get("required"):
+                await message.reply(
+                    embed = discordutils.create_embed(
+                        f"{bot.config.lang['emoji']['error']}  Missing arguments!",
+                        f"```{self.get_syntax_err_string(text_args, next_i)}\nexpected argument {arg_name} of type {arg_details['type']}```",
+                        color = "error"
                     )
-                    self.parent.stat_cache["__denied__"] += 1
-                    return
-                
-                parsed_args[arg_name] = None
+                )
+                self.parent.stat_cache["__denied__"] += 1
+                return
+
+            next_i += 1
 
         # 7: Generate RespChannel
         resp = discordclasses.MessageResponseChannel(message)
@@ -374,10 +397,11 @@ class MessageCommandAdapter:
             **kw,
             "type": humecord.ContextTypes.MESSAGE,
             "resp": resp,
-            "interaction": message,
+            "message": message,
             "channel": message.channel,
             "hcommand": hcommand,
-            "args": args
+            "args": args,
+            "user": message.author
         }
         ctx = discordclasses.Context(**kw)
 
@@ -450,7 +474,7 @@ class MessageCommandAdapter:
         fields = []
 
         # Check for subcommands
-        if len(hcommand._subcommand_tree) == 2:
+        if len(hcommand._subcommand_tree) > 1:
             comp = []
             # Subcommands exist. List them
             for name, subcommand_details in hcommand._subcommand_tree.items():
@@ -465,27 +489,29 @@ class MessageCommandAdapter:
 
         # Aliases
         aliases = hcommand.messages.get("aliases")
-        if len(aliases) > 1:
-            fields.append(
-                {
-                    "name": "→ Aliases",
-                    "value": ", ".join(aliases)
-                }
-            )
+        if aliases is not None:
+            if len(aliases) > 1:
+                fields.append(
+                    {
+                        "name": "→ Aliases",
+                        "value": ", ".join(aliases)
+                    }
+                )
 
         # And shortcuts
         shortcuts = hcommand.messages.get("shortcuts")
-        if len(shortcuts) > 1:
-            comp = []
-            for _from, _to in shortcuts.items():
-                comp.append(f"• **{_from}** → {_to}")
+        if shortcuts is not None:
+            if len(shortcuts) > 1:
+                comp = []
+                for _from, _to in shortcuts.items():
+                    comp.append(f"• **{_from}** → {_to}")
 
-            fields.append(
-                {
-                    "name": "→ Shortcuts",
-                    "value": "\n".join(comp)
-                }
-            )
+                fields.append(
+                    {
+                        "name": "→ Shortcuts",
+                        "value": "\n".join(comp)
+                    }
+                )
 
         # Generate details
         if error:
@@ -493,7 +519,7 @@ class MessageCommandAdapter:
             color = "error"
 
         else:
-            title = f"{bot.config.lang['emoji']['info']}  {hcommand.name[0].upper()}{hcommand.name[1:]}"
+            title = f"{bot.config.lang['emoji']['info']}  Command info: /{hcommand.name}"
             color = "blue"
 
         return discordutils.create_embed(
@@ -513,6 +539,7 @@ discord_to_humecord_args = {
     "mentionable": None,
     "number": "float",
     "attachment": None,
-    "option": "str"
+    "option": "str",
+    None: None
 }
 

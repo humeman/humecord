@@ -27,6 +27,13 @@ If you use the Users API, the following value has to be added:
 user_api: users
 ```
 
+The following option has to be added: Due to Discord limitations, we can't check permissions before displaying a command to the user -- only after execution. To keep other guilds clean, dev commands are now restricted to a predefined list of guilds. This is not applicable to message commands.
+```yml
+# Restricts any commands with 'self.dev = True' to these guild IDs for slash command registration.
+dev_guilds: 
+  - 782851458671968276
+```
+
 ## command migration
 
 This is the change which will require the most restructuring to implement:
@@ -34,6 +41,7 @@ This is the change which will require the most restructuring to implement:
 - Response channels
 - Context class
 - Args class
+- Permissions
 
 ### a. New format
 All command classes now follow a new format:
@@ -255,6 +263,7 @@ __All context params__
 * `hcommand` (humecord.Command): The humecord command executed
 * `command` (discord.app_commands.Command): The discord app command object executed
 * `args` (humecord.classesdiscordclasses.Args): An object containing all args
+* `user` (discord.User, discord.Member): User who ran the command
 
 ### d. Args
 
@@ -276,6 +285,52 @@ async def run(self, resp, ctx) -> None:
             "You didn't supply an argument! :("
         )
 ```
+
+### e. Permissions
+
+Permissions are now done a bit differently.
+
+With slash commands, guild owners now have the ability to override the permissions of any slash command or subcommand. To set the default permissions of a command, use:
+```py
+# If you want to use a Humecord permission node (only guild.admin, guild.mod, or guild.any)
+self.default_perms = "guild.admin"
+
+# If you want to manually specify permissions
+# https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions for names
+self.default_perms = [
+    "manage_roles",
+    "kick_members"
+]
+
+# Can also be done on a subcommand basis
+self.subcommand_details = {
+    "mysubcommand": {
+        "description": "...",
+        "default_perms": "guild.mod"
+    }
+}
+```
+
+Note that this permission *can* be overridden by any guild owner, so development commands still need some extra work:
+```py
+# Hides the command on any guild not specified in config.dev_guilds
+self.dev = True
+
+# Verifies the user's Humecord permission node before running
+# https://github.com/humeman/humecord/blob/main/docs/misc/permissions.md
+self.perms = "bot.dev"
+```
+
+You can also still use the old Humecord permission nodes to ensure no one uses a command they shouldn't. This is highly recommended for commands that could have a high impact if used by the wrong person -- don't trust the guild owner to set it up right. Applies to the base command and all subcommands.
+```py
+# https://github.com/humeman/humecord/blob/main/docs/misc/permissions.md
+self.perms = "bot.dev"
+```
+
+You can also restrict a command to only run inside of a guild with:
+```py
+self.guild_only = True
+``` 
 
 ## component changes
 
