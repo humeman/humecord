@@ -1,8 +1,11 @@
-# events system
+### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/events
 
-The Humecord events system allows you to create custom event hooks on top of any Discord event. It also allows you to intercept and manage default Humecord event hooks, as well as run code when specific Humecord actions occur.
+---
+# events
 
+This document outlines the Humecord events system, which allows you to create custom event hooks on top of any Discord event. It also allows you to intercept and manage default Humecord event hooks, as well as run code when specific Humecord actions occur.
 
+---
 ## event format
 
 As is the case with both commands and loops, Humecord events are defined as a simple class, then imported in your imports file.

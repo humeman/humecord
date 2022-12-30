@@ -1,5 +1,13 @@
+### [humecord](../..)/[docs](../README.md)/[classes](./README.md)/imports
+
+---
 # humecord loader
 
+class: `humecord.classes.imports.Imports`
+
+instance: `humecord.bot.imports`
+
+---
 This document outlines how to use the Humecord Loader, located at `bot.loader`. This system is used to manage imports of commands, events, and loops, allowing for them to be reloaded without requiring a bot restart on the fly. 
 
 ## outline

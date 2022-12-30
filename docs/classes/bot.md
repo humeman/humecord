@@ -1,5 +1,13 @@
+### [humecord](../..)/[docs](../README.md)/[classes](./README.md)/bot
+
+---
 # bot
 
+class: `humecord.classes.bot.Bot`
+
+instance: `humecord.bot`
+
+---
 This document outlines the main Humecord bot class, which holds all the important data and objects for your bot's operation.
 
 ## outline
@@ -28,6 +36,9 @@ Each bot class has the following attributes:
 * **bot.messages** ([humecord.classes.messages.Messages](messages.md)): Messenger instance
 * **async bot.shutdown(reason, safe = True, error_state = False, skip_shutdown = False)**
   Shuts down the bot with the specified `reason`.
+
   If safe, Humecord will attempt to shut down the command handler/api interface/ws handler/etc safely before closing the asyncio loop.
+
   If error_state, Humecord will notify the user of the last thrown exception.
+
   If skip_shutdown, Humecord will close immediately with no logging or any attempt to shut down safely.

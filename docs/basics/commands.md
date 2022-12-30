@@ -1,4 +1,11 @@
-# commands system
+### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/commands
+
+---
+# commands
+
+This document outlines the creation of Humecord commands.
+
+---
 ## creating commands
 
 Each command should be contained in its own class.
