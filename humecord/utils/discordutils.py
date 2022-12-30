@@ -79,8 +79,10 @@ def get_profile(
 
     if type(member) in [discord.Member, discord.User, discord.ClientUser]:
         name = get_member_descriptor(member)
-                
-        embed.set_author(name = name, icon_url = member.avatar.url)
+
+        icon = member.avatar or member.default_avatar
+
+        embed.set_author(name = name, icon_url = icon.url)
 
     else:
         kw = {}

@@ -62,8 +62,7 @@ class ProfileCommand(humecord.Command):
             "status": {
                 "type": "str",
                 "required": True,
-                "description": "My new status text.",
-                "choices": []
+                "description": "My new status text."
             }
         }
         self.subcommand_details = {
@@ -228,8 +227,8 @@ class ProfileCommand(humecord.Command):
         await bot.loops.run_once("refresh_status")
 
         await resp.embed(
-            title = f"{bot.config.lang['emoji']['success']}  Changed visibility!",
-            description = f"My visibility is now `{new}`.",
+            title = f"{bot.config.lang['emoji']['success']}  Changed activity!",
+            description = f"My activity is now `{new}`.",
             color = "success"
         )
 

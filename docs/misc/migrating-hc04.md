@@ -60,7 +60,7 @@ class TestCommand(humecord.Command):
 
         # Command tree
         self.command_tree = {
-            "/%test%": self.run
+            "%test%": self.run
         }
 
         # Arguments, if any exist

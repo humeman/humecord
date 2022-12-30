@@ -165,17 +165,17 @@ int_times = [
 ]
 
 def timestamp_to_seconds(
-        seconds: int
+        timestamp: str
     ):
-        seconds = seconds.split(":")
+    seconds = timestamp.split(":")
 
-        i = len(seconds) - 1
-        total = 0
-        for duration in seconds:
-            duration = int(duration)
+    i = len(seconds) - 1
+    total = 0
+    for duration in seconds:
+        duration = int(duration)
 
-            total += duration * int_times[i]
+        total += duration * int_times[i]
 
-            i -= 1
+        i -= 1
 
-        return total
+    return total

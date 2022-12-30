@@ -1,4 +1,4 @@
-version = "0.4.0a"
+version = "0.4.0"
 
 # Base functions
 from .funcs import *

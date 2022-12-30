@@ -14,6 +14,12 @@ class ContextTypes(Enum):
     SLASH = 1
     MESSAGE = 2
 
+class RespTypes:
+    NONE = 0
+    MESSAGE = 1
+    INTERACTION = 2
+    THREAD = 3
+
 # classes/interactions
 class ComponentTypes(Enum):
     BUTTON = 0

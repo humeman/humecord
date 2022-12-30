@@ -632,6 +632,49 @@ class ParseUser:
         if member is None:
             raise IE("User is not in guild")
 
+class ParseRole:
+    async def main(
+            inp: str
+        ):
+
+        inp = inp.strip()
+        
+        # Remove <, @, !, >
+        for char in "<@!>":
+            inp = inp.replace(char, "")
+
+        # Try to turn into int
+        try:
+            inp = int(inp)
+
+        except:
+            raise IE(f"Invalid ID")
+
+        # Try to get user
+        user = humecord.bot.client.get_user(inp)
+
+        if user is None:
+            raise IE("User not found")
+
+        # Good
+        return user
+
+    async def format(
+            inp
+        ):
+
+        return str(inp)
+
+    async def guild(
+            inp,
+            args
+        ):
+
+        member = humecord.bot.client.get_guild(args[0]).get_member(inp.id)
+
+        if member is None:
+            raise IE("User is not in guild")
+
 channel_permission_presets = {
     "text": [
         "read_messages",
@@ -752,6 +795,39 @@ class ParseChannel:
         if type(inp) != ctype:
             raise IE("Channel is of wrong type")
 
+class ParseRole:
+    async def main(
+            inp: str,
+            guild: discord.Guild
+        ):
+
+        inp = inp.strip()
+        
+        # Remove <, @, !, >
+        for char in "<#@!>":
+            inp = inp.replace(char, "")
+
+        # Try to turn into int
+        try:
+            inp = int(inp)
+
+        except:
+            raise IE(f"Invalid ID")
+
+        # Try to get channel
+        role = guild.get_role(inp)
+
+        if role is None:
+            raise IE("Role not found")
+
+        # Good
+        return role
+
+    async def format(
+            inp
+        ):
+
+        return str(inp)
 
 
 
@@ -912,6 +988,18 @@ rules = {
         "format": {
             "data": {},
             "function": ParseChannel.format
+        }
+    },
+    "role": {
+        "main": ParseRole.main,
+        "str": "a discord role",
+        "functions": {},
+        "data": {
+            "guild": [discord.Guild]
+        },
+        "format": {
+            "data": {},
+            "function": ParseRole.format
         }
     }
 }

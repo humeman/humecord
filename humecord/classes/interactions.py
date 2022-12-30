@@ -140,7 +140,7 @@ class InteractionManager:
             resp (discordclasses.ResponseChannel)
         """
 
-        return discordclasses.ComponentResponseChannel(interaction)
+        return discordclasses.InteractionResponseChannel(interaction, is_component = True)
 
     async def generate_ctx(
             self,
@@ -173,6 +173,7 @@ class InteractionManager:
             )
 
             kw["gdb"] = gdb
+            kw["guild"] = interaction.guild
 
         # Get UDB
         try:
@@ -204,6 +205,7 @@ class InteractionManager:
             interaction = interaction,
             channel = interaction.channel,
             component_id = _id,
+            user = interaction.user,
             **kw,
             **extra
         )
@@ -296,14 +298,26 @@ class InteractionManager:
         elif component_type == humecord.ComponentTypes.MODAL:
             ext_kw["modal_args"] = {}
 
-            # Iterate over each component in the modal
-            for modal_component in (interaction.data.get("components") or []):
-                name = modal_component.get("custom_id")
+            valid = True
+            if "components" not in interaction.data:
+                valid = False
 
-                if name is None:
-                    continue
+            if len(interaction.data["components"]) != 1:
+                valid = False
+            
+            components = interaction.data["components"][0].get("components")
+            if components is None:
+                valid = False
 
-                ext_kw["modal_args"][name] = modal_component["value"]
+            if valid:
+                # Iterate over each component in the modal
+                for modal_component in components:
+                    name = modal_component.get("custom_id")
+
+                    if name is None:
+                        continue
+
+                    ext_kw["modal_args"][name] = modal_component.get("value")
 
             arg_type = humecord.ComponentArgTypes.MODAL
 
@@ -336,7 +350,7 @@ class InteractionManager:
             [
                 f"Type:           components.{argtype_to_str.get(arg_type)}",
                 f"Component:      {_id}",
-                f"Channel:        {interaction.channel.id} ({interaction.channel.name})",
+                f"Channel:        {interaction.channel.id} ({getattr(interaction.channel, 'name', None)})",
                 f"User:           {interaction.user.id} ({interaction.user})"
             ]
         )
@@ -505,8 +519,8 @@ class InteractionManager:
                     label = details["name"],
                     value = option,
                     description = details.get("description"),
-                    emoji = options.get("emoji"),
-                    default = option.get("default") or False
+                    emoji = details.get("emoji"),
+                    default = details.get("default") or False
                 )
             )
 
@@ -517,7 +531,7 @@ class InteractionManager:
         elif callback is not None:
             _id = await self.register_component(
                 component_name = name,
-                component_type = humecord.ComponentTypes.BUTTON,
+                component_type = humecord.ComponentTypes.SELECT,
                 callback = callback,
                 sender = sender
             )

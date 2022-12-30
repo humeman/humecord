@@ -112,6 +112,11 @@ class CommandHandler:
                 "module": "profile",
                 "class": "ProfileCommand"
             },
+            "settings": {
+                "imp": "from humecord.commands import settings",
+                "module": "settings",
+                "class": "SettingsCommand"
+            },
             "sync": {
                 "imp": "from humecord.commands import sync",
                 "module": "sync",
@@ -328,9 +333,10 @@ class CommandHandler:
             )
 
             kw["gdb"] = gdb
+            kw["guild"] = interaction.guild
 
-        # Set preferred GDB values
-        kw["preferred_gdb"] = {x: gdb.get(x) for x in bot.config.preferred_gdb}
+            # Set preferred GDB values
+            kw["preferred_gdb"] = {x: gdb.get(x) for x in bot.config.preferred_gdb}
 
         # Get UDB
         try:
@@ -441,8 +447,8 @@ class HumecordCommand(object):
         would become
 
         self.command_tree = {
-            "/user/%user%/%option%": self.user,
-            "/othersubcommand": self.othersubcommand
+            "user %user% %option%": self.user,
+            "othersubcommand": self.othersubcommand
         }
 
         self.args = {
@@ -453,9 +459,8 @@ class HumecordCommand(object):
             },
             "option": {
                 "description": "The option you want.",
-                "type": "option",
                 "required": False
-                "options": [
+                "choices": [
                     "option1",
                     "option2"
                 ]
@@ -677,12 +682,22 @@ class HumecordCommand(object):
                 default = None
                 ext_kw = {}
 
-                # The type can be automatically set to 'string' (for our own validation later) if argtype is 'option'
-                if "options" in arg_details:
+                # The type can be automatically set to 'string' (for our own validation later) if argtype is 'choices'
+                if "choices" in arg_details:
                     dtype = discord.AppCommandOptionType.string
 
+                    d_choices = []
+
+                    for choice in arg_details["choices"]:
+                        d_choices.append(
+                            discord.app_commands.Choice(
+                                name = choice,
+                                value = choice
+                            )
+                        )
+
                     # Define our extra kwargs for that
-                    ext_kw["options"] = arg_details["options"]
+                    ext_kw["choices"] = d_choices
 
                 else:
                     # Attempt to transform string into discord arg

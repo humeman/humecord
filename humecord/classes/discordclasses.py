@@ -62,11 +62,10 @@ class Modal(discord.ui.Modal):
 class ResponseChannel:
     def __init__(
             self,
-            type: str,
             channel: Union[discord.TextChannel, discord.DMChannel]
         ):
 
-        self.type = type
+        self.type = humecord.RespTypes.NONE
 
         self.channel = channel
 
@@ -110,25 +109,13 @@ class ResponseChannel:
     async def defer(self, *args):
         raise humecord.utils.exceptions.NotDefined(f"This function isn't available for message type {self.type}.")
 
-class ComponentResponseChannel(ResponseChannel):
-    def __init__(self, interaction):
-        self.interaction = interaction
-        super().__init__("component", interaction.channel)
-
-    async def send(self, *args, **kwargs):
-        return await self.interaction.response.send_message(*args, **kwargs)
-
-    async def edit(self, *args, **kwargs):
-        return await self.interaction.response.edit_message(*args, **kwargs)
-
-    async def send_modal(self, *args, **kwargs):
-        return await self.interaction.response.send_modal(*args, **kwargs)
-
 class MessageResponseChannel(ResponseChannel):
     def __init__(self, message):
+        self.type = humecord.RespTypes.MESSAGE
+
         self.initial_action = False
         self.message = message
-        super().__init__("message", message.channel)
+        super().__init__(message.channel)
 
     async def send(self, *args, **kwargs):
         if "ephemeral" in kwargs:
@@ -147,37 +134,63 @@ class MessageResponseChannel(ResponseChannel):
 
 class ThreadResponseChannel(ResponseChannel):
     def __init__(self, message):
+        self.type = humecord.RespTypes.THREAD
+
         self.channel = message.channel
         self.parent = self.channel.parent
+
+        super().__init__(None)
 
     async def send(self, *args, **kwargs):
         return await self.channel.send(*args, **kwargs)
 
 class InteractionResponseChannel(ResponseChannel):
-    def __init__(self, interaction):
+    def __init__(self, interaction, is_component: bool = False):
+        self.type = humecord.RespTypes.INTERACTION
+
         self.interaction = interaction
         self.response = interaction.response
         self.followup = interaction.followup
-        self.initial_action = False
+        self.initial_action = is_component
+        self.is_component = is_component
+        self.deferred = False
 
-        super().__init__("interaction", None)
+        super().__init__(None)
 
     async def send(self, *args, **kwargs):
-        if not self.initial_action:
+        if (not self.initial_action) or self.deferred:
             await self.response.send_message(*args, **kwargs)
             self.initial_action = True
 
         else:
             # Reply using the followup instead
-            await self.followup.send(*args, **kwargs)
+            if "view" in kwargs:
+                if kwargs["view"] is None:
+                    del kwargs["view"]
+
+            self.msg = await self.followup.send(*args, **kwargs)
 
     async def edit(self, *args, **kwargs):
-        if self.initial_action:
-            await self.interaction.edit_original_response(*args, **kwargs)
+        if self.initial_action and (not self.deferred):
+            await self.response.edit_message(*args, **kwargs)
+
+        elif self.deferred:
+            if "view" in kwargs:
+                if kwargs["view"] is None:
+                    del kwargs["view"]
+
+            await self.followup.send(*args, **kwargs)
 
         else:
-            await self.response.send_message(*args, **kwargs)
+            self.msg = await self.response.send_message(*args, **kwargs)
             self.initial_action = True
+
+    async def send_modal(self, *args, **kwargs):
+        return await self.interaction.response.send_modal(*args, **kwargs)
+
+    async def defer(self, *args, **kwargs):
+        await self.response.defer(*args, **kwargs)
+        self.deferred = True
 
 
 class Context:

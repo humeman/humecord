@@ -73,15 +73,21 @@ class AboutCommand(humecord.Command):
             # Override with component name
             current_page = ctx.component
 
+        if hasattr(ctx, "gdb"):
+            prefix = ctx.gdb["prefix"]
+
+        else:
+            prefix = "/"
+
         placeholders = {
-            "prefix": ctx.gdb["prefix"],
             "bot": bot.config.cool_name,
             "version": bot.config.version,
             "humecord": humecord.version,
             "owner": bot.config.owner_name,
             "support": bot.config.discord_server,
             "invite": bot.config.invite,
-            "guide": bot.config.guide_page
+            "guide": bot.config.guide_page,
+            "prefix": prefix
         }
 
         comp = {}

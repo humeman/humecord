@@ -169,6 +169,8 @@ class MessageCommandAdapter:
                 { "id": message.guild.id, "autocreate": True }
             )
 
+            kw["guild"] = message.guild
+
             # Set preferred GDB values
             kw["preferred_gdb"] = {x: gdb.get(x) for x in bot.config.preferred_gdb}
 
