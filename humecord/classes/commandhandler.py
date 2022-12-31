@@ -893,6 +893,8 @@ class HumecordCommand(object):
             raise exceptions.ValidationError("No callback could be found")
 
         # Generate an Args class
+        kwargs = {x: y for x, y in kwargs.items() if y is not None}
+
         args = discordclasses.Args(**kwargs)
 
         # Call the command handler's run_command method with this data
