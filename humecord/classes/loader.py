@@ -27,6 +27,13 @@ class Loader:
             starting: bool = False,
             safe_stop: bool = False
         ):
+        """
+        Loads (or reloads) the bot.
+
+        Params:
+            starting (bool = False): If True, loads for the first time (ie: bot just started).
+            safe_stop (bool = False): Gracefully shuts down the bot's components first.
+        """
 
         # Shut down the bot
         humecord.bot.available = False
@@ -87,6 +94,9 @@ class Loader:
     async def load_config(
             self
         ):
+        """
+        Reloads the bot's config files.
+        """
 
         # Reload the config
         await humecord.bot.load_config()
@@ -107,6 +117,12 @@ class Loader:
             self,
             safe_stop: bool = False
         ):
+        """
+        Shuts down all the bot's running loops, and then, the loop handler.
+
+        Params:
+            safe_stop (bool = False): If True, loops/handler will be given some time to finish before closing.
+        """
 
         # Close loop handler
         if safe_stop:

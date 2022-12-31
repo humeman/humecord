@@ -23,36 +23,36 @@ As the docs are being created, the following key will let you know which documen
 A number of basics guides exist to help you get started.
 
 <u>**getting started**</u>
-* 🟢 [Creating a Discord bot](basics/create_bot.md)
-* 🟢 [Installing Humecord](basics/install_humecord.md)
-* 🔴 [Setting up a Humecord bot](basics/setup_humecord_bot.md)
+* 🟢 [Creating a Discord bot](./create_bot.md)
+* 🟢 [Installing Humecord](./install_humecord.md)
+* 🟢 [Setting up a Humecord bot](./setup_humecord_bot.md)
 
-<u>**important topics**</u>
-* 🟡 [Creating commands](basics/commands.md) *Command handler is being replaced.*
-* 🟢 [Creating events](basics/events.md)
-* 🔴 [Creating loops](basics/loops.md)
-
-<u>**interfaces**</u>
-* 🔴 [Using the API interface](basics/api.md)
-* 🟡 [Using the file interface](basics/files.md) *File interface is being rewritten.*
-* 🔴 [Using the WS interface](basics/ws.md)
+<u>**humecord basics**</u>
+* 🟢 [Creating commands](./commands.md)
+* 🟢 [Creating events](./events.md)
+* 🔴 [Creating loops](./loops.md)
+* 🟢 [Using components](./components.md)
+* 🔴 [Using the API interface](./api.md)
+* 🟢 [Using permissions](./permissions.md)
+* 🟢 [Using the arg parser](./argparser.md)
 
 ## api reference
 <u>**[classes](classes)**</u>
 * 🟢 [classes.argparser.ArgumentParser](classes/argparser.md)
 * 🟢 [classes.bot.Bot](classes/bot.md)
-* 🔴 [classes.commands.CommandHandler](classes/commands.md) *Command handler is being replaced.*
+* 🟢 [classes.commands.CommandHandler](classes/commands.md)
+* 🟢 [classes.debugconsole](classes/debugconsole.md)
+* 🟢 [classes.discordclasses](classes/discordclasses.md)
 * 🟢 [classes.events.EventHandler](classes/events.md)
-* 🟢 [classes.imports.Imports](classes/imports.md)
-* 🟢 [classes.interactions.InteractionHandler](classes/interactions.md)
+* 🟢 [classes.interactions.InteractionManager](classes/interactions.md)
+* 🟢 [classes.loader.Loader](classes/loader.md)
 * 🟢 [classes.logger.Logger](classes/logger.md)
-* 🔴 [classes.loops.LoopHandler](classes/loops.md)
-* 🔴 [classes.messages.Messenger](classes/messages.md)
-* 🔴 [classes.overrides.OverrideHandler](classes/overrides.md)
-* 🟡 [classes.permissions.Permissions](classes/permissions.md) *Old format.*
-* 🔴 [classes.replies.Replies](classes/replies.md)
-* 🟡 [classes.discordclasses.*](classes/discordchannels.md) *RespChannels [here](classes/responsechannels.md)*
-* 🔴 [classes.syslogger.SystemLogger](classes/syslogger.md)
+* 🟢 [classes.loops.LoopHandler](classes/loops.md)
+* 🟢 [classes.messages.MessageAdapter](classes/messageadapter.md)
+* 🟢 [classes.messages.Messenger](classes/messages.md)
+* 🟢 [classes.permissions.Permissions](classes/permissions.md)
+* 🟡 [classes.replies.Replies](classes/replies.md) *Deprecated. Use modals.*
+* 🟢 [classes.syslogger.SystemLogger](classes/syslogger.md)
 
 <u>**[interfaces](interfaces)**</u>
 * 🔴 [interfaces.APIInterface](interfaces/api.md)
@@ -76,3 +76,9 @@ A number of basics guides exist to help you get started.
 * 🔴 [utils.miscutils](utils/miscutils.md)
 * 🔴 [utils.ratelimits](utils/ratelimits.md)
 * 🔴 [utils.subprocess](utils/subprocess.md)
+
+## misc
+
+Docs that don't belong anywhere else.
+
+* 🟢 [migrating to humecord 0.4](./migrating-hc04.md)

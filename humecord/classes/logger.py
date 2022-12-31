@@ -149,6 +149,18 @@ class Logger:
             *args,
             **kwargs
         ):
+        """
+        Logs something in the standard format.
+
+        Params:
+            category (str): Category to log into
+            log_type (str): Log type to use (info, warn, error, etc.). Defines the style of the message.
+            message (str): Message to log
+            bold (bool = False): Whether to bold the message
+            reversed (bool = False): Whether to display the message on reversed text
+            color (str): Color to log the line in (normal terminal color names - see [utils.colors](../utils/colors.md))
+            placeholder_ext (dict[str, Any]): Extra placeholders to use
+        """
 
         self.log_type(
             "log",
@@ -161,6 +173,18 @@ class Logger:
             *args,
             **kwargs
         ):
+        """
+        Logs a message as a sublog of another log (indented, arrow prefix).
+
+        Params:
+            category (str): Category to log into
+            log_type (str): Log type to use (info, warn, error, etc.). Defines the style of the message.
+            message (str): Message to log
+            bold (bool = False): Whether to bold the message
+            reversed (bool = False): Whether to display the message on reversed text
+            color (str): Color to log the line in (normal terminal color names - see [utils.colors](../utils/colors.md))
+            placeholder_ext (dict[str, Any]): Extra placeholders to use
+        """
 
         self.log_type(
             "step",
@@ -179,6 +203,19 @@ class Logger:
             remove_blank_lines: bool = False,
             extra_line: bool = False
         ):
+        """
+        Logs a long message by line. Either splits by linebreak (\\n) or sends a list of message strings.
+
+        Params:
+            category (str): Category to log into
+            log_type (str): Log type to use (info, warn, error, etc.). Defines the style of the message.
+            message (str): Message to log
+            bold (bool = False): Whether to bold the message
+            reversed (bool = False): Whether to display the message on reversed text
+            color (str): Color to log the line in (normal terminal color names - see [utils.colors](../utils/colors.md))
+            remove_blank_lines (bool = False): Whether to remove any line left blank
+            extra_line (bool = False): Whether to print an extra blank line afterward
+        """
 
         if type(messages) == str:
             messages = messages.split("\n")
@@ -205,6 +242,18 @@ class Logger:
             *args,
             **kwargs
         ):
+        """
+        Logs a message without any of the default formatting.
+
+        Params:
+            category (str): Category to log into
+            log_type (str): Log type to use (info, warn, error, etc.). Defines the style of the message.
+            message (str): Message to log
+            bold (bool = False): Whether to bold the message
+            reversed (bool = False): Whether to display the message on reversed text
+            color (str): Color to log the line in (normal terminal color names - see [utils.colors](../utils/colors.md))
+            placeholder_ext (dict[str, Any]): Extra placeholders to use
+        """
 
         self.log_type(
             "raw",
@@ -217,6 +266,13 @@ class Logger:
             message: str,
             hint: str
         ):
+        """
+        Logs a long message by line. Either splits by linebreak (\\n) or sends a list of message strings.
+
+        Params:
+            message (str): Question
+            hint (str): Placeholder text to enter into terminal
+        """
 
         self.log_type(
             "ask",

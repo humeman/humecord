@@ -24,7 +24,8 @@ Each bot class has the following attributes:
 * **bot.client** (discord.Client): Active discord client instance
 * **bot.timezone** (pytz.timezone): Configured timezone object
 * **bot.syslogger** ([humecord.classes.syslogger.SysLogger](syslogger.md)): Humecord syslogger instance
-* **bot.commands** ([humecord.classes.commands.Commands](commands.md)): Command handler instance
+* **bot.commands** ([humecord.classes.commands.CommandHandler](commands.md)): Command handler instance
+* **bot.msgcommands** ([humecord.classes.msgcommands.MessageAdapter](messageadapter.md)): Message command adapter instance
 * **bot.loops** ([humecord.classes.loops.Loops](loops.md)): Loop handler instance
 * **bot.events** ([humecord.classes.events.Events](events.md)): Event handler instance
 * **bot.replies** ([humecord.classes.replies.Replies](replies.md)): Reply handler instance

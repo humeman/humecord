@@ -1,7 +1,8 @@
 ### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/events
 
 ---
-# events
+# humecord basics
+## creating custom events
 
 This document outlines the Humecord events system, which allows you to create custom event hooks on top of any Discord event. It also allows you to intercept and manage default Humecord event hooks, as well as run code when specific Humecord actions occur.
 

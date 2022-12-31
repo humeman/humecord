@@ -38,11 +38,12 @@ from . import classes
 
 # Shorthand command reference
 Command = classes.commandhandler.HumecordCommand
+# Include discord class shorthands
+from .classes.discordclasses import *
 
 from . import utils
 from . import interfaces
 from . import loops
-#from . import msg_commands
 
 extra_events = []
 reg_permas = []

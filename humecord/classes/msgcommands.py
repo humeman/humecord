@@ -28,7 +28,7 @@ class MessageCommandAdapter:
         Initializes a message command adapter object.
 
         Params:
-            parent (humecord.classes.commandhandler.CommandHandler): Parent command handler to retrieve commands from
+        - `parent` (humecord.classes.commandhandler.CommandHandler): Parent command handler to retrieve commands from
         """
         global bot
         from humecord import bot
@@ -107,11 +107,11 @@ class MessageCommandAdapter:
         Still has to be checked against the guild/user's prefix.
 
         Params:
-            first_arg (str): First argument
+        - `first_arg` (str): First argument
 
         Returns:
-            match_command (Optional[dict[str, Any]]): Matched command details, if a match is found
-            match_activator (Optional[dict[str, dict[str, Any]]]): Matched activator details
+        - `match_command` (Optional[dict[str, Any]]): Matched command details, if a match is found
+        - `match_activator` (Optional[dict[str, dict[str, Any]]]): Matched activator details
         """
         first_arg = first_arg.lower()
 
@@ -444,8 +444,8 @@ class MessageCommandAdapter:
         If index is out of bounds, pointer will be at the end of the string.
 
         Params:
-            args (List[str])
-            index (int)
+        - `args` (List[str])
+        - `index` (int)
         """
         # Change index into a location
         if index >= len(args):
@@ -465,6 +465,16 @@ class MessageCommandAdapter:
             hcommand,
             error: bool = False
         ) -> None:
+        """
+        Generates an error embed giving info on a command (description, args, shortcuts, aliases, subcommands).
+
+        Params:
+        - `hcommand` (humecord.Command): Command to gather info from
+        - `error` (bool = False): If True, message's title will be "Invalid syntax" and color will be red
+
+        Returns:
+        - `embed` (discord.Embed)
+        """
 
         details = [
             f"**{hcommand.name}**"

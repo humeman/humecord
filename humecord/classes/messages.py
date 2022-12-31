@@ -214,6 +214,26 @@ class Messenger:
             ext_placeholders: dict = {},
             overrides: dict = {}
         ):
+        """
+        Gets kwargs for sending a formatted message.
+
+        General usage is:
+        ```py
+        await resp.send(**(await bot.messages.get(...)))
+        ```
+
+        Params:
+        - `gdb` (dict): Guild database, if applicable. Otherwise, send `{}`.
+        - `path` (list[str]): A list of strings pointing to the message location in messages.yml.
+        - `placeholders` (dict[str, str]): Any placeholders to format into the message.
+        - `conditions` (dict): Conditions and their values. See [basics](../basics/messages.md) for how this works.
+        - `force_type` (Optional[str] = None): If specified, the message will be sent in the format given. Either `message` or `embed`.
+        - `ext_placeholders` (dict = {}): Extra placeholders to add.
+        - `overrides` (dict = {}): Overrides any embed fields with the specified args.
+
+        Returns:
+        - `kwargs` (dict)
+        """
 
         # Follow path
         msg = self.find(path)
@@ -251,7 +271,7 @@ class Messenger:
                 msg["text"],
                 placeholders,
                 conditions,
-                override is None
+                override 
             )
 
             kwargs["content"] = content

@@ -1,7 +1,26 @@
+# [Skip to docs](docs/README.md)
+
+---
+
 # 🤖 humecord
 An advanced discord.py wrapper, designed to allow for easy creation of bots with less of the work.
 
 ## Features
+* A wide array of helper functions to simplify development
+* Designed to easily integrate with APIs/databases (-> easy sharding, multiple bots with the same data)
+* Pre-command argument validation, data retrieval, and permission checking
+* Very configurable
+* Supports slash and message commands with no additional work
+* Advanced development tools
+    * Error logs are sent to a debug channel of your choice
+    * View all logs directly from discord
+    * Interactive Python console from the terminal/discord chat
+* Very user-configurable: customizable settings with a few lines of YAML config and editable messages
+* Easily extensible:
+    * [humeman/statusreporter](https://github.com/humeman/statusreporter): Advanced status monitoring bot which can remotely restart, send commands to, monitor usage of any Humecord bot
+    * [humeman/humetunes](https://github.com/humeman/humetunes): YouTube music commands, with advanced searching, filters, and more
+
+## Components
 * Easy to use handlers for:
     * All discord.py events
     * Commands
@@ -14,9 +33,10 @@ An advanced discord.py wrapper, designed to allow for easy creation of bots with
     * MySQL
 
 * Supports:
-    * Normal message commands
-    * Message components
     * Slash commands
+    * Message commands
+    * Message components
+    * Modals
 
 * Built in command set:
     * !dev - manages your bot, entirely from discord
@@ -59,29 +79,22 @@ You can, alternatively, create your own interface to support whatever storage sy
 
 ## Requirements
 Humecord runs on:
-* Python 3.6 or higher
-* [pycord](https://docs.pycord.dev/en/master/) master branch
+* Python 3.11 (recommended), 3.7 (required)
+* [discord.py](https://github.com/rapptz/discord.py) 2.1.0 or higher
 
 ## Getting started
-Read the documentation for Humecord by [clicking here](docs).
+Read the documentation for Humecord by [clicking here](docs/README.md).
 
-To install it:
-```sh
-$ git clone https://github.com/humeman/humecord
-$ mv humecord ~/.local/lib/python3.[press tab]/site-packages
-```
+Read the [getting started guide]() for a full tutorial.
 
 ## Bots using Humecord
 | Created by           | Bots                                                              |
 |:--------------------:| ----------------------------------------------------------------- |
-| humeman (me)         | [humebot](https://humeman.com/bots/humebot) - all of the below, merged |
-|                      | [teck tip bot](https://humeman.com/bots/tecktip) - copypastas |
+| humeman (me)         | [humebot](https://humeman.com/bots/humebot) - all of the below + moderation |
+|                      | [teck tip bot](https://humeman.com/bots/tecktip) - copypastas, games, music |
 |                      | [humetunes](https://humeman.com/bots/humetunes) - music |
-|                      | [huskbot](https://humeman.com/bots/tecktip) - moderation |
 |                      | [huskhook](https://humeman.com/bots/huskhook) - pterodactyl interface + minecraft server utils |
 |                      | [guildmanager](https://humeman.com/bots/guildmanager) - hypixel & minecraft chatbots |
 |                      | [statusreporter](https://github.com/humeman/statusreporter) - bot monitoring & server status |
 |                      | [testcord](https://humeman.com/bots/testcord) - testing bot for new humecord releases |
-|                      | [yuno](https://humeman.com/bots/humebot) - reskin of humebot, requested by [theseconddiarykeeper](https://github.com/TheSecondDiaryKeeper) |
-| theseconddiarykeeper | Currently working on migrating his bots to Humecord. 
-|                      | Check back soon.
+| theseconddiarykeeper | [theseconddiarykeeper.com/bots](https://theseconddiarykeeper.com/bots) - just check here |

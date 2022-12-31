@@ -130,7 +130,8 @@ class Bot:
                     )
                 )
 
-        logger.log("botinit", "warn", "You are running a snapshot version of Humecord. Bugs ahead!\n", bold = True)
+        if humecord.version[-1] in "asb":
+            logger.log("botinit", "warn", "You are running a snapshot version of Humecord. Bugs ahead!\n", bold = True)
         logger.log("botinit", "start", "Initializing bot instance...", bold = True)
         logger.log_step("botinit", "start", "Loaded config")
 

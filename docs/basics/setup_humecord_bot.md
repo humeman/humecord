@@ -56,4 +56,4 @@ Then, you can press CTRL + C to exit.
 
 ---
 ## next steps
-[Part 3: Set up a Humecord bot](./setup_humecord_bot.md)
+Check out the rest of the Humecord Basics series by going back to the [homepage](./README.md).

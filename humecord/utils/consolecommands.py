@@ -86,8 +86,11 @@ async def say(
     channel = bot.client.get_channel(value)
 
     if channel is None:
-        await parent.send(1, f"No channel by ID {args[1]}!", True)
-        return
+        user = bot.client.get_user(value)
+
+        if user is None:
+            await parent.send(1, f"No channel by ID {args[1]}!", True)
+            return
 
     msg = " ".join(args[2:])
 

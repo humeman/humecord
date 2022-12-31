@@ -98,6 +98,15 @@ class Loops:
             self,
             name: str
         ) -> None:
+        """
+        Runs a loop once.
+
+        Params:
+        - `name` (str): Name of the loop to run
+
+        Raises:
+        - `exceptions.NotFound`: Loop doesn't exist
+        """
 
         for loop in self.loops:
             if loop.name == "refresh_status":

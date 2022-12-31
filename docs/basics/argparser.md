@@ -1,16 +1,23 @@
-# argument parser
+### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/argparser
 
+---
+# humecord basics
+## the arg parser
 This document outlines how the Humecord argument parser works. This system is used in a number of places to validate user input automatically - settings, the command argument validator, and so on. The system is also expandable via the imports file if you find something that's missing.
 
 ## basic outline
 
-Arguments are generally basic python types, separated by commas.
+Arguments are generally basic python types.
+
+Validator args appear within brackets immediately after the arg type, formatted as a function.
+
+Multiple args can be chained as you would with a normal Python conditional using `&&` and `||`.
 
 For example, validating the string `"test"` against the following rules:
 * `str`: Valid
 * `int`: Invalid
-* `str[len(1-3)]`: Invalid 
-* `((str[len(1-4)])||(str[len(7-8)]))&&(str[includes(te,st)])`: Valid
+* `str[len(1,3)]`: Invalid 
+* `((str[len(1,4)])||(str[len(7,8)]))&&(str[includes(te,st)])`: Valid
 
 ## reference
 
@@ -29,6 +36,7 @@ Currently, the type list is as follows:
 | user        | A Discord user.          | canedit(), inguild()                          |
 | perms       | A Humecord perms string. | category(), has()                             |
 | embed       | A Discord embed.         | has()                                         |
+| role        | A Discord role.          |                                               |
 (More coming as I develop it)
 
 ## format

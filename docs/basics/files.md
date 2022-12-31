@@ -1,7 +1,8 @@
 ### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/files
 
 ---
-# file interface
+# humecord basics
+## using files
 
 This document outlines the usage of the file interface.
 

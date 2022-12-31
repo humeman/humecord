@@ -241,6 +241,7 @@ class CommandHandler:
         
         Params:
             guild (discord.Guild): Target guild to sync to
+            copy (bool = False): If True, the global command tree will be copied to this guild
             
         Returns:
             count (int): Commands synced

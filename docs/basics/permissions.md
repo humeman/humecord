@@ -1,4 +1,8 @@
-# permissions system
+### [humecord](../..)/[docs](../README.md)/[basics](./README.md)/permissions
+
+---
+# humecord basics
+## the permissions system
 
 This document outlines how the Humecord discord permission system works.
 These permissions are used everywhere - command permissions, interactions,

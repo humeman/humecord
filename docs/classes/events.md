@@ -11,7 +11,7 @@ instance: `humecord.bot.events`
 Handles callback to various events that are sent to the bot or created by Humecord classes.
 
 ## user documentation
-You're probably looking for the tutorial on **[how to create events](../basics/events.md)**. This document is only the technical outline for how the event handler works.
+⚠️ **NOTE**: You're probably looking for the tutorial on **[how to create events](../basics/events.md)**. This document is only the technical outline for how the event handler works.
 
 ## outline
 * **.get_imports()**: 

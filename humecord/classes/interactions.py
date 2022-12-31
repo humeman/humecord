@@ -377,6 +377,9 @@ class InteractionManager:
                 .create_select()
                 .create_modal()
                 .create_textinput
+
+        Returns:
+            view (discord.ui.View)
         """
         view = discord.ui.View(timeout = 3600)
 
@@ -411,7 +414,7 @@ class InteractionManager:
                     `async def func(ctx, resp, my_arg_1, my_arg_2, ...)`
                 row (int): Row, 0-4, to place the item in (max 5 buttons/1 select per row)
                 perma (bool = False): Permanent or not
-                    (Need hc_on_perma_interaction dvent hook to receive)
+                    (Need hc_on_perma_interaction event hook to receive)
                 disabled (bool = False): Disable the button
                 sender (Optional[discord.User, discord.Member]): Sender to restrict usage to
             -> Button specific args
@@ -483,7 +486,7 @@ class InteractionManager:
                     `async def func(ctx, resp, my_arg_1, my_arg_2, ...)`
                 row (int): Row, 0-4, to place the item in (max 5 buttons/1 select per row)
                 perma (bool = False): Permanent or not
-                    (Need hc_on_perma_interaction dvent hook to receive)
+                    (Need hc_on_perma_interaction event hook to receive)
                 disabled (bool = False): Disable the button
                 sender (Optional[discord.User, discord.Member]): Sender to restrict usage to
             -> Select specific args
