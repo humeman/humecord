@@ -28,13 +28,13 @@ A number of basics guides exist to help you get started.
 * 🟢 [Setting up a Humecord bot](./setup_humecord_bot.md)
 
 <u>**humecord basics**</u>
-* 🟢 [Creating commands](./commands.md)
-* 🟢 [Creating events](./events.md)
-* 🔴 [Creating loops](./loops.md)
-* 🟢 [Using components](./components.md)
-* 🔴 [Using the API interface](./api.md)
-* 🟢 [Using permissions](./permissions.md)
-* 🟢 [Using the arg parser](./argparser.md)
+* 🟢 [Creating commands](basics/commands.md)
+* 🟢 [Creating events](basics/events.md)
+* 🔴 [Creating loops](basics/loops.md)
+* 🟢 [Using components](basics/components.md)
+* 🔴 [Using the API interface](basics/api.md)
+* 🟢 [Using permissions](basics/permissions.md)
+* 🟢 [Using the arg parser](basics/argparser.md)
 
 ## api reference
 <u>**[classes](classes)**</u>
@@ -81,4 +81,4 @@ A number of basics guides exist to help you get started.
 
 Docs that don't belong anywhere else.
 
-* 🟢 [migrating to humecord 0.4](./migrating-hc04.md)
+* 🟢 [migrating to humecord 0.4](misc/migrating-hc04.md)
