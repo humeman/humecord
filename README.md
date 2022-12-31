@@ -2,7 +2,11 @@
 
 ---
 
-# 🤖 humecord
+<p align="center">
+    <img src="https://humeman.com/files/humecord/hcheader.png" height="200">
+</p>
+
+# humecord
 An advanced discord.py wrapper, designed to allow for easy creation of bots with less of the work.
 
 ## Features
