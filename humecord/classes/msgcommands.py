@@ -358,7 +358,7 @@ class MessageCommandAdapter:
                 success, res = await bot.args.parse(
                     hc_arg_type,
                     to_parse,
-                    {}
+                    {"guild": message.guild}
                 )
 
                 if success:
@@ -548,7 +548,7 @@ discord_to_humecord_args = {
     "bool": "bool",
     "user": "user",
     "channel": "channel",
-    "role": None,
+    "role": "role",
     "mentionable": None,
     "number": "float",
     "attachment": None,
