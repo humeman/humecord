@@ -8,57 +8,6 @@ from humecord.utils import (
     exceptions
 )
 
-class Button(discord.ui.Button):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def callback(self, interaction):
-        await humecord.utils.errorhandler.discord_wrap(
-            humecord.bot.interactions.recv_interaction(
-                interaction
-            ),
-            interaction.message
-        )
-
-class Select(discord.ui.Select):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def callback(self, interaction):
-        await humecord.utils.errorhandler.discord_wrap(
-            humecord.bot.interactions.recv_interaction(
-                interaction
-            ),
-            interaction.message
-        )
-
-class TextInput(discord.ui.TextInput):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def callback(self, interaction):
-        await humecord.utils.errorhandler.discord_wrap(
-            humecord.bot.interactions.recv_interaction(
-                interaction
-            ),
-            interaction.message
-        )
-
-class Modal(discord.ui.Modal):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def on_submit(
-            self,
-            interaction
-        ):
-        await humecord.utils.errorhandler.discord_wrap(
-            humecord.bot.interactions.recv_interaction(
-                interaction
-            ),
-            interaction.message
-        )
-
 class ResponseChannel:
     def __init__(
             self,

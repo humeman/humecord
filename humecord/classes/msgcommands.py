@@ -228,6 +228,10 @@ class MessageCommandAdapter:
             humecord.logger.log("command", "cmd", f"User {message.author} ({message.author.id}) has ignore enabled, skipping command dispatch.")
             self.parent.stat_cache["__denied__"] += 1
             return
+
+        # this goes here :)
+        # 7: Generate RespChannel
+        resp = discordclasses.MessageResponseChannel(message)
                 
         # 2a: (forgot about this one) Check permissions, if they exist
         if "perms" in dir(hcommand):
@@ -387,9 +391,6 @@ class MessageCommandAdapter:
                 return
 
             next_i += 1
-
-        # 7: Generate RespChannel
-        resp = discordclasses.MessageResponseChannel(message)
 
         # 8: Generate Args
         args = discordclasses.Args(**parsed_args)
