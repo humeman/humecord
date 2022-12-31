@@ -12,7 +12,7 @@ Open up a terminal of your choice. If you're on Windows, these steps are a bit m
 
 ### Linux/Mac Install
 
-You'll need to install `git`, `python3`, and `python3-pip` from your preferred package manager before beginning. Make sure your Python version is 3.8 or higher.
+You'll need to install `git`, `python3`, and `python3-pip` from your preferred package manager before beginning. Make sure your Python version is 3.7 (3.11 is recommended) or higher.
 
 __Clone the Humecord repository__
 ```sh
@@ -28,7 +28,7 @@ $ pip3 install -r requirements.txt
 __Install Humecord to site-packages__
 ```sh
 # You may need to change either 'python3.8' or the entire target directory entirely based on your install. Press the tab key if in doubt.
-$ ln -s ~/humecord ~/.local/lib/python3.8/site-packages/humecord
+$ ln -s [/full/path/to/humecord/repo]/humecord /home/[yourusername]/.local/lib/python3.8/site-packages/humecord
 ```
 
 __Install discord.py__
@@ -47,7 +47,7 @@ $ python3
 A full-screen outline should appear, with the top bar labeled `Humecord is initializing...`, if everything is working properly.
 
 Press Ctrl+C to stop Humecord, then Ctrl+D to exit the Python shell once you're done.
-*Bug notice: If nothing appears when you type into your terminal, press ENTER once, type `stty sane`, and press ENTER again. Work in progress. :)*
+*Bug notice: If nothing appears when you type into your terminal, press Ctrl+C once, type `stty sane`, and press ENTER again. Work in progress. :)*
 
 ### Windows Install
 
