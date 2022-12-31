@@ -23,9 +23,9 @@ As the docs are being created, the following key will let you know which documen
 A number of basics guides exist to help you get started.
 
 <u>**getting started**</u>
-* 🟢 [Creating a Discord bot](./create_bot.md)
-* 🟢 [Installing Humecord](./install_humecord.md)
-* 🟢 [Setting up a Humecord bot](./setup_humecord_bot.md)
+* 🟢 [Creating a Discord bot](basics/create_bot.md)
+* 🟢 [Installing Humecord](basics/install_humecord.md)
+* 🟢 [Setting up a Humecord bot](basics/setup_humecord_bot.md)
 
 <u>**humecord basics**</u>
 * 🟢 [Creating commands](basics/commands.md)
