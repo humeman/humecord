@@ -94,6 +94,13 @@ class ExecCommand(humecord.Command):
         # Add spacing for function creation
         function = "\n".join([f"  {x}" for x in code.split("\n")])
 
+        # Make a new ResponseChannel to make things not break
+        if resp.type == humecord.RespTypes.INTERACTION:
+            new_resp = humecord.classes.discordclasses.InteractionResponseChannel(ctx.interaction, False)
+
+        else:
+            new_resp = humecord.classes.discordclasses.MessageResponseChannel(ctx.message)
+
         # Create a function
         exec(f"async def _run_exec(bot, resp, ctx):\n{function}", globals())
 
@@ -102,7 +109,7 @@ class ExecCommand(humecord.Command):
 
         # Create task
         task = bot.client.loop.create_task(
-            globals()["_run_exec"](bot, resp, ctx)
+            globals()["_run_exec"](bot, new_resp, ctx)
         )
 
         bot.mem_storage["evals"][task_id] = {
