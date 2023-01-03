@@ -194,7 +194,7 @@ class InteractionManager:
             kw["component"] = _id
 
         else:
-            if _id.count(":") != 1:
+            if _id.count(":") == 0:
                 raise exceptions.DevError(f"Component ID {_id} is malformed.")
 
             kw["component_uuid"], kw["component"] = _id.split(":", 1)
@@ -430,8 +430,8 @@ class InteractionManager:
         """
 
         # Verify name is valid
-        if (not name.replace("_", "").replace("-", "").isalnum()) or (len(name) > 20):
-            raise exceptions.InvalidComponent(f"Name must be alphanumeric (and _, -) and <20 chars (current: '{name}')") 
+        if len(name) > 30:
+            raise exceptions.InvalidComponent(f"Name must be <=30 chars (current: '{name}')") 
 
         # Create a callback
         if perma:
@@ -511,8 +511,8 @@ class InteractionManager:
         """
 
         # Verify name is valid
-        if (not name.isalnum()) or (len(name) > 20):
-            raise exceptions.InvalidComponent(f"Name must be alphanumeric and <20 chars (current: '{name}')") 
+        if len(name) > 30:
+            raise exceptions.InvalidComponent(f"Name must be <=30 chars (current: '{name}')") 
 
         # Generate options
         items = []
