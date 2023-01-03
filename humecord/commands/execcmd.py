@@ -98,8 +98,12 @@ class ExecCommand(humecord.Command):
         if resp.type == humecord.RespTypes.INTERACTION:
             new_resp = humecord.classes.discordclasses.InteractionResponseChannel(ctx.interaction, False)
 
-        else:
+        elif resp.type == humecord.RespTypes.MESSAGE:
             new_resp = humecord.classes.discordclasses.MessageResponseChannel(ctx.message)
+
+        else:
+            # hope for the best
+            new_resp = resp
 
         # Create a function
         exec(f"async def _run_exec(bot, resp, ctx):\n{function}", globals())
