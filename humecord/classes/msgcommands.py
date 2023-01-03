@@ -5,6 +5,7 @@ Provides an adapter from message-based commands to the new slash command interfa
 Replaces the old command handler entirely.
 """
 
+import json
 from typing import Optional, Union, Any, Tuple, List
 from enum import Enum
 import discord
@@ -159,7 +160,16 @@ class MessageCommandAdapter:
 
         kw = {}
         prefix = None
-        # Now, we have to get a command prefix. Check if this is:
+
+        # UDB first
+        udb = await bot.api.get(
+            bot.config.user_api,
+            "user",
+            { "id": message.author.id, "autocreate": True }
+        )
+
+        kw["udb"] = udb
+
         # A guild message
         if message.channel.type in [discord.ChannelType.text, discord.ChannelType.private_thread, discord.ChannelType.public_thread, discord.ChannelType.forum]:
             # Get gdb (+ preferred gdb) and udb, prefix is from gdb
@@ -190,19 +200,7 @@ class MessageCommandAdapter:
                 kw["alt_gdb"] = kw["gdb"]
                 kw["gdb"] = p_gdb
 
-            udb = await bot.api.get(
-                bot.config.user_api,
-                "user",
-                { "id": message.guild.id, "autocreate": True }
-            )
-
         elif message.channel.type in [discord.ChannelType.private or discord.ChannelType.group]:
-            udb = await bot.api.get(
-                bot.config.user_api,
-                "user",
-                { "id": message.author.id, "autocreate": True }
-            )
-
             prefix = udb.get("prefix") or "!"
 
         # Now, check that the command matches the prefix + activator to determine if we actually run
@@ -235,7 +233,7 @@ class MessageCommandAdapter:
                 
         # 2a: (forgot about this one) Check permissions, if they exist
         if "perms" in dir(hcommand):
-            if not await bot.permissions.check(message.author, hcommand.perms, udb):
+            if not await bot.permissions.check(message.author, hcommand.perms, udb, dev_override = True):
                 await resp.send(
                     embed = humecord.utils.discordutils.error(
                         message.author,

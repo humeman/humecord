@@ -55,7 +55,8 @@ class Permissions:
             self,
             member: Union[discord.Member, discord.User],
             permission: str,
-            udb: dict
+            udb: dict,
+            dev_override: bool = True
         ):
 
         if type(member) == discord.Member:
@@ -101,6 +102,10 @@ class Permissions:
             
             if rule not in checks:
                 raise humecord.utils.exceptions.InvalidPermission(f"Rule {rule} isn't in category {category}")
+            
+            if dev_override:
+                if await self.bot["dev"](member, args, udb):
+                    return True
 
             if await checks[rule](member, args, udb) is True:
                 return True

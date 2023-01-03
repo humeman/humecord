@@ -377,7 +377,7 @@ class CommandHandler:
                 
         # Check permissions
         if "perms" in dir(hcommand):
-            if not await bot.permissions.check(interaction.user, hcommand.perms, udb):
+            if not await bot.permissions.check(interaction.user, hcommand.perms, udb, dev_override = True):
                 self.stat_cache["__denied__"] += 1
                 await resp.send(
                     embed = discordutils.error(
@@ -833,7 +833,8 @@ class HumecordCommand(object):
         return await bot.permissions.check(
             interaction.user,
             perm_node,
-            udb
+            udb,
+            dev_override = True
         )
 
     async def _fake_callback(
