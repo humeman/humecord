@@ -1,0 +1,28 @@
+version: 0.4.1
+
+title: "0.4.1: unbrokey the brokey"
+description: |
+  This update fixes ~~all~~ some of the things I missed before the release of 0.4.0.
+changes:
+  - name: Bug fixes
+    value: |
+      - Fixed a bug in which the message command handler set arguments even when not supplied by the user
+      - Fixed an error that prevented role validation from working in message commands
+      - Fixed a bug that caused any user-facing errors to not be sent in message commands
+      - Fixed a bug that caused the message command handler to return a syntax error if the command has only one subcommand
+  - name: Updated the docs, a lot
+    value: |
+      There is now a full guide available on how to set up and use Humecord -- installation, making a bot, and setting it up with Humecord.
+      There are also a number of guides on commands, loops, events, components, API usage, the messenger, and so on. More will be added shortly.
+
+      All classes have full doc coverage now. Utils are in the works.
+  - name: Added docstrings and type definitions to a bunch of functions
+    value: |
+      Anything in the docs is also available as a docstring now. Try hovering over a function name in VSCode.
+      This is in preparation for an update in the near future in which type checking will be enabled.
+  - name: Re-added all missing commands
+    value: |
+      At release, Humecord 0.4 was missing the base commands `/dev`, `/logs`, `/messages`, `/overrides`, `/syslogger`, and `/useredit`. They have been readded.
+  - name: Updated the client ready message
+    value: |
+      It now contains some components that allow you to view commands, events, and loops.

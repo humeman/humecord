@@ -21,10 +21,6 @@ class OnReadyEvent:
         self.event = "on_ready"
 
         self.functions = {
-            "run_nuke": {
-                "function": self.run_nuke,
-                "priority": 0
-            },
             "populate_debug_channel": {
                 "function": self.populate_debug_channel,
                 "priority": 1
@@ -53,13 +49,6 @@ class OnReadyEvent:
 
         global logger
         from humecord import logger
-
-    async def run_nuke(
-            self,
-            __ = None
-        ):
-
-        await humecord.bot.run_kill()
 
     async def populate_debug_channel(
             self,
@@ -181,22 +170,22 @@ class OnReadyEvent:
 
             # Check if our version differs
             if humecord.bot.files.files["__humecord__.json"]["version"] != humecord.version:
+                # Skip if snapshot
+                if humecord.version[-1] in "abs":
+                    return
+
                 # Check for a changelog
                 current = "".join([x for x in humecord.version if x in "0123456789."]).replace(".", "-").lower()
 
                 try:
                     async with httpx.AsyncClient(http2 = True) as cl:
-                        print(f"https://cdn.humeman.com/humecord/changelogs/{current}.yml")
                         resp = await cl.get(
                             f"https://cdn.humeman.com/humecord/changelogs/{current}.yml"
                         )
-
-                    if resp.status_code != 200:
-                        print(f"status code {resp.status_code}")
-                        raise
                 
-                except Exception as e:
-                    debug.print_traceback()
+                except:
+                    debug.print_traceback(error_message = "An error occurred while retrieving this update's changelog!")
+                    logger.log_step("botinit", "warn", f"Attempted URL: https://cdn.humeman.com/humecord/changelogs/{current}.yml")
                     logger.log_step("botinit", "start", f"Humecord was updated to version {humecord.version}!", bold = True)
                     await humecord.bot.debug_channel.send(
                         embed = discordutils.create_embed(
@@ -275,5 +264,3 @@ class OnReadyEvent:
                         # Store the new version
                         humecord.bot.files.files["__humecord__.json"]["version"] = humecord.version
                         humecord.bot.files.write("__humecord__.json")
-                        logger.log_step("botinit", "start", f"Humecord was updated to version {humecord.version}!", bold = True)
-                        return

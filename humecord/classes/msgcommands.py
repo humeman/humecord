@@ -249,7 +249,7 @@ class MessageCommandAdapter:
         # 3: Split the command into args
         text_args = message.content.split(" ")
         
-        if len(hcommand._subcommand_tree) == 1:
+        if "__root__" in hcommand._subcommand_tree:
             arg_len = 1
 
         else:
@@ -265,35 +265,35 @@ class MessageCommandAdapter:
         text_arg_len = len(text_args)
         subcommand_match = None
         err = True
-        if text_arg_len == 1: # Root subcommand or error
-            if len(hcommand._subcommand_tree) > 1:
+        if "__root__" not in hcommand._subcommand_tree:
+            if text_arg_len == 1: # Root subcommand or error
                 # Syntax error: Missing a subcommand
                 await message.reply(
                     embed = self.get_err_embed(hcommand, error = False)
                 )
                 self.parent.stat_cache["__denied__"] += 1
                 return
-
-            # Run the root command
-            subcommand_match = hcommand._subcommand_tree["__root__"]
         
-        # We've already matched a command -- now check the subcommand (arg 2)
-        elif text_arg_len >= 2:
-            subcommand = text_args[1].lower()
+            # We've already matched a command -- now check the subcommand (arg 2)
+            elif text_arg_len >= 2:
+                subcommand = text_args[1].lower()
 
-            for name, details in hcommand._subcommand_tree.items():
-                matches = [name.lower()]
+                for name, details in hcommand._subcommand_tree.items():
+                    matches = [name.lower()]
 
-                if "aliases" in details["details"]:
-                    matches += [x.lower() for x in details["details"]["aliases"]]
-                
-                if subcommand in matches:
-                    # Match found
-                    subcommand_match = hcommand._subcommand_tree[name]
-                    break
+                    if "aliases" in details["details"]:
+                        matches += [x.lower() for x in details["details"]["aliases"]]
+                    
+                    if subcommand in matches:
+                        # Match found
+                        subcommand_match = hcommand._subcommand_tree[name]
+                        break
+
+            else:
+                err = False
 
         else:
-            err = False
+            subcommand_match = hcommand._subcommand_tree["__root__"]
 
         # If there's not a match, send an error
         if subcommand_match is None:
@@ -487,7 +487,7 @@ class MessageCommandAdapter:
         fields = []
 
         # Check for subcommands
-        if len(hcommand._subcommand_tree) > 1:
+        if "__root__" not in hcommand._subcommand_tree:
             comp = []
             # Subcommands exist. List them
             for name, subcommand_details in hcommand._subcommand_tree.items():

@@ -107,8 +107,8 @@ class SubcommandCommand(humecord.Command):
 
         # Command tree
         self.command_tree = {
-            "/mysubcommand": self.mysubcommand,
-            "/anothersubcommand/%testargument%": self.anothersubcommand
+            "mysubcommand": self.mysubcommand,
+            "anothersubcommand %testargument%": self.anothersubcommand
         }
 
         # Arguments, if any exist
@@ -165,8 +165,8 @@ would become
 
 ```py
 self.command_tree = {
-    "/user/%user%/%option%": self.user,
-    "/othersubcommand": self.othersubcommand
+    "user %user% %option%": self.user,
+    "othersubcommand": self.othersubcommand
 }
 
 self.args = {
@@ -192,7 +192,7 @@ A command tree with no subcommands could be formatted as such:
 # /commandname
 
 self.command_tree = {
-    "/": self.run
+    "": self.run
 }
 ```
 
@@ -201,7 +201,7 @@ or, with args:
 # /commandname [arg1] (arg2)
 
 self.command_tree = {
-    "/%arg1%/%arg2%": self.run
+    "%arg1% %arg2%": self.run
 }
 
 self.args = {

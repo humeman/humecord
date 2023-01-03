@@ -42,6 +42,9 @@ class OnMessageEvent:
         global bot
         from humecord import bot
 
+        from humecord.commands.about import AboutCommand
+        self.about_cmd = AboutCommand()
+
     async def check_bot(
             self,
             message
@@ -64,6 +67,7 @@ class OnMessageEvent:
             self,
             message
         ):
+
         if not message.author.bot and message.author.id != humecord.bot.client.user.id:
             if message.content.startswith("<@"):
                 if message.content in [f"<@{humecord.bot.client.user.id}>", f"<@!{humecord.bot.client.user.id}>"]:
@@ -71,27 +75,27 @@ class OnMessageEvent:
                     resp = humecord.classes.discordclasses.MessageResponseChannel(
                         message
                     )
+                    
+                    kw = {
+                        "channel": message.channel,
+                        "user": message.author,
+                        "message": message
+                    }
+                    if message.guild:
+                        if humecord.bot.config.use_api:
+                            kw["gdb"] = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id, "autocreate": True})
+
+                        else:
+                            kw["gdb"] = await humecord.bot.db.get("guild", {"id": message.guild.id})
+
+                        kw["guild"] = message.guild
 
                     # Get GDB
-                    if humecord.bot.config.use_api:
-                        gdb = await humecord.bot.api.get(humecord.bot.config.self_api, "guild", {"id": message.guild.id, "autocreate": True})
+                    ctx = humecord.classes.discordclasses.Context(**kw)
 
-                    else:
-                        gdb = await humecord.bot.db.get("guild", {"id": message.guild.id})
-
-                    # Generate pdb
-                    pdb = {}
-                    for key in humecord.bot.config.preferred_gdb:
-                        pdb[key] = gdb[key]
-
-                    await humecord.bot.msgcommands.get_command("info", "about").run(
-                        message,
+                    await self.about_cmd.run(
                         resp,
-                        [],
-                        {},
-                        None,
-                        None,
-                        pdb
+                        ctx
                     )
 
     async def check_reply(

@@ -4,17 +4,20 @@ from ..utils import (
     argrules
 )
 
-from typing import Union
+from typing import Tuple, Union, Any
 
 import humecord
 
 class ArgumentParser:
     def __init__(
             self,
-            extra_rules: dict
-        ):
+            extra_rules: dict[str, Any]
+        ) -> None:
         """
         Constructs an ArgumentParser.
+
+        Params:
+        - `extra_rules` (dict[str, Any]): Extra argument rules to add.
         """
 
         self.rules = {
@@ -31,7 +34,7 @@ class ArgumentParser:
     async def compile_recursive(
             self,
             parsestr: str
-        ):
+        ) -> None:
         """
         Converts a parse string into an ArgumentParser-readable
         object, recursively.
@@ -39,7 +42,7 @@ class ArgumentParser:
         This allows for nested statements, using parenthesis.
 
         Arguments:
-            parsestr (str): String to compile
+        - `parsestr` (str): String to compile
         """
 
         # Strip leading & trailing (
@@ -87,13 +90,13 @@ class ArgumentParser:
     async def compile(
             self,
             parsestr: str
-        ):
+        ) -> None:
         """
         Converts a parse string into an ArgumentParser-readable
         object.
         
         Arguments:
-            parsestr (str): String to compile
+        - `parsestr` (str): String to compile
         """
 
         # Final desired format:
@@ -255,23 +258,23 @@ class ArgumentParser:
             rules: Union[dict, str],
             istr: str,
             data: dict
-        ):
+        ) -> Tuple[bool, Any]:
         """
         Automatically validates something,
         and returns either errors or a parsed value.
         
         Arguments:
-            rules: (dict, str) - Rules to validate.
-                If this is a string, it'll be converted
-                to a valid format.
-            istr: (str) - Input to validate.
-            data: (dict) - Data to pass along to the validator.
+        - `rules`: (dict, str) - Rules to validate.
+            If this is a string, it'll be converted
+            to a valid format.
+        - `istr`: (str) - Input to validate.
+        - `data`: (dict) - Data to pass along to the validator.
 
         Returns:
-            valid (bool) - Whether or not the data is valid
-            value - Value returned from validator
-                If valid: The actual parsed value
-                Else: A list of errors (failed checks) 
+        - `valid` (bool) - Whether or not the data is valid
+        - `value` - Value returned from validator
+            If valid: The actual parsed value
+            Else: A list of errors (failed checks) 
         """
 
         if type(rules) != dict:
@@ -291,7 +294,22 @@ class ArgumentParser:
             rules: dict,
             istr: str,
             data: dict
-        ):
+        ) -> Tuple[bool, Any]:
+        """
+        Validates a string input agianst a pre-compiled set of rules.
+        Use parse() -- it allows for either compiled/uncompiled rules.
+
+        Params:
+        - `rules` (dict): Rules, already compiled
+        - `istr` (str): Input to parse
+        - `data` (dict): Extra data to pass to validator
+
+        Returns:
+        - `valid` (bool) - Whether or not the data is valid
+        - `value` - Value returned from validator
+            If valid: The actual parsed value
+            Else: A list of errors (failed checks)
+        """
         checked = {}
 
         results = []
@@ -411,6 +429,12 @@ class ArgumentParser:
             istr: str,
             data: dict
         ):
+        """
+        Honestly not sure why this one exists, but it's referenced 4 times.
+        Use .parse(). It does the same thing as far as I can tell.
+
+        This is a mess
+        """
 
         # Either a string or dict can be passed as rules.
         # If it's a string, forward it to validate_one.
@@ -444,6 +468,8 @@ class ArgumentParser:
             data: dict
         ):
 
+        raise DeprecationWarning("Use .parse().")
+
         # Compile into rule
         rules = await self.compile_recursive(
             rule
@@ -462,6 +488,23 @@ class ArgumentParser:
             istr: str,
             data: dict
         ):
+        """
+        Compiles a single rule and validates a string with it.
+        
+        Use .parse(). It allows for chained rules (ie: &&, ||, ()).
+        
+        Params:
+        - `rulestr` (str): Uncompiled rule string
+        - `istr` (str): Input to validate
+        - `data` (dict): Extra data to pass to the validator
+        
+        Returns:
+        - `value` (Any): Parsed value.
+        
+        Raises:
+        - `exceptions.InvalidRule` - rule is formatted incorrectly
+        - `exceptions.MissingData` - data must be passed
+        """
 
         # First, find the type.
         if "[" in rulestr:
