@@ -133,7 +133,7 @@ class ExecCommand(humecord.Command):
             # them the task ID so it can be cancelled.
 
             if counter >= 1 and not long_logged and not silent:
-                await resp.edit(
+                await resp.send(
                     embed = discordutils.create_embed(
                         title = f"{bot.config.lang['emoji']['loading']}  Running exec task...",
                         description = f"This task is taking a while. If you'd like to cancel it, use `/exec cancel {task_id}`.",
@@ -148,7 +148,7 @@ class ExecCommand(humecord.Command):
 
         except asyncio.CancelledError:
             if not bot.mem_storage["evals"][task_id]["silent"]:
-                await resp.edit(
+                await resp.send(
                     embed = discordutils.create_embed(
                         title = f"{bot.config.lang['emoji']['error']}  Exec task cancelled.",
                         footer = f"Task ID {task_id} | Cancelled after {round(time.time() - bot.mem_storage['evals'][task_id]['started'], 1)}s",
@@ -194,7 +194,7 @@ class ExecCommand(humecord.Command):
         del globals()["_run_exec"]
 
         if not bot.mem_storage["evals"][task_id]["silent"]: # Refresh it
-            await resp.edit(
+            await resp.send(
                 embed = discordutils.create_embed(
                     title = result_title,
                     fields = [
