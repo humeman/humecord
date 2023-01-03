@@ -136,7 +136,7 @@ class MessageCommandAdapter:
         """
 
         # Verify this is a user message
-        if message.type != discord.MessageType.default:
+        if message.type not in [discord.MessageType.default, discord.MessageType.reply]:
             return
 
         # Check if there is content available
