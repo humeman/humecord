@@ -215,7 +215,7 @@ class InteractionManager:
             self,
             _id: str,
             interaction: discord.Interaction
-        ):
+        ) -> None:
         """
         Creates a task for a permanent interaction.
 
@@ -223,8 +223,11 @@ class InteractionManager:
             _id (str): Perma ID
             interaction (discord.Interaction)
         """
-        # Then, the name is everything after
-        # We dispatch that directly as an event
+        
+        
+        # Get information: values or modal args
+        arg_type, ext_kw = self._get_args(interaction)
+
         resp = await self.generate_resp(
             interaction
         )
@@ -233,18 +236,31 @@ class InteractionManager:
             interaction,
             resp,
             extra = {
-                "component_type": humecord.ComponentArgTypes.PERMA,
                 "perma": True,
-                "perma_id": _id
+                "perma_id": _id,
+                "arg_type": arg_type,
+                **ext_kw
             },
             perma = True
         )
 
-        # Verify no botban
+        # Check for botban
         if ctx.udb["botban"] is not None:
             if ctx.udb["botban"]["endsat"] > time.time():
                 humecord.logger.log("interaction", "int", f"User {interaction.user} ({interaction.user.id}) is botbanned. Skipping interaction.")
                 return
+            
+        # Run the component's callback
+        humecord.logger.log_long(
+            "interaction",
+            "int",
+            [
+                f"Type:           components.{argtype_to_str.get(arg_type)}",
+                f"Component:      {_id} (perma)",
+                f"Channel:        {interaction.channel.id} ({getattr(interaction.channel, 'name', None)})",
+                f"User:           {interaction.user.id} ({interaction.user})"
+            ]
+        )
 
         return humecord.bot.client.loop.create_task(
             humecord.bot.events.call(
@@ -253,6 +269,55 @@ class InteractionManager:
             )
         )
     
+    def _get_args(
+            self,
+            interaction: discord.Interaction
+        ) -> dict[str, Any]:
+        """
+        Generates extra kwargs for Context() containing values for this interaction's args.
+        
+        Params:
+            interaction (discord.Interaction)
+            
+        Returns:
+            arg_type (humecord.ComponentArgTypes): This component's argument type
+            kw (dict[str, Any]): kwargs to add to Context()
+        """
+        ext_kw = {}
+        arg_type = humecord.ComponentArgTypes.ANY
+        if "values" in interaction.data:
+            # Values, or the items in the list that are checked
+            ext_kw["values"] = interaction.data["values"] or []
+            arg_type = humecord.ComponentArgTypes.SELECT
+
+        elif "components" in interaction.data:
+            ext_kw["modal_args"] = {}
+
+            valid = True
+            if "components" not in interaction.data:
+                valid = False
+
+            if len(interaction.data["components"]) != 1:
+                valid = False
+            
+            components = interaction.data["components"][0].get("components")
+            if components is None:
+                valid = False
+
+            if valid:
+                # Iterate over each component in the modal
+                for modal_component in components:
+                    name = modal_component.get("custom_id")
+
+                    if name is None:
+                        continue
+
+                    ext_kw["modal_args"][name] = modal_component.get("value")
+
+            arg_type = humecord.ComponentArgTypes.MODAL
+
+        return arg_type, ext_kw
+
     async def run_temp_interaction(
             self,
             _id: str,
@@ -287,39 +352,7 @@ class InteractionManager:
                 return
         
         # Get information: values or modal args
-        ext_kw = {}
-        component_type = c_details.get("type")
-        arg_type = humecord.ComponentArgTypes.ANY
-        if component_type == humecord.ComponentTypes.SELECT:
-            # Values, or the items in the list that are checked
-            ext_kw["values"] = interaction.data["values"] or []
-            arg_type = humecord.ComponentArgTypes.SELECT
-
-        elif component_type == humecord.ComponentTypes.MODAL:
-            ext_kw["modal_args"] = {}
-
-            valid = True
-            if "components" not in interaction.data:
-                valid = False
-
-            if len(interaction.data["components"]) != 1:
-                valid = False
-            
-            components = interaction.data["components"][0].get("components")
-            if components is None:
-                valid = False
-
-            if valid:
-                # Iterate over each component in the modal
-                for modal_component in components:
-                    name = modal_component.get("custom_id")
-
-                    if name is None:
-                        continue
-
-                    ext_kw["modal_args"][name] = modal_component.get("value")
-
-            arg_type = humecord.ComponentArgTypes.MODAL
+        arg_type, ext_kw = self._get_args(interaction)
 
         # Generate args
         resp = await self.generate_resp(
@@ -330,7 +363,7 @@ class InteractionManager:
             interaction,
             resp,
             extra = {
-                "component_type": arg_type,
+                "arg_type": arg_type,
                 "perma": False,
                 **ext_kw
             },
