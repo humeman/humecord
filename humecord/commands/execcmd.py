@@ -102,7 +102,7 @@ class ExecCommand(humecord.Command):
 
         # Create task
         task = bot.client.loop.create_task(
-            globals()["_run_exec"](bot, ctx, resp)
+            globals()["_run_exec"](bot, resp, ctx)
         )
 
         bot.mem_storage["evals"][task_id] = {

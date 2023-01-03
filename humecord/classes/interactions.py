@@ -223,7 +223,7 @@ class InteractionManager:
             _id (str): Perma ID
             interaction (discord.Interaction)
         """
-        
+        humecord.logger.log("interaction", "int", f"Dispatching interaction ID {_id}", bold = True)
         
         # Get information: values or modal args
         arg_type, ext_kw = self._get_args(interaction)
