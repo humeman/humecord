@@ -4,6 +4,7 @@
 Syncs the command tree.
 """
 
+import asyncio
 from typing import Optional
 
 import humecord
@@ -13,7 +14,8 @@ from humecord.classes import (
 )
 
 from humecord.utils import (
-    discordutils
+    discordutils,
+    debug
 )
 
 class SyncCommand(humecord.Command):
@@ -86,7 +88,20 @@ class SyncCommand(humecord.Command):
             )
             return
 
-        cmd_count = await bot.commands.sync_to(guild, copy = ctx.args.copy)
+        await resp.defer(thinking = True)
+
+        try:
+            cmd_count = await bot.commands.sync_to(guild, copy = ctx.args.copy)
+
+        except Exception as e:
+            debug.print_traceback("An error occured during command tree sync.")
+            await debug.log_traceback("Command tree sync")
+            await resp.error(
+                ctx.user,
+                "Failed to sync command tree.",
+                "Check the debug channel and/or logs for information."
+            )
+            return
 
         await resp.send(
             embed = discordutils.create_embed(
@@ -130,12 +145,25 @@ class SyncCommand(humecord.Command):
             resp: discordclasses.ResponseChannel,
             ctx: discordclasses.Context
         ) -> None:
-        #bot.loop.create_task(bot.commands.sync_global())
+        await resp.defer(thinking = True)
+
+        try:
+            cmd_count = await bot.commands.sync_global()
+
+        except Exception as e:
+            debug.print_traceback("An error occured during command tree sync.")
+            await debug.log_traceback("Command tree sync")
+            await resp.error(
+                ctx.user,
+                "Failed to sync command tree.",
+                "Check the debug channel and/or logs for information."
+            )
+            return
 
         await resp.edit(
             embed = discordutils.create_embed(
-                f"{bot.config.lang['emoji']['success']}  Queued command tree sync!",
-                f"Changes may take a while to propogate everywhere.",
+                f"{bot.config.lang['emoji']['success']}  Command tree synced successfully!",
+                f"**{cmd_count}** commands were synced. Changes may take a while to propogate everywhere.",
                 color = "success"
             ),
             view = None

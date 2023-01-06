@@ -10,13 +10,10 @@ from humecord.utils import (
 
 class ResponseChannel:
     def __init__(
-            self,
-            channel: Union[discord.TextChannel, discord.DMChannel]
+            self
         ):
 
         self.type = humecord.RespTypes.NONE
-
-        self.channel = channel
 
     async def send(self, *args, **kwargs):
         raise humecord.utils.exceptions.NotDefined(f"This function isn't available for message type {self.type}.")
@@ -55,22 +52,23 @@ class ResponseChannel:
             **ext_kw
         )
 
-    async def defer(self, *args):
-        raise humecord.utils.exceptions.NotDefined(f"This function isn't available for message type {self.type}.")
+    async def defer(self, *args, **kwargs):
+        return
 
 class MessageResponseChannel(ResponseChannel):
     def __init__(self, message):
         self.type = humecord.RespTypes.MESSAGE
 
+        self.channel = message.channel
         self.initial_action = False
         self.message = message
-        super().__init__(message.channel)
+        super().__init__()
 
     async def send(self, *args, **kwargs):
         if "ephemeral" in kwargs:
             kwargs = {x: y for x, y, in kwargs.items() if x != "ephemeral"}
                 
-        self.sent_msg = await self.message.channel.send(*args, **kwargs)
+        self.sent_msg = await self.channel.send(*args, **kwargs)
         self.initial_action = True
         return self.sent_msg
 
@@ -88,7 +86,7 @@ class ThreadResponseChannel(ResponseChannel):
         self.channel = message.channel
         self.parent = self.channel.parent
 
-        super().__init__(None)
+        super().__init__()
 
     async def send(self, *args, **kwargs):
         return await self.channel.send(*args, **kwargs)
@@ -104,10 +102,10 @@ class InteractionResponseChannel(ResponseChannel):
         self.is_component = is_component
         self.deferred = False
 
-        super().__init__(None)
+        super().__init__()
 
     async def send(self, *args, **kwargs):
-        if (not self.initial_action) or self.deferred:
+        if (not self.initial_action) and (not self.deferred):
             await self.response.send_message(*args, **kwargs)
             self.initial_action = True
 

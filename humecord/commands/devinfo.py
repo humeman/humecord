@@ -190,7 +190,7 @@ class DevInfoCommand(humecord.Command):
                 },
                 {
                     "name": "→ Uptime",
-                    "value": f"• **Runtime**: `{miscutils.get_duration(time.time() - humecord.bot.timer)}`\n• **Session started**: `{dateutils.get_timestamp(humecord.bot.timer)}`"
+                    "value": f"• **Runtime**: `{dateutils.get_duration(time.time() - humecord.bot.timer)}`\n• **Session started**: `{dateutils.get_timestamp(humecord.bot.timer)}`"
                 },
                 {
                     "name": "→ Commands",

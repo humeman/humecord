@@ -62,7 +62,9 @@ class Loops:
             counter += 1
             if loop.name not in humecord.bot.files.files["__loops__.json"]:
                 humecord.bot.files.files["__loops__.json"][loop.name] = {
-                    "last_run": -1
+                    "last_run": -1,
+                    "pause": False,
+                    "pause_until": None
                 }
 
         humecord.bot.files.write("__loops__.json")

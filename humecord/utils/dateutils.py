@@ -91,7 +91,7 @@ def get_duration(
 
     while seconds > 0:
         for name, bound in times.items():
-            if seconds > bound:
+            if seconds >= bound:
                 # Find number
                 if name == "second":
                     comp[name] = seconds
@@ -108,6 +108,7 @@ def get_duration(
     comp_str = []
     for name, value in comp.items():
         if value == 0 and (name != "second" and len(comp_str) > 0):
+            print("skipping")
             continue
 
         if short:

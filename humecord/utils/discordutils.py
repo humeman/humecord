@@ -344,3 +344,33 @@ async def fetch_message(
         raise exceptions.NotFound(f"Lookup failed after {tries} attempts")
 
     return message
+
+def get_timecode(
+        timestamp: Optional[int] = None,
+        format: Union[str, humecord.TimecodeFormats] = humecord.TimecodeFormats.DATE_TIME
+    ) -> str:
+    """
+    Gets a Discord timecode string from a UNIX timestamp.
+    
+    With no supplied arguments, the function will generate a DATE_TIME string
+    at the current time.
+
+    Params:
+    - `timestamp` (Optional[int] = None): Timestamp (time.time())
+    - `format` (humecord.TimecodeFormats or str = .DATE_TIME): Format to use
+        One of: `SHORT_TIME`, `LONG_TIME`, `SHORT_DATE`, `LONG_DATE`, `DATE_TIME`, `LONG_DATE_TIME`, `RELATIVE`
+        Or, strings (please only use if this is from user input): `short_time`, `long_time`, ...
+    """
+
+    if timestamp is None:
+        timestamp = time.time()
+
+    if type(format) == str:
+        format = humecord.STR_TO_TIMECODE.get(format)
+
+        if format is None:
+            raise exceptions.NotFound(f"Invalid timecode format '{format}'. Valid formats include: {','.join(list(humecord.STR_TO_TIMECODE))}")
+
+    format = format.value
+
+    return f"<t:{int(timestamp)}{format}>"

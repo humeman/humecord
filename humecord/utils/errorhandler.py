@@ -212,7 +212,7 @@ async def slash_wrap(
         details = ""
 
         if ctx.interaction.guild:
-            details = f"Guild: `{ctx.interaction.guild.id}`\nUser: `{ctx.interaction.user.id} ({ctx.interaction.user})"
+            details = f"Guild: `{ctx.interaction.guild.id}`\nUser: `{ctx.interaction.user.id}` (`{ctx.interaction.user}`)"
 
         details += f"Channel: `{ctx.channel.id}`\n"
 

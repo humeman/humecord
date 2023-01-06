@@ -107,6 +107,16 @@ class CommandHandler:
                 "module": "execcmd",
                 "class": "ExecCommand"
             },
+            "logs": {
+                "imp": "from humecord.commands import logs",
+                "module": "logs",
+                "class": "LogsCommand"
+            },
+            "loops": {
+                "imp": "from humecord.commands import loops",
+                "module": "loops",
+                "class": "LoopsCommand"
+            },
             "profile": {
                 "imp": "from humecord.commands import profile",
                 "module": "profile",
@@ -121,6 +131,11 @@ class CommandHandler:
                 "imp": "from humecord.commands import sync",
                 "module": "sync",
                 "class": "SyncCommand"
+            },
+            "useredit": {
+                "imp": "from humecord.commands import useredit",
+                "module": "useredit",
+                "class": "UserEditCommand"
             }
         }
         
@@ -285,7 +300,7 @@ class CommandHandler:
         if not self._prep_finished:
             raise exceptions.DevError("Command tree is not prepared yet.")
         
-        return len(await self.slashtree.sync())
+        return len(await self.slashtree.sync(guild = None))
 
     async def call_command(
             self,

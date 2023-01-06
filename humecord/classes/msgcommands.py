@@ -111,18 +111,20 @@ class MessageCommandAdapter:
         - `first_arg` (str): First argument
 
         Returns:
-        - `match_command` (Optional[dict[str, Any]]): Matched command details, if a match is found
-        - `match_activator` (Optional[dict[str, dict[str, Any]]]): Matched activator details
+        - (list[Tuple[dict, dict]]): List of all matches:
+            - `0` (Optional[dict[str, Any]]): Matched command details, if a match is found
+            - `1` (Optional[dict[str, dict[str, Any]]]): Matched activator details
         """
         first_arg = first_arg.lower()
+        matches = []
 
         for category, category_det in self.tree.items():
             for command_det in category_det["commands"]:
                 for activator, activator_det in command_det["activators"].items():
                     if first_arg.endswith(activator):
-                        return command_det, activator_det
+                        matches.append((command_det, activator_det))
 
-        return None, None
+        return matches
 
     async def run(
             self,
@@ -151,12 +153,11 @@ class MessageCommandAdapter:
             first_arg = message.content.split(" ", 1)[0]
 
         # Check if the message has an activator match
-        matched_command, matched_activator = self.check_run(first_arg)
+        matches = self.check_run(first_arg)
 
-        if matched_command is None:
+        if len(matches) == 0:
             return
         
-        hcommand = matched_command["hcommand"]
 
         kw = {}
         prefix = None
@@ -171,7 +172,7 @@ class MessageCommandAdapter:
         kw["udb"] = udb
 
         # A guild message
-        if message.channel.type in [discord.ChannelType.text, discord.ChannelType.private_thread, discord.ChannelType.public_thread, discord.ChannelType.forum]:
+        if message.channel.type in [discord.ChannelType.text, discord.ChannelType.private_thread, discord.ChannelType.public_thread, discord.ChannelType.forum, discord.ChannelType.news, discord.ChannelType.news_thread]:
             # Get gdb (+ preferred gdb) and udb, prefix is from gdb
             gdb = await bot.api.get(
                 humecord.bot.config.self_api,
@@ -187,6 +188,30 @@ class MessageCommandAdapter:
             kw["gdb"] = gdb
             prefix = gdb.get("prefix") or "!"
 
+        elif message.channel.type in [discord.ChannelType.private or discord.ChannelType.group]:
+            prefix = udb.get("prefix") or "!"
+
+        # Now, check that the command matches the prefix + activator to determine if we actually run
+        if prefix is None:
+            humecord.logger.log("command", "warn", f"No prefix defined for target location {message.channel.id} ({message.channel.type}). Skipping execution.")
+            self.parent.stat_cache["__denied__"] += 1
+            return
+
+        matched_command = None
+        for item in matches:
+            cmd, activator = item # Expand tuple
+
+            if first_arg == f"{prefix}{activator['content']}":
+                matched_command = cmd
+                matched_activator = activator
+
+        if matched_command is None:
+            return # No matches
+
+        hcommand = matched_command["hcommand"]
+
+        # Get preferred database from this, if this is a guild message (checked earlier)
+        if "gdb" in kw:
             preferred_api = getattr(hcommand, "preferred_api", None)
 
             if preferred_api is not None:
@@ -199,18 +224,6 @@ class MessageCommandAdapter:
 
                 kw["alt_gdb"] = kw["gdb"]
                 kw["gdb"] = p_gdb
-
-        elif message.channel.type in [discord.ChannelType.private or discord.ChannelType.group]:
-            prefix = udb.get("prefix") or "!"
-
-        # Now, check that the command matches the prefix + activator to determine if we actually run
-        if prefix is None:
-            humecord.logger.log("command", "warn", f"No prefix defined for target location {message.channel.id} ({message.channel.type}). Skipping execution.")
-            self.parent.stat_cache["__denied__"] += 1
-            return
-
-        if first_arg != f"{prefix}{matched_activator['content']}":
-            return
 
         # We matched the command. Prepare for execution.
         # 1: Check if user is botbanned.
@@ -485,11 +498,19 @@ class MessageCommandAdapter:
         fields = []
 
         # Check for subcommands
-        if "__root__" not in hcommand._subcommand_tree:
+        if "__root__" in hcommand._subcommand_tree:
+            fields.append(
+                {
+                    "name": "→ Syntax",
+                    "value": f"{hcommand.name}{self._get_subcommand_args(hcommand, '__root__')}"
+                }
+            )
+
+        else:
             comp = []
             # Subcommands exist. List them
             for name, subcommand_details in hcommand._subcommand_tree.items():
-                comp.append(f"• **{hcommand.name} {name}**: *{subcommand_details['details'].get('description') or 'No description set'}*")
+                comp.append(f"• **{hcommand.name} {name}{self._get_subcommand_args(hcommand, name)}**\n*{subcommand_details['details'].get('description') or 'No description set'}*")
 
             fields.append(
                 {
@@ -539,6 +560,53 @@ class MessageCommandAdapter:
             fields = fields,
             color = color
         )
+
+    def _get_subcommand_args(
+            self,
+            hcommand,
+            subcommand_name: str
+        ) -> str:
+        """
+        Generates a string displaying a command's args.
+        
+        For example, if a command has subcommand tree
+        "%user% %description%" where user is of type user and required, and description is of type str and not required,
+        this method will return:
+        ` [user] (description: str)`
+
+        If an arg's name is the same as its type, the type will not be displayed.
+
+        Params:
+        - `hcommand` (humecord.Command)
+        - `subcommand_name` (str): Name of the subcommand to check. `__root__` for root command.
+        
+        Returns:
+            (str): Subcommand args.
+        """
+
+        details = hcommand._subcommand_tree[subcommand_name]
+
+        comp = []
+        for arg_name in details["args"]:
+            arg_details = hcommand.args[arg_name]
+
+            if arg_name == arg_details["type"]:
+                arg_str = arg_name
+            
+            else:
+                arg_str = f"{arg_name}: {arg_details['type']}"
+
+            if arg_details.get("required"):
+                arg_str = f"[{arg_str}]"
+
+            else:
+                arg_str = f"({arg_str})"
+
+            comp.append(arg_str)
+
+        return f" {' '.join(comp)}"
+
+
 
 discord_to_humecord_args = {
     "str": "str",

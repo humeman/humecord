@@ -360,7 +360,7 @@ class Bot:
                     "stop",
                     embed = discordutils.create_embed(
                         title = f"{self.config.lang['emoji']['success']}  Shutting down client.",
-                        description = f"```yml\nCaused by: {reason}\n\nRuntime: {miscutils.get_duration(time.time() - self.timer)}\nSession started: {dateutils.get_timestamp(self.timer)}\nSession closed: {dateutils.get_timestamp(time.time())}\n\nBye bye!```",
+                        description = f"```yml\nCaused by: {reason}\n\nRuntime: {dateutils.get_duration(int(time.time()) - self.timer)}\nSession started: {dateutils.get_timestamp(self.timer)}\nSession closed: {dateutils.get_timestamp(time.time())}\n\nBye bye!```",
                         color = "success"
                     )
                 )

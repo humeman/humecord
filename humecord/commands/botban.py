@@ -26,34 +26,24 @@ class BotBanCommand(humecord.Command):
         self.name = "botban"
         self.description = "Bans someone from using the bot."
         self.command_tree = {
-            "add %user% %userid% %duration% %reason% %silent%": self.add,
-            "remove %user% %userid% %note% %silent%": self.remove
+            "add %user% %duration% %reason%": self.add,
+            "remove %user% %note%": self.remove
         }
         self.args = {
             "user": {
                 "type": "user",
-                "required": False,
+                "required": True,
                 "description": "Mentionable user to add botban to."
-            },
-            "userid": {
-                "type": "str",
-                "required": False,
-                "description": "User ID to add botban to."
             },
             "duration": {
                 "type": "str",
                 "required": False,
-                "description": "Duration to ban the user for (blank for perma)."
+                "description": "Duration to ban the user for (or 'perm')."
             },
             "reason": {
                 "type": "str",
                 "required": False,
                 "description": "Reason for the ban. Displayed to the user."
-            },
-            "silent": {
-                "type": "bool",
-                "required": False,
-                "description": "If true, the user will not be alerted."
             },
             "note": {
                 "type": "str",
@@ -83,60 +73,31 @@ class BotBanCommand(humecord.Command):
             ctx: discordclasses.Context
         ) -> None:
 
-        user_details = "*nonexistent user* "
-        target_user = None
-        # Check user
-        if ctx.args.exists("user"):
-            target = ctx.args.user.id
-
-            target_user = ctx.args.user
-
-        elif ctx.args.exists("userid"):
-            try:
-                target = int(ctx.args.userid)
-
-            except:
-                await resp.error(
-                    ctx.user,
-                    "Invalid user ID!",
-                    "Couldn't transform user ID into an int."
-                )
-                return
-
-            target_user = bot.client.get_user(target)
-
-        else:
-            await resp.error(
-                ctx.user,
-                "Invalid args!",
-                "You must specify either a `user` or `userid`."
-            )
-            return
-
-        if target_user is not None:
-            user_details = f"{target_user} "
+        target = ctx.args.user.id
+        target_user = ctx.args.user
+        user_details = f"{target_user} "
 
         # Set up duration
+        length = None
         if ctx.args.exists("duration"):
-            try:
-                length = dateutils.parse_duration(ctx.args.duration)
+            if not ctx.args.duration.lower().startswith("perm"):
+                try:
+                    length = dateutils.parse_duration(ctx.args.duration)
 
-            except:
-                await resp.error(
-                    ctx.user,
-                    "Invalid length!",
-                    "Duration value is incorrectly formatted. Examples: `3d`, `4h`, `1w`, etc."
-                )
-                return
+                except:
+                    await resp.error(
+                        ctx.user,
+                        "Invalid length!",
+                        "Duration value is incorrectly formatted. Examples: `3d`, `4h`, `1w`, etc."
+                    )
+                    return
 
-            duration = {
-                "duration": length,
-                "endsat": int(time.time()) + length
-            }
+                duration = {
+                    "duration": length,
+                    "endsat": int(time.time()) + length
+                }
 
-        else:
-            length = None
-
+        if length is None:
             duration = {
                 "duration": None,
                 "endsat": None
@@ -148,6 +109,13 @@ class BotBanCommand(humecord.Command):
 
         else:
             reason = "Not specified."
+
+        if reason.endswith(" silent"):
+            reason = reason.rsplit(" ", 1)[0]
+            silent = True
+
+        else:
+            silent = False
 
         # Post botban data
         botban_data = {
@@ -173,7 +141,7 @@ class BotBanCommand(humecord.Command):
         # Check for DM
         dm_sent = False
         dm_ext = ""
-        if (not getattr(ctx.args, "silent", False)) and (target_user is not None):
+        if (not silent) and (target_user is not None):
             try:
                 await target_user.send(
                     **(
@@ -202,7 +170,7 @@ class BotBanCommand(humecord.Command):
         await resp.send(
             embed = discordutils.create_embed(
                 f"{bot.config.lang['emoji']['success']} Botbanned {user_details}({target}).",
-                description = f"**Duration:** `{'Permanent' if duration is None else dateutils.get_duration(int(duration))}`\n**Reason:** `{reason}`\n**User:** <@{target}> (`{target}`)\n\nDM {'not ' if not dm_sent else ''}sent{dm_ext}.",
+                description = f"**Duration:** `{'Permanent' if length is None else dateutils.get_duration(int(length))}`\n**Reason:** `{reason}`\n**User:** <@{target}> (`{target}`)\n\nDM {'not ' if not dm_sent else ''}sent{dm_ext}.",
                 color = "success"
             )
         )
@@ -214,44 +182,22 @@ class BotBanCommand(humecord.Command):
             ctx: discordclasses.Context
         ) -> None:
 
-        user_details = "*nonexistent user* "
-        target_user = None
-        # Check user
-        if ctx.args.exists("user"):
-            target = ctx.args.user.id
-
-            target_user = ctx.args.user
-
-        elif ctx.args.exists("userid"):
-            try:
-                target = int(ctx.args.userid)
-
-            except:
-                await resp.error(
-                    ctx.user,
-                    "Invalid user ID!",
-                    "Couldn't transform user ID into an int."
-                )
-                return
-
-            target_user = bot.client.get_user(target)
-
-        else:
-            await resp.error(
-                ctx.user,
-                "Invalid args!",
-                "You must specify either a `user` or `userid`."
-            )
-            return
-
-        if target_user is not None:
-            user_details = f"{target_user} "
+        target = ctx.args.user.id
+        target_user = ctx.args.user
+        user_details = f"{target_user} "
 
         if ctx.args.exists("note"):
             note = ctx.args.note
 
         else:
             note = "Not specified."
+
+        if note.endswith(" silent"):
+            note = note.rsplit(" ", 1)[0]
+            silent = True
+
+        else:
+            silent = False
 
         # Get a UDB
         udb = await bot.api.get(
@@ -300,7 +246,7 @@ class BotBanCommand(humecord.Command):
 
         dm_sent = False
         dm_ext = ""
-        if (not getattr(ctx.args, "silent", False)) and (target_user is not None):
+        if (not silent) and (target_user is not None):
             try:
                 await target_user.send(
                     **(
