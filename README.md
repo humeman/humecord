@@ -1,3 +1,9 @@
+# Archive Notice
+This repository has been archived as of January 16, 2024, due to lack of interest and time. No future updates will be released. Much of the functionality present here can be implemented simply with only the discord.py wrapper.
+
+
+---
+
 # [Skip to docs](docs/README.md)
 
 ---
